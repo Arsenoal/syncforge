@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`docs/MAVEN_PUBLISH.md`** — Maven Central one-time setup, GitHub secrets, tag publish, and post-release verification checklist
+
+### Changed
+
+- **POM metadata** — `syncforge.pom.url` and SCM URLs point to `github.com/Arsenoal/syncforge`
+
+### Added (earlier unreleased)
+
 - **`REST_API.md` versioning policy** — semver alignment with library releases, stable 1.0 scope, minor/major change rules, backend checklist
 
 ## [0.9.0-rc.1] - 2026-07-02
