@@ -42,7 +42,10 @@ jobs:
             :syncforge-persistence:compileKotlinJvm \
             :syncforge-persistence:compileKotlinIosSimulatorArm64 \
             :syncforge-persistence:compileKotlinMacosArm64 \
-            :syncforge-annotations:compileKotlin \
+            :syncforge-annotations:compileDebugKotlinAndroid \
+            :syncforge-annotations:compileKotlinJvm \
+            :syncforge-annotations:compileKotlinIosSimulatorArm64 \
+            :syncforge-annotations:compileKotlinMacosArm64 \
             :syncforge-ksp:compileKotlin \
             --no-daemon
 
