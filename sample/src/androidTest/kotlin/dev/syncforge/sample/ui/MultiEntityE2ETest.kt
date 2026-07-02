@@ -1,0 +1,66 @@
+package dev.syncforge.sample.ui
+
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Until
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/**
+ * Multi-entity E2E coverage for the 1.0 P0 Sample App Proof:
+ * tasks + notes on one [dev.syncforge.sync.SyncManager], shared outbox, independent sync.
+ */
+@RunWith(AndroidJUnit4::class)
+class MultiEntityE2ETest : SampleE2ETestBase() {
+
+    @Before
+    fun setUp() {
+        prepareDevice()
+    }
+
+    @Test
+    fun addTaskAndNote_singleSync_bothEntitiesReachSyncedState() {
+        val taskTitle = uniqueTitle("E2E Multi Task")
+        val noteTitle = uniqueTitle("E2E Multi Note")
+
+        addTask(taskTitle)
+        addNote(noteTitle, body = "Created during multi-entity E2E")
+
+        tapText("Sync")
+        waitForSyncToFinish()
+        waitForAnyText("Up to date", "Synced", "Last synced")
+
+        waitForRowSyncState(noteTitle, "Synced")
+
+        navigateToTasks()
+        waitForRowSyncState(taskTitle, "Synced")
+    }
+
+    @Test
+    fun taskConflict_doesNotBlockNoteSync() {
+        val taskTitle = uniqueTitle("E2E Conflict Task")
+        val noteTitle = uniqueTitle("E2E Conflict Note")
+
+        addTask(taskTitle)
+        tapText("Sync")
+        waitForSyncToFinish()
+
+        tapText("Server edit")
+        device.wait(Until.hasObject(By.textContains("Server updated")), 15_000)
+        device.findObject(By.checkable(true)).click()
+
+        tapText("Sync")
+        device.wait(Until.hasObject(By.textContains("Conflict")), 30_000)
+        waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
+
+        addNote(noteTitle)
+        tapText("Sync")
+        waitForSyncToFinish()
+
+        waitForRowSyncState(noteTitle, "Synced")
+
+        navigateToTasks()
+        device.wait(Until.hasObject(By.textContains("Conflict")), 10_000)
+    }
+}

@@ -95,7 +95,7 @@ Key files:
 | `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution |
 | `sample/.../tasks/TasksScreen.kt` | `SyncDebugLauncher`, conflict sheet |
 
-The sample satisfies the multi-entity proof in [1.0 P0](SyncForge-1.0-P0.docx); E2E automation and distribution items remain.
+The sample satisfies the multi-entity proof in [1.0 P0](SyncForge-1.0-P0.docx); run `./gradlew androidE2e` locally or see CI `android-e2e` job.
 
 ---
 
