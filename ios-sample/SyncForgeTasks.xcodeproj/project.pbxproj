@@ -251,7 +251,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Scripts/build-kotlin-frameworks.sh\"\n";
+			shellScript = "cd \"${SRCROOT}/..\" && SRCROOT=\"${SRCROOT}\" PLATFORM_NAME=\"${PLATFORM_NAME}\" ./gradlew linkIosFrameworksForXcode --quiet\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

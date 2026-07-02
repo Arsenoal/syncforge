@@ -10,7 +10,7 @@ class SampleUITestBase: XCTestCase {
         continueAfterFailure = false
 
         guard Self.isMockServerHealthy() else {
-            throw XCTSkip("Mock server must be running on localhost:8080 (./scripts/run-ios-e2e.sh)")
+            throw XCTSkip("Mock server must be running on localhost:8080 (./gradlew iosE2e)")
         }
 
         app = XCUIApplication()

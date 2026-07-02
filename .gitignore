@@ -15,6 +15,7 @@ captures/
 docs/*.docx
 .~lock.*
 scripts/*.py
+*.sh
 *.log
 
 # Android

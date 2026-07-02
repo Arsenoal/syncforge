@@ -1,4 +1,4 @@
-// Placeholder — overwritten by Scripts/build-kotlin-frameworks.sh on each Xcode build.
+// Placeholder — overwritten by ./gradlew linkIosFrameworksForXcode on each Xcode build.
 // Run manually if needed:
 //   ./gradlew :syncforge:linkDebugFrameworkIosSimulatorArm64 :sample-ios-shared:linkDebugFrameworkIosSimulatorArm64
 REPO_ROOT = $(SRCROOT)/..
