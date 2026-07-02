@@ -10,13 +10,13 @@ import app.cash.sqldelight.driver.android.AndroidSqliteDriver
  * Default database name is `syncforge.db` — separate from Room's `syncforge_outbox.db`,
  * so both stores can coexist during migration.
  *
- * Opt in via [dev.syncforge.SyncForge.android]:
+ * Wired automatically by [dev.syncforge.SyncForge.android]. For a custom file name:
  * ```
  * SyncForge.android(context) {
- *     useSqlDelightPersistence()
- *     // or: persistence(createSyncForgePersistence(context))
+ *     databaseName("my_app_syncforge.db")
  * }
  * ```
+ * Or inject explicitly: `persistence(createSyncForgePersistence(context))`
  */
 @ExperimentalSyncForgeApi
 fun createSyncForgePersistence(

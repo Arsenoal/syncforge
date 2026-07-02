@@ -84,24 +84,19 @@ class AndroidSyncForgeDsl internal constructor(
     }
 
     /**
+     * SQLDelight database file name (default `syncforge.db`). Ignored when [persistence] is set.
+     */
+    fun databaseName(name: String) {
+        require(name.isNotBlank()) { "databaseName must not be blank" }
+        sqlDelightDatabaseName = name
+    }
+
+    /**
      * Inject a custom SQLDelight [SyncForgePersistence] instance.
      */
     @ExperimentalSyncForgeApi
     fun persistence(persistence: SyncForgePersistence) {
         this.persistence = persistence
-        useRoom = false
-    }
-
-    /**
-     * SQLDelight is the default since 0.6.0. This call is a no-op — kept for backward compatibility.
-     */
-    @Deprecated(
-        message = "SQLDelight is the Android default since 0.6.0 — remove this call.",
-        level = DeprecationLevel.WARNING,
-    )
-    @ExperimentalSyncForgeApi
-    fun useSqlDelightPersistence(databaseName: String = "syncforge.db") {
-        sqlDelightDatabaseName = databaseName
         useRoom = false
     }
 
@@ -126,7 +121,8 @@ class AndroidSyncForgeDsl internal constructor(
         builder.conflicts(block)
     }
 
-    /** Escape hatch for advanced overrides on the underlying builder. */
+    /** Escape hatch for advanced overrides on the underlying [SyncForgeBuilder]. */
+    @ExperimentalSyncForgeApi
     fun customize(block: SyncForgeBuilder.() -> Unit) {
         builder.apply(block)
     }

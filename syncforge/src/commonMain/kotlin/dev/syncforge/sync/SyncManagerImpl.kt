@@ -1,6 +1,5 @@
 package dev.syncforge.sync
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPullApplier
@@ -256,14 +255,12 @@ internal class SyncManagerImpl(
 }
 
 /** Platform hook for background sync scheduling. */
-@ExperimentalSyncForgeApi
 interface SyncWorkScheduler {
     fun schedulePeriodic(interval: kotlin.time.Duration)
     fun scheduleRetry(delay: kotlin.time.Duration)
     fun cancel()
 }
 
-@ExperimentalSyncForgeApi
 object NoOpSyncWorkScheduler : SyncWorkScheduler {
     override fun schedulePeriodic(interval: kotlin.time.Duration) = Unit
     override fun scheduleRetry(delay: kotlin.time.Duration) = Unit
