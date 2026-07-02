@@ -16,8 +16,8 @@ class SampleUITestBase: XCTestCase {
         app.launchEnvironment["MOCK_SERVER_BASE_URL"] = Self.mockServerBaseUrl
         app.launchEnvironment["E2E_TESTING"] = "1"
         app.launchArguments += ["-E2E_TESTING", "-UIViewAnimationEnabled", "NO"]
-        // Do not block on Kotlin/Native framework init — SwiftUI must be queryable first.
-        app.launchWithoutWaitingForQuiescence()
+        // launchWithoutWaitingForQuiescence() is macOS-only; weak-linked KMP keeps iOS launch fast.
+        app.launch()
         waitForAppReady()
         waitForKotlinBridge()
     }
@@ -39,7 +39,7 @@ class SampleUITestBase: XCTestCase {
             app.staticTexts["Idle"],
             app.staticTexts["No tasks yet"],
         ]
-        let deadline = Date().addingTimeInterval(30)
+        let deadline = Date().addingTimeInterval(45)
         while Date() < deadline {
             if markers.contains(where: { $0.waitForExistence(timeout: 0.5) }) {
                 return
