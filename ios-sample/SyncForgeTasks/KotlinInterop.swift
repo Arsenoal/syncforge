@@ -1,3 +1,4 @@
+#if !E2E_SWIFT_STUB
 import Foundation
 import SyncForgeSample
 
@@ -73,3 +74,4 @@ enum KotlinInterop {
         )
     }
 }
+#endif

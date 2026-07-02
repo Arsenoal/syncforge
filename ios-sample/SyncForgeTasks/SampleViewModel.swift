@@ -44,7 +44,7 @@ final class SampleViewModel: ObservableObject {
         guard !isPreloadingBridge else { return }
         isPreloadingBridge = true
 
-        let bridge = SampleKotlinBridge(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
+        let bridge = makeBridge()
         self.bridge = bridge
 
         bridge.setStatusListener { [weak self] label in
@@ -161,6 +161,14 @@ final class SampleViewModel: ObservableObject {
 
     var hasConflicts: Bool {
         statusLabel.localizedCaseInsensitiveContains("conflict")
+    }
+
+    private func makeBridge() -> SampleKotlinBridgeProtocol {
+#if E2E_SWIFT_STUB
+        SampleKotlinBridgeE2eStub(baseUrl: resolvedBaseUrl)
+#else
+        SampleKotlinBridge(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
+#endif
     }
 
     private func requireBridge() -> SampleKotlinBridgeProtocol {

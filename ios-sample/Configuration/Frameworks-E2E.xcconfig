@@ -1,0 +1,2 @@
+// CI XCUITest build — Swift-only stub, no KMP frameworks linked.
+OTHER_LDFLAGS = $(inherited) -lsqlite3

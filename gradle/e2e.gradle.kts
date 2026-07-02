@@ -81,20 +81,7 @@ tasks.register("iosE2e") {
             waitForMockServerHealth(port, logFile)
             resetMockServerState(port)
 
-            val kotlinTarget = if (System.getProperty("os.arch") == "aarch64") {
-                "IosSimulatorArm64"
-            } else {
-                "IosX64"
-            }
-            logger.lifecycle("Pre-building Kotlin frameworks ($kotlinTarget)...")
-            exec {
-                commandLine(
-                    rootProject.file("gradlew").absolutePath,
-                    ":syncforge:linkDebugFramework$kotlinTarget",
-                    ":sample-ios-shared:linkDebugFramework$kotlinTarget",
-                    "--quiet",
-                )
-            }
+            logger.lifecycle("Using Swift-only E2E stub (no KMP frameworks linked for XCUITest)")
 
             val destination = System.getenv("IOS_SIMULATOR_DESTINATION")
                 ?: project.resolveIosSimulatorDestination()
@@ -106,6 +93,7 @@ tasks.register("iosE2e") {
                 environment("MOCK_SERVER_HEALTH_URL", healthUrl)
                 environment("MOCK_SERVER_BASE_URL", "http://127.0.0.1:$port")
                 environment("E2E_TESTING", "1")
+                environment("E2E_SWIFT_STUB", "1")
                 commandLine(
                     "xcodebuild",
                     "test",
@@ -121,6 +109,10 @@ tasks.register("iosE2e") {
                     "-maximum-concurrent-test-simulator-destinations",
                     "1",
                     "CODE_SIGNING_ALLOWED=NO",
+                    "E2E_SWIFT_STUB=1",
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS=E2E_SWIFT_STUB",
+                    "GCC_PREPROCESSOR_DEFINITIONS=E2E_SWIFT_STUB=1",
+                    "OTHER_LDFLAGS=-lsqlite3",
                 )
             }
             if (result.exitValue != 0) {

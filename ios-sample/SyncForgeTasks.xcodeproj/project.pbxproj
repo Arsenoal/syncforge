@@ -29,6 +29,8 @@
 		B100000000000000000000A3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* AppDelegate.swift */; };
 		B100000000000000000000A4 /* AccessibleTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* AccessibleTextField.swift */; };
 		B100000000000000000000A5 /* SampleKotlinBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* SampleKotlinBridge.swift */; };
+		B100000000000000000000A6 /* SampleKotlinBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* SampleKotlinBridgeProtocol.swift */; };
+		B100000000000000000000A7 /* SampleKotlinBridgeE2eStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,9 @@
 		B10000000000000000000024 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B10000000000000000000025 /* AccessibleTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleTextField.swift; sourceTree = "<group>"; };
 		B10000000000000000000026 /* SampleKotlinBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKotlinBridge.swift; sourceTree = "<group>"; };
+		B10000000000000000000027 /* SampleKotlinBridgeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKotlinBridgeProtocol.swift; sourceTree = "<group>"; };
+		B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKotlinBridgeE2eStub.swift; sourceTree = "<group>"; };
+		B10000000000000000000029 /* Frameworks-E2E.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Frameworks-E2E.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,7 +110,9 @@
 				B10000000000000000000012 /* ContentView.swift */,
 				B10000000000000000000013 /* TasksView.swift */,
 				B10000000000000000000014 /* SampleViewModel.swift */,
+				B10000000000000000000027 /* SampleKotlinBridgeProtocol.swift */,
 				B10000000000000000000026 /* SampleKotlinBridge.swift */,
+				B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */,
 				B10000000000000000000015 /* TaskRowView.swift */,
 				B10000000000000000000019 /* KotlinInterop.swift */,
 				B1000000000000000000001A /* TaskRowModel.swift */,
@@ -130,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000018 /* Frameworks.xcconfig */,
+				B10000000000000000000029 /* Frameworks-E2E.xcconfig */,
 			);
 			path = Configuration;
 			sourceTree = "<group>";
@@ -257,7 +265,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"${SRCROOT}/..\" && SRCROOT=\"${SRCROOT}\" PLATFORM_NAME=\"${PLATFORM_NAME}\" ./gradlew linkIosFrameworksForXcode --quiet\n";
+			shellScript = "if [ \"${E2E_SWIFT_STUB}\" = \"1\" ]; then exit 0; fi\ncd \"${SRCROOT}/..\" && SRCROOT=\"${SRCROOT}\" PLATFORM_NAME=\"${PLATFORM_NAME}\" ./gradlew linkIosFrameworksForXcode --quiet\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -270,7 +278,9 @@
 				B10000000000000000000002 /* ContentView.swift in Sources */,
 				B10000000000000000000003 /* TasksView.swift in Sources */,
 				B10000000000000000000004 /* SampleViewModel.swift in Sources */,
+				B100000000000000000000A6 /* SampleKotlinBridgeProtocol.swift in Sources */,
 				B100000000000000000000A5 /* SampleKotlinBridge.swift in Sources */,
+				B100000000000000000000A7 /* SampleKotlinBridgeE2eStub.swift in Sources */,
 				B10000000000000000000005 /* TaskRowView.swift in Sources */,
 				B10000000000000000000007 /* KotlinInterop.swift in Sources */,
 				B10000000000000000000008 /* TaskRowModel.swift in Sources */,

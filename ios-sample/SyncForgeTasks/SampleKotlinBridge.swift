@@ -1,23 +1,9 @@
+#if !E2E_SWIFT_STUB
 import Foundation
 import SyncForge
 import SyncForgeSample
 
-/// Kotlin/SyncForge entry point — kept in a separate file so [SampleViewModel] does not
-/// load KMP frameworks until the first user action (XCUITest can query SwiftUI first).
-@MainActor
-protocol SampleKotlinBridgeProtocol: AnyObject {
-    func setStatusListener(_ listener: @escaping (String) -> Void)
-    func setTasksListener(_ listener: @escaping ([TaskRowModel]) -> Void)
-    func setNotesListener(_ listener: @escaping ([NoteRowModel]) -> Void)
-    func setTagsListener(_ listener: @escaping ([TagRowModel]) -> Void)
-    func addTask(title: String, onComplete: @escaping (Bool, String?) -> Void)
-    func addNote(title: String, body: String, onComplete: @escaping (Bool, String?) -> Void)
-    func addTag(label: String, onComplete: @escaping (Bool, String?) -> Void)
-    func deleteNote(noteId: String, onComplete: @escaping (Bool, String?) -> Void)
-    func deleteTag(tagId: String, onComplete: @escaping (Bool, String?) -> Void)
-    func sync(onComplete: @escaping (Bool, String) -> Void)
-}
-
+/// Kotlin/SyncForge entry point — not linked in E2E_SWIFT_STUB CI builds.
 @MainActor
 final class SampleKotlinBridge: SampleKotlinBridgeProtocol {
     private static var didRegisterBackgroundSync = false
@@ -94,3 +80,4 @@ final class SampleKotlinBridge: SampleKotlinBridgeProtocol {
         }
     }
 }
+#endif
