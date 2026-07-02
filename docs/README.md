@@ -45,7 +45,7 @@ docs/
 ├── MODULES.md                ← Package-by-package API reference
 ├── REST_API.md               ← Backend push/pull contract
 ├── ROADMAP.md                ← Phases, limitations, future work
-└── SyncForge-1.0-P0.docx     ← P0 checklist for 1.0.0 (regenerate: scripts/generate-p0-docx.py)
+└── SyncForge-1.0-P0.docx     ← P0 checklist for 1.0.0
 ```
 
 ---
