@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import dev.syncforge.sample.demo.attachDemoPresentation
 import dev.syncforge.sample.navigation.SampleApp
 import dev.syncforge.sample.notes.NotesViewModel
 import dev.syncforge.sample.tags.TagsViewModel
@@ -25,6 +26,11 @@ class MainActivity : ComponentActivity() {
         val notesViewModel = NotesViewModel(repository = app.noteRepository)
         val tagsViewModel = TagsViewModel(repository = app.tagRepository)
 
+        lifecycleScope.attachDemoPresentation(
+            syncManager = app.syncManager,
+            observeTaskCount = { app.countTasks() },
+        )
+
         setContent {
             SampleApp(
                 tasksViewModel = tasksViewModel,
@@ -34,6 +40,7 @@ class MainActivity : ComponentActivity() {
                 onSync = {
                     lifecycleScope.launch { app.syncManager.sync() }
                 },
+                onClearLocalData = { app.resetForDemoPresentation() },
             )
         }
     }

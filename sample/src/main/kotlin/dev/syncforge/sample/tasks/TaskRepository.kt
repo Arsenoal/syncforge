@@ -2,6 +2,8 @@ package dev.syncforge.sample.tasks
 
 import dev.syncforge.model.Change
 import dev.syncforge.model.SyncState
+import dev.syncforge.sample.demo.DemoActivityLog
+import dev.syncforge.sample.demo.logRoomTaskMutation
 import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
@@ -24,6 +26,7 @@ class TaskRepository(
             syncState = SyncState.PENDING,
         )
         syncManager.enqueueChange(Change.create(TaskEntity.ENTITY_TYPE, task))
+        logRoomTaskMutation("CREATE", task.title)
     }
 
     suspend fun toggleCompleted(task: TaskEntity) {
@@ -34,6 +37,7 @@ class TaskRepository(
             syncState = SyncState.PENDING,
         )
         syncManager.enqueueChange(Change.update(TaskEntity.ENTITY_TYPE, updated))
+        logRoomTaskMutation("UPDATE", updated.title)
     }
 
     suspend fun deleteTask(task: TaskEntity) {
@@ -45,7 +49,14 @@ class TaskRepository(
                 updatedAtMillis = System.currentTimeMillis(),
             ),
         )
+        logRoomTaskMutation("DELETE", task.title)
     }
 
-    suspend fun sync() = syncManager.sync()
+    suspend fun sync() {
+        DemoActivityLog.log(
+            "User tapped Sync — SyncManager.sync(): push outbox, then pull deltas from server",
+            highlight = true,
+        )
+        syncManager.sync()
+    }
 }

@@ -26,14 +26,15 @@ Emulator must reach the server at `http://10.0.2.2:8080` (default in `:sample`).
 
 ### 2. Shot list (~60 seconds)
 
-Record the **Tasks** tab in one continuous take:
+Record the **Tasks** tab in one continuous take. The sample app shows an **Under the hood (demo)** panel (debug builds) that narrates Room, outbox, and sync steps — keep it in frame.
 
 | Time | Action | Show on screen |
 |------|--------|----------------|
-| **0–15s** | Enable **airplane mode** → add task *"Buy milk"* | Task appears instantly; status *Offline* / *Pending* |
-| **15–30s** | Disable airplane mode → tap **Sync** | Status *Syncing…* → *Up to date*; row *Synced* |
-| **30–50s** | On synced task → **Server edit** → change title locally → **Sync** | Conflict chip → tap **Resolve** → pick version |
-| **50–60s** | (Optional) Tap **SF** debug button | Outbox / events / conflicts panel |
+| **0–15s** | Enable **airplane mode** → add task *"Buy milk"* | Highlight field: *Room UPDATE + outbox enqueue*; task appears; *Offline* |
+| **15–30s** | Disable airplane mode → tap **Sync** | *Push to server* / *Pull from server* log lines; row *Synced* |
+| **30–45s** | Tap **Clear local DB** → tap **Sync** | Empty list → *PULL remote data from mock-server* → tasks reappear in Room |
+| **45–55s** | **Server edit** → local edit → **Sync** | Conflict chip → **Resolve** |
+| **55–60s** | (Optional) Tap **SF** debug button | Outbox / events / conflicts panel |
 
 Use the in-app **Server edit** button (calls `POST /dev/simulate-edit`) — no curl needed.
 

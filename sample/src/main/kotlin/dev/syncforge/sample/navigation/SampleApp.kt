@@ -1,5 +1,6 @@
 package dev.syncforge.sample.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -20,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,9 +35,13 @@ import dev.syncforge.sample.notes.NotesScreen
 import dev.syncforge.sample.notes.NotesViewModel
 import dev.syncforge.sample.tags.TagsScreen
 import dev.syncforge.sample.tags.TagsViewModel
+import dev.syncforge.sample.demo.DemoActivityLogPanel
 import dev.syncforge.sample.tasks.TasksScreen
 import dev.syncforge.sample.tasks.TasksViewModel
 import dev.syncforge.sync.SyncManager
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +51,9 @@ fun SampleApp(
     tagsViewModel: TagsViewModel,
     syncManager: SyncManager,
     onSync: () -> Unit,
+    onClearLocalData: suspend () -> Unit = {},
 ) {
+    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val destination = backStack?.destination
@@ -121,19 +129,29 @@ fun SampleApp(
                 }
             },
         ) { padding ->
-            NavHost(
-                navController = navController,
-                startDestination = TasksRoute,
-                modifier = Modifier.padding(padding),
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
             ) {
-                composable<TasksRoute> {
-                    TasksScreen(viewModel = tasksViewModel, showTopBar = false)
-                }
-                composable<NotesRoute> {
-                    NotesScreen(viewModel = notesViewModel)
-                }
-                composable<TagsRoute> {
-                    TagsScreen(viewModel = tagsViewModel)
+                DemoActivityLogPanel(
+                    onClearLocalData = { scope.launch { onClearLocalData() } },
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+                NavHost(
+                    navController = navController,
+                    startDestination = TasksRoute,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    composable<TasksRoute> {
+                        TasksScreen(viewModel = tasksViewModel, showTopBar = false)
+                    }
+                    composable<NotesRoute> {
+                        NotesScreen(viewModel = notesViewModel)
+                    }
+                    composable<TagsRoute> {
+                        TagsScreen(viewModel = tagsViewModel)
+                    }
                 }
             }
         }

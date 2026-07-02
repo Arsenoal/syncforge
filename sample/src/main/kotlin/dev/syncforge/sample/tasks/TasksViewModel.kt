@@ -6,6 +6,8 @@ import dev.syncforge.compose.SyncStatusUiModel
 import dev.syncforge.compose.toUiModel
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictSummary
+import dev.syncforge.sample.demo.DemoActivityLog
+import dev.syncforge.sample.demo.logTaskListRefresh
 import dev.syncforge.sample.tasks.DevSyncClient
 import dev.syncforge.sample.tasks.TaskEntity
 import dev.syncforge.sample.tasks.TaskRepository
@@ -28,6 +30,17 @@ class TasksViewModel(
 
     val tasks: StateFlow<List<TaskEntity>> =
         repository.observeTasks()
+            .also { flow ->
+                viewModelScope.launch {
+                    var lastCount = -1
+                    flow.collect { list ->
+                        if (list.size != lastCount) {
+                            lastCount = list.size
+                            logTaskListRefresh(list.size)
+                        }
+                    }
+                }
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val syncStatus: StateFlow<SyncStatusUiModel> =
@@ -116,6 +129,10 @@ class TasksViewModel(
                 task = task,
                 newTitle = "${task.title} (server edit)",
             ).onSuccess {
+                DemoActivityLog.log(
+                    "Mock-server POST /dev/simulate-edit — remote version bumped on server",
+                    highlight = true,
+                )
                 _devMessage.value = "Server updated — edit locally, then Sync to trigger conflict"
             }.onFailure { error ->
                 _devMessage.value = error.message ?: "Simulate edit failed"

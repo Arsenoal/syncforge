@@ -15,6 +15,7 @@ captures/
 .docx-gen/
 docs/*.docx
 !docs/SyncForge-GitHub-Launch-Playbook.docx
+docs/images/demo-screenshot-*.png
 .~lock.*
 scripts/*.py
 !scripts/generate-launch-playbook-docx.py

@@ -9,9 +9,11 @@ import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.sample.notes.SyncForgeHandlers
 import dev.syncforge.sample.notes.NoteRepository
 import dev.syncforge.sample.tags.TagRepository
+import dev.syncforge.sample.demo.DemoActivityLog
 import dev.syncforge.sample.tasks.SampleDatabase
 import dev.syncforge.sample.tasks.TaskRepository
 import dev.syncforge.sync.SyncManager
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import androidx.core.content.edit
 
@@ -57,6 +59,25 @@ class SampleApplication : Application(), Configuration.Provider {
         taskRepository = TaskRepository(taskDao, syncManager)
         noteRepository = NoteRepository(noteDao, syncManager)
         tagRepository = TagRepository(tagDao, syncManager)
+    }
+
+    suspend fun countTasks(): Int = database.taskDao().observeAll().first().size
+
+    /** Demo: wipe Room + SyncForge cursor/outbox to simulate fresh install with server data intact. */
+    @OptIn(ExperimentalSyncForgeApi::class)
+    suspend fun resetForDemoPresentation() {
+        DemoActivityLog.log(
+            "Clearing local Room DB + sync cursor + outbox (server/mock-server unchanged)",
+            highlight = true,
+        )
+        database.clearAllTables()
+        syncManager.debug.clearOutbox()
+        syncManager.debug.clearEventLog()
+        getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit { clear() }
+        DemoActivityLog.log(
+            "Local DB empty — tap Sync to PULL tasks from mock-server into Room",
+            highlight = true,
+        )
     }
 
     /** Clears local sample entities and pending outbox rows between instrumented E2E tests. */
