@@ -65,12 +65,8 @@ kotlin {
         androidMain {
             dependsOn(syncPersistenceMain)
         }
-        iosMain {
+        appleMain {
             dependsOn(syncPersistenceMain)
-        }
-        macosMain {
-            dependsOn(syncPersistenceMain)
-            dependsOn(iosMain.get())
         }
         jvmMain {
             dependsOn(syncPersistenceMain)
@@ -120,7 +116,7 @@ kotlin {
             implementation(libs.ktor.client.mock)
             implementation(libs.sqldelight.sqlite.driver)
         }
-        iosMain.dependencies {
+        appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.skie.configuration.annotations)
             // Satisfy Compose compiler on Kotlin/Native (Compose UI is androidMain-only).

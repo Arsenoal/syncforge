@@ -21,9 +21,9 @@ import kotlin.time.Duration.Companion.minutes
 @ExperimentalSyncForgeApi
 object IosBackgroundSync {
 
-    const val DEFAULT_TASK_IDENTIFIER: String = "dev.syncforge.background-sync"
+    const val DEFAULT_TASK_IDENTIFIER: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER
 
-    private var taskIdentifier: String = DEFAULT_TASK_IDENTIFIER
+    private var taskIdentifier: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER
     private var onSync: (suspend () -> Unit)? = null
     private var periodicInterval: Duration = 15.minutes
     private var handlerRegistered: Boolean = false
@@ -34,7 +34,7 @@ object IosBackgroundSync {
      */
     @OptIn(ExperimentalForeignApi::class)
     fun registerBackgroundTasks(
-        taskIdentifier: String = DEFAULT_TASK_IDENTIFIER,
+        taskIdentifier: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER,
     ) {
         this.taskIdentifier = taskIdentifier
         if (handlerRegistered) return
@@ -95,7 +95,7 @@ object IosBackgroundSync {
 /** Registers BGTaskScheduler handlers — Swift: `IosBackgroundSyncKt.registerIosBackgroundSyncTasks(...)`. */
 @ExperimentalSyncForgeApi
 fun registerIosBackgroundSyncTasks(
-    taskIdentifier: String = IosBackgroundSync.DEFAULT_TASK_IDENTIFIER,
+    taskIdentifier: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER,
 ) {
     IosBackgroundSync.registerBackgroundTasks(taskIdentifier)
 }

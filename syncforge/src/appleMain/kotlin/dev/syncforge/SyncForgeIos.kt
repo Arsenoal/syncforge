@@ -20,8 +20,8 @@ import dev.syncforge.persistence.outboxRepository
 import dev.syncforge.sync.SyncCursorStore
 import dev.syncforge.sync.SyncCursorStoreFactory
 import dev.syncforge.sync.SyncManager
-import dev.syncforge.work.IosBackgroundSync
-import dev.syncforge.work.IosBackgroundSyncWorkScheduler
+import dev.syncforge.work.AppleBackgroundSyncPlatform
+import dev.syncforge.work.DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -45,7 +45,7 @@ class IosSyncForgeDsl internal constructor() {
     private var builtInAuth: BuiltInAuthDsl.() -> Unit = {}
     private var useBuiltInAuth: Boolean = false
     private var persistence: SyncForgePersistence? = null
-    private var backgroundSyncTaskIdentifier: String = IosBackgroundSync.DEFAULT_TASK_IDENTIFIER
+    private var backgroundSyncTaskIdentifier: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER
 
     fun baseUrl(url: String) {
         baseUrl = url
@@ -166,14 +166,15 @@ class IosSyncForgeDsl internal constructor() {
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create()
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create()
         builder.workScheduler = builder.workScheduler
-            ?: IosBackgroundSyncWorkScheduler(backgroundSyncTaskIdentifier)
+            ?: AppleBackgroundSyncPlatform.createWorkScheduler(backgroundSyncTaskIdentifier)
         builder.scope = builder.scope ?: CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
         return builder.build().also { manager ->
-            IosBackgroundSync.bind { manager.sync() }
-            if (builder.schedulePeriodicSyncOnStart) {
-                manager.schedulePeriodicSync()
-            }
+            AppleBackgroundSyncPlatform.onManagerBuilt(
+                manager = manager,
+                taskIdentifier = backgroundSyncTaskIdentifier,
+                schedulePeriodicSyncOnStart = builder.schedulePeriodicSyncOnStart,
+            )
         }
     }
 }
