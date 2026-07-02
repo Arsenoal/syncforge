@@ -1,5 +1,5 @@
-rootProject.name = "SyncForge"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+// Lowercase name avoids Gradle type-safe accessor filename/class casing bugs on Linux CI.
+rootProject.name = "syncforge"
 
 pluginManagement {
     includeBuild("syncforge-gradle-plugin")

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.syncforge.sample.MainActivity
@@ -85,12 +86,13 @@ abstract class SampleE2ETestBase {
     protected fun tapText(text: String) {
         when (text) {
             "Sync" -> composeTestRule.onNodeWithTag("sync_button").performClick()
-            else -> composeTestRule
-                .onNode(
-                    hasText(text, substring = false, ignoreCase = false) and hasClickAction(),
-                    useUnmergedTree = true,
-                )
-                .performClick()
+            else -> {
+                val matcher = hasText(text, substring = false, ignoreCase = false) and hasClickAction()
+                composeTestRule.waitUntil(timeoutMillis = 15_000) {
+                    composeTestRule.onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty()
+                }
+                composeTestRule.onAllNodes(matcher).onFirst().performScrollTo().performClick()
+            }
         }
     }
 
