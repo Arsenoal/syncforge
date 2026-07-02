@@ -62,11 +62,7 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
     func addTask(title: String, onComplete: @escaping (Bool, String?) -> Void) {
         let id = UUID().uuidString
         tasks.append(TaskRowModel(id: id, title: title, completed: false, syncStateLabel: "PENDING"))
-        enqueue(
-            entityType: "tasks",
-            entityId: id,
-            payload: ["id": id, "title": title, "completed": false],
-        )
+        enqueueTask(entityId: id, title: title)
         tasksListener?(tasks)
         onComplete(true, nil)
     }
@@ -74,11 +70,7 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
     func addNote(title: String, body: String, onComplete: @escaping (Bool, String?) -> Void) {
         let id = UUID().uuidString
         notes.append(NoteRowModel(id: id, title: title, body: body, syncStateLabel: "PENDING"))
-        enqueue(
-            entityType: "notes",
-            entityId: id,
-            payload: ["id": id, "title": title, "body": body],
-        )
+        enqueueNote(entityId: id, title: title, body: body)
         notesListener?(notes)
         onComplete(true, nil)
     }
@@ -86,11 +78,7 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
     func addTag(label: String, onComplete: @escaping (Bool, String?) -> Void) {
         let id = UUID().uuidString
         tags.append(TagRowModel(id: id, label: label, syncStateLabel: "PENDING"))
-        enqueue(
-            entityType: "tags",
-            entityId: id,
-            payload: ["id": id, "label": label],
-        )
+        enqueueTag(entityId: id, label: label)
         tagsListener?(tags)
         onComplete(true, nil)
     }
@@ -128,9 +116,53 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
         }
     }
 
-    private func enqueue(entityType: String, entityId: String, payload: [String: Any]) {
-        let payloadData = try? JSONSerialization.data(withJSONObject: payload)
-        let payloadJson = payloadData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    private struct TaskPayload: Encodable {
+        let id: String
+        let title: String
+        let completed: Bool
+    }
+
+    private struct NotePayload: Encodable {
+        let id: String
+        let title: String
+        let body: String
+    }
+
+    private struct TagPayload: Encodable {
+        let id: String
+        let label: String
+    }
+
+    private func enqueueTask(entityId: String, title: String) {
+        enqueue(
+            entityType: "tasks",
+            entityId: entityId,
+            payloadJson: encodePayload(TaskPayload(id: entityId, title: title, completed: false))
+        )
+    }
+
+    private func enqueueNote(entityId: String, title: String, body: String) {
+        enqueue(
+            entityType: "notes",
+            entityId: entityId,
+            payloadJson: encodePayload(NotePayload(id: entityId, title: title, body: body))
+        )
+    }
+
+    private func enqueueTag(entityId: String, label: String) {
+        enqueue(
+            entityType: "tags",
+            entityId: entityId,
+            payloadJson: encodePayload(TagPayload(id: entityId, label: label))
+        )
+    }
+
+    private func encodePayload<T: Encodable>(_ payload: T) -> String {
+        let data = (try? JSONEncoder().encode(payload)) ?? Data()
+        return String(data: data, encoding: .utf8) ?? "{}"
+    }
+
+    private func enqueue(entityType: String, entityId: String, payloadJson: String) {
         let entry = PendingEntry(
             id: nextOutboxId,
             entityType: entityType,
@@ -138,7 +170,7 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
             changeType: "CREATE",
             payloadJson: payloadJson,
             localVersion: 1,
-            createdAtMillis: Int64(Date().timeIntervalSince1970 * 1000),
+            createdAtMillis: Int64(Date().timeIntervalSince1970 * 1000)
         )
         nextOutboxId += 1
         pendingEntries.append(entry)
