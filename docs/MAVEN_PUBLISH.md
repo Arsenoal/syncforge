@@ -140,7 +140,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | Soak | Let `0.9.0-rc.1` sit; CI + optional external dogfood |
 | Fixes | Tag `v0.9.0-rc.2` if needed |
 | Stable | Bump version, tag `v1.0.0`, repeat publish + verification |
-| Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` (regenerate via `scripts/generate-p0-docx.py`) |
+| Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
 
 ---
 

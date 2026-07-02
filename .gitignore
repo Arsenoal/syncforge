@@ -19,7 +19,6 @@ docs/images/*-raw.mp4
 docs/images/syncforge-demo.gif
 .~lock.*
 scripts/*.py
-!scripts/generate-launch-playbook-docx.py
 *.sh
 *.log
 

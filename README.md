@@ -23,7 +23,7 @@ Compose status observation, and an in-app debug console.
 </p>
 
 <p align="center">
-  <sub>Offline write → sync → clear local DB → pull from server · <a href="docs/images/README.md">re-record</a></sub>
+  <sub>Offline write → sync → <strong>clear local DB</strong> (empty Room) → pull from server · <a href="docs/images/README.md">re-record</a></sub>
 </p>
 
 The `:sample` app is a multi-tab Tasks / Notes / Tags demo. Run it against the mock server in two terminals:
@@ -83,7 +83,8 @@ sequenceDiagram
 |----------|------------|--------------|
 | **1. Offline-first** | Add a task with airplane mode on | Task appears in Room immediately; status shows pending / offline |
 | **2. Sync** | Turn network on → tap **Sync** | Push + pull run; row shows **Synced**; outbox drains |
-| **3. Conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+| **3. Empty local DB** | Tap **Clear local DB** in the demo panel → **Sync** | Room wiped; tasks disappear; pull restores data from mock-server |
+| **4. Conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
 
 **Debug console (debug builds):** tap the **SF** button on the Tasks tab to inspect the outbox, sync health, events, and open conflicts.
 
