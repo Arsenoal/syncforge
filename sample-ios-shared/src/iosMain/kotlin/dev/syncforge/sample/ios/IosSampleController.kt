@@ -1,7 +1,5 @@
 package dev.syncforge.sample.ios
 
-import co.touchlab.skie.configuration.annotations.FlowInterop
-import co.touchlab.skie.configuration.annotations.SuspendInterop
 import dev.syncforge.SyncForge
 import dev.syncforge.compose.toUiModel
 import dev.syncforge.entity.EntityRegistry
@@ -10,8 +8,9 @@ import dev.syncforge.model.Change
 import dev.syncforge.model.SyncResult
 import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.CoroutineScope
-import platform.Foundation.NSDate
 import kotlinx.coroutines.Dispatchers
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -22,9 +21,10 @@ import kotlinx.coroutines.launch
  * Swift-friendly facade for the SyncForge iOS sample.
  *
  * Mirrors Android :sample — tasks, notes, and tags on one [SyncManager].
+ *
+ * SKIE Flow/Suspend interop is enabled for `dev.syncforge.sample.ios` in
+ * `:sample-ios-shared` Gradle config (not via class-level annotations).
  */
-@FlowInterop.Enabled
-@SuspendInterop.Enabled
 class IosSampleController(
     baseUrl: String = IOS_SAMPLE_DEFAULT_BASE_URL,
 ) {

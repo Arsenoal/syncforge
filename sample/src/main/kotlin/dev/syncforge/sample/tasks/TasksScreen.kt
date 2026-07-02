@@ -199,7 +199,7 @@ private fun TaskRow(
             Checkbox(
                 checked = task.completed,
                 onCheckedChange = { onToggle() },
-                modifier = Modifier.testTag("task_checkbox_${task.id}"),
+                modifier = Modifier.testTag("task_checkbox_${task.title}"),
             )
             Column {
                 Text(text = task.title)

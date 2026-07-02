@@ -124,7 +124,7 @@ kotlin {
             implementation(libs.ktor.client.darwin)
             implementation(libs.skie.configuration.annotations)
             // Satisfy Compose compiler on Kotlin/Native (Compose UI is androidMain-only).
-            compileOnly(libs.jetbrains.compose.runtime)
+            implementation(libs.jetbrains.compose.runtime)
         }
     }
 }

@@ -133,5 +133,10 @@ internal class InMemorySyncStore {
         return true
     }
 
+    fun clear() {
+        records.clear()
+        versionCounter.set(1L)
+    }
+
     private fun recordKey(entityType: String, entityId: String): String = "$entityType:$entityId"
 }

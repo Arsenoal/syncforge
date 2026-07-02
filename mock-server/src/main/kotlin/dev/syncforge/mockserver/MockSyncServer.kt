@@ -79,6 +79,11 @@ fun Application.mockSyncModule() {
          * Dev-only: simulates a concurrent server edit for conflict demos.
          * The entity must already exist on the server (push first).
          */
+        post("/dev/reset") {
+            store.clear()
+            call.respond(mapOf("reset" to true))
+        }
+
         post("/dev/simulate-edit") {
             val request = call.receive<SimulateEditRequest>()
             val updated = store.forceUpdate(

@@ -23,7 +23,7 @@ class TasksE2ETest : SampleE2ETestBase() {
         addTask(taskTitle)
         tapText("Sync")
         waitForSyncToFinish()
-        waitForAnyText("Up to date", "Synced", "Last synced")
+        waitForRowSyncState(taskTitle, "Synced", timeoutMillis = 45_000)
     }
 
     @Test

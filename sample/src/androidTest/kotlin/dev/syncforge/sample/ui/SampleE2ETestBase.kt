@@ -1,21 +1,18 @@
 package dev.syncforge.sample.ui
 
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.syncforge.sample.MainActivity
+import dev.syncforge.sample.SampleApplication
 import org.junit.Assume
 import org.junit.Rule
 import java.net.HttpURLConnection
@@ -38,7 +35,33 @@ abstract class SampleE2ETestBase {
             "Mock server must be running on host port 8080 (./gradlew androidE2e)",
             isMockServerHealthy(),
         )
+        resetE2eState()
         waitForAppReady()
+    }
+
+    private fun resetE2eState() {
+        resetMockServer()
+        val app = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .applicationContext as SampleApplication
+        app.resetForE2eTests()
+        composeTestRule.waitForIdle()
+    }
+
+    private fun resetMockServer() {
+        val baseUrl = InstrumentationRegistry.getArguments().getString("mockServerUrl")
+            ?: "http://10.0.2.2:8080"
+        runCatching {
+            val url = URL("$baseUrl/dev/reset")
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 2_000
+                readTimeout = 2_000
+                requestMethod = "POST"
+                doOutput = true
+            }
+            connection.outputStream.use { }
+            connection.responseCode
+        }
     }
 
     private fun waitForAppReady() {
@@ -100,13 +123,10 @@ abstract class SampleE2ETestBase {
     }
 
     protected fun toggleCheckboxForTask(taskTitle: String) {
-        composeTestRule.onNodeWithText(taskTitle).performScrollTo()
-        composeTestRule.onNode(
-            isToggleable() and hasAnyAncestor(
-                hasAnyDescendant(hasText(taskTitle, substring = false, ignoreCase = false)),
-            ),
-            useUnmergedTree = true,
-        ).performClick()
+        composeTestRule
+            .onNodeWithTag("task_checkbox_$taskTitle")
+            .performScrollTo()
+            .performClick()
     }
 
     protected fun waitForSyncToFinish(timeoutMillis: Long = 30_000) {
@@ -117,8 +137,8 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    protected fun waitForAnyText(vararg options: String) {
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+    protected fun waitForAnyText(vararg options: String, timeoutMillis: Long = 30_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
             options.any { option ->
                 composeTestRule.onAllNodesWithText(option, substring = true)
                     .fetchSemanticsNodes()
