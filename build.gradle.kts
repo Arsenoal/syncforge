@@ -29,6 +29,27 @@ tasks.register("publishAllToMavenLocal") {
     )
 }
 
+tasks.register("verifyReleaseSignOff") {
+    group = "verification"
+    description =
+        "Pre-publish sign-off: JVM + Android unit tests, server tests, consumer smoke, and compile checks."
+    dependsOn(
+        ":syncforge:jvmTest",
+        ":syncforge:testDebugUnitTest",
+        ":syncforge-server:test",
+        ":syncforge-persistence:compileDebugKotlinAndroid",
+        ":syncforge-persistence:compileKotlinJvm",
+        ":syncforge-annotations:compileDebugKotlinAndroid",
+        ":syncforge-annotations:compileKotlinJvm",
+        ":syncforge-ksp:compileKotlin",
+        ":backend-starter:compileKotlin",
+        ":mock-server:compileKotlin",
+        ":sample:compileDebugKotlin",
+        ":sample:compileDebugAndroidTestKotlin",
+        "verifyConsumerSmoke",
+    )
+}
+
 tasks.register<Exec>("verifyConsumerSmoke") {
     group = "verification"
     description =

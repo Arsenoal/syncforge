@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Room → SQLDelight migration sign-off tests** — `SyncForgeAndroidMigrationTest` (Robolectric), `RoomMigrationInstrumentedTest` (sample/androidTest, runs in `androidE2e`), and `MigrationTestSupport` helpers
+- **`verifyReleaseSignOff`** Gradle task — JVM + Android unit tests, server tests, consumer smoke, compile checks (CI `linux` job)
 - **`:syncforge-server`** — shared Ktor sync routes (`POST /sync/push`, `GET /sync/pull`), `SyncStore` contract, and `InMemorySyncStore`
 - **`:backend-starter`** — minimal runnable reference backend (`./gradlew :backend-starter:run`); copy and replace storage for production
 - **`docs/MAVEN_PUBLISH.md`** — Maven Central one-time setup, GitHub secrets, tag publish, and post-release verification checklist

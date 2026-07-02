@@ -2,10 +2,8 @@ package dev.syncforge.persistence
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import dev.syncforge.conflict.ConflictEntryEntity
+import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictStatus
-import dev.syncforge.outbox.OutboxEntryEntity
-import dev.syncforge.outbox.SyncForgeDatabaseFactory
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -18,6 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+@OptIn(ExperimentalSyncForgeApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class RoomToSqlDelightMigratorTest {
@@ -28,22 +27,17 @@ class RoomToSqlDelightMigratorTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        context.getSharedPreferences("syncforge_migration", Context.MODE_PRIVATE).edit().clear().commit()
-        context.deleteDatabase(RoomToSqlDelightMigrator.ROOM_DATABASE_NAME)
-        context.deleteDatabase(sqlDelightDbName)
-        RoomToSqlDelightMigrator.failAfterOutboxRows = null
+        MigrationTestSupport.resetMigrationState(context, sqlDelightDbName)
     }
 
     @After
     fun tearDown() {
-        RoomToSqlDelightMigrator.failAfterOutboxRows = null
-        context.deleteDatabase(RoomToSqlDelightMigrator.ROOM_DATABASE_NAME)
-        context.deleteDatabase(sqlDelightDbName)
+        MigrationTestSupport.resetMigrationState(context, sqlDelightDbName)
     }
 
     @Test
     fun migrateIfNeeded_copiesRoomOutboxAndConflicts() = runTest {
-        seedRoomDatabase(outboxCount = 1, conflictCount = 1)
+        MigrationTestSupport.seedLegacyRoomStorage(context, outboxCount = 1, conflictCount = 1)
 
         val persistence = createSyncForgePersistence(context, sqlDelightDbName)
         val result = RoomToSqlDelightMigrator.migrateIfNeeded(
@@ -89,7 +83,7 @@ class RoomToSqlDelightMigratorTest {
     @Test
     fun migrateIfNeeded_largeOutbox_migratesAllRowsInBatches() = runTest {
         val outboxCount = 250
-        seedRoomDatabase(outboxCount = outboxCount, conflictCount = 0)
+        MigrationTestSupport.seedLegacyRoomStorage(context, outboxCount = outboxCount, conflictCount = 0)
 
         val persistence = createSyncForgePersistence(context, sqlDelightDbName)
         val result = RoomToSqlDelightMigrator.migrateIfNeeded(context, persistence)
@@ -109,7 +103,7 @@ class RoomToSqlDelightMigratorTest {
     @Test
     fun migrateIfNeeded_partialFailure_retriesAndCompletes() = runTest {
         val outboxCount = 150
-        seedRoomDatabase(outboxCount = outboxCount, conflictCount = 2)
+        MigrationTestSupport.seedLegacyRoomStorage(context, outboxCount = outboxCount, conflictCount = 2)
 
         val persistence = createSyncForgePersistence(context, sqlDelightDbName)
         // Fail in batch 2 so batch 1 (100 rows) is committed before rollback.
@@ -140,39 +134,4 @@ class RoomToSqlDelightMigratorTest {
         )
     }
 
-    private suspend fun seedRoomDatabase(outboxCount: Int, conflictCount: Int) {
-        val roomDb = SyncForgeDatabaseFactory.create(context, RoomToSqlDelightMigrator.ROOM_DATABASE_NAME)
-        repeat(outboxCount) { index ->
-            roomDb.outboxDao().insert(
-                OutboxEntryEntity(
-                    entityType = "tasks",
-                    entityId = "entity-$index",
-                    changeType = "UPDATE",
-                    payloadJson = """{"id":"entity-$index","title":"Pending $index"}""",
-                    rollbackSnapshotJson = null,
-                    localVersion = index.toLong() + 1,
-                    createdAtMillis = 100L + index,
-                    retryCount = index % 3,
-                    lastError = if (index % 5 == 0) "network" else null,
-                    nextRetryAtMillis = if (index % 5 == 0) 200L + index else null,
-                ),
-            )
-        }
-        repeat(conflictCount) { index ->
-            roomDb.conflictDao().insert(
-                ConflictEntryEntity(
-                    entityType = "tasks",
-                    entityId = "conflict-$index",
-                    localJson = """{"id":"conflict-$index"}""",
-                    remoteJson = """{"id":"conflict-$index","title":"Remote"}""",
-                    localUpdatedAtMillis = 50L + index,
-                    remoteServerVersion = 3L + index,
-                    remoteUpdatedAtMillis = 60L + index,
-                    detectedAtMillis = 70L + index,
-                    status = ConflictStatus.OPEN.name,
-                    resolutionKind = null,
-                ),
-            )
-        }
-    }
 }

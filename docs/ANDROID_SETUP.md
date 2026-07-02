@@ -82,6 +82,14 @@ The migrator:
 3. Deletes `syncforge_outbox.db` after a successful copy.
 4. Records completion in `syncforge_migration` SharedPreferences (runs once).
 
+### Verification
+
+| Test | Command |
+|------|---------|
+| Migrator unit tests (Robolectric) | `./gradlew :syncforge:testDebugUnitTest` |
+| `SyncForge.android` upgrade path | `SyncForgeAndroidMigrationTest` in the same task |
+| Sample instrumented upgrade + push | `./gradlew androidE2e` — `RoomMigrationInstrumentedTest` |
+
 On failure, the migrator logs to `SyncForgeMigrator`, leaves the preference unset, and retries on
 the next launch (`INSERT OR REPLACE` makes partial progress safe).
 

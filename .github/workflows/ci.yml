@@ -30,24 +30,8 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Compile and test (Android + JVM)
-        run: |
-          ./gradlew \
-            :syncforge:compileDebugKotlinAndroid \
-            :syncforge:compileKotlinJvm \
-            :syncforge:jvmTest \
-            :syncforge-server:test \
-            :syncforge-persistence:compileDebugKotlinAndroid \
-            :syncforge-persistence:compileKotlinJvm \
-            :syncforge-annotations:compileDebugKotlinAndroid \
-            :syncforge-annotations:compileKotlinJvm \
-            :syncforge-ksp:compileKotlin \
-            :backend-starter:compileKotlin \
-            :sample:compileDebugKotlin \
-            --no-daemon
-
-      - name: Verify Maven consumer smoke (publish + minimal Android app)
-        run: ./gradlew verifyConsumerSmoke --no-daemon
+      - name: Release sign-off (unit tests + consumer smoke)
+        run: ./gradlew verifyReleaseSignOff --no-daemon
 
   android-e2e:
     name: Android E2E (emulator + mock-server)
