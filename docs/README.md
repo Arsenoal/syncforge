@@ -26,6 +26,7 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Add login/register (built-in auth)** | [Auth API](AUTH_API.md) |
 | **See what's planned next** | [Roadmap](ROADMAP.md) |
 | **Track 1.0 release blockers (P0)** | Generate locally: `.venv-pdf/bin/python scripts/generate-p0-docx.py` → `docs/SyncForge-1.0-P0.docx` |
+| **Launch playbook (1.0 soak, GitHub growth)** | [SyncForge-GitHub-Launch-Playbook.docx](SyncForge-GitHub-Launch-Playbook.docx) · regenerate: `python3 scripts/generate-launch-playbook-docx.py` |
 | **Track release changes** | [Changelog](../CHANGELOG.md) |
 
 ---
@@ -47,7 +48,8 @@ docs/
 ├── REST_API.md               ← Backend push/pull contract
 ├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
 ├── ROADMAP.md                ← Phases, limitations, future work
-└── SyncForge-1.0-P0.docx     ← P0 checklist (local only; generate via scripts/generate-p0-docx.py)
+├── SyncForge-1.0-P0.docx     ← P0 checklist (generate via scripts/generate-p0-docx.py)
+└── SyncForge-GitHub-Launch-Playbook.docx  ← 1.0 soak, Maven Central, GitHub growth playbook
 ```
 
 ---

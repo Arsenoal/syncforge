@@ -11,10 +11,13 @@ captures/
 
 # Local tooling / generated artifacts
 .venv-pdf/
+.venv-docgen/
 .docx-gen/
 docs/*.docx
+!docs/SyncForge-GitHub-Launch-Playbook.docx
 .~lock.*
 scripts/*.py
+!scripts/generate-launch-playbook-docx.py
 *.sh
 *.log
 
