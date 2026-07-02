@@ -47,7 +47,7 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
 
         tapText("Server edit")
         waitForTextContains("Server updated")
-        toggleFirstCheckbox()
+        toggleCheckboxForTask(taskTitle)
 
         tapText("Sync")
         waitForTextContains("Conflict", timeoutMillis = 30_000)

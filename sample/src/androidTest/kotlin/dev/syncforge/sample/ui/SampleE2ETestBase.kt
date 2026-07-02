@@ -1,5 +1,7 @@
 package dev.syncforge.sample.ui
 
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -8,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -96,8 +99,14 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    protected fun toggleFirstCheckbox() {
-        composeTestRule.onNode(isToggleable(), useUnmergedTree = true).performClick()
+    protected fun toggleCheckboxForTask(taskTitle: String) {
+        composeTestRule.onNodeWithText(taskTitle).performScrollTo()
+        composeTestRule.onNode(
+            isToggleable() and hasAnyAncestor(
+                hasAnyDescendant(hasText(taskTitle, substring = false, ignoreCase = false)),
+            ),
+            useUnmergedTree = true,
+        ).performClick()
     }
 
     protected fun waitForSyncToFinish(timeoutMillis: Long = 30_000) {
