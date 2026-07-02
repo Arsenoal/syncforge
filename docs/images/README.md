@@ -37,21 +37,28 @@ Record the **Tasks** tab in one continuous take. The sample app shows an **Under
 
 Use the in-app **Server edit** button (calls `POST /dev/simulate-edit`) — no curl needed.
 
-### 3. Capture video
+### 3. Capture video (in-app auto-demo — no manual taps)
 
-**Option A — Android Studio (easiest)**
-
-1. Run the emulator with the sample app.
-2. **View → Tool Windows → Logcat** (or emulator toolbar) → **Screen record** (camera icon).
-3. Perform the shot list → stop recording → save as `syncforge-demo.mp4`.
-
-**Option B — `adb screenrecord`**
+Use `auto_demo` so the sequence runs in code. **Do not** use `adb shell input tap` — it can open the launcher, calendar, or keyboard chrome.
 
 ```bash
-adb shell screenrecord /sdcard/syncforge-demo.mp4
-# … perform the demo (max 180s) …
-# Ctrl+C to stop early
-adb pull /sdcard/syncforge-demo.mp4 /tmp/syncforge-demo.mp4
+curl -s -X POST http://127.0.0.1:8080/dev/reset
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 0
+# Prevent Google Calendar from opening mid-recording on the emulator
+adb shell pm disable-user --user 0 com.google.android.calendar
+adb shell pm clear dev.syncforge.sample
+
+# Launch auto-demo first so the app is in frame, then record (~24s)
+adb shell am start -n dev.syncforge.sample/.MainActivity --ez auto_demo true
+sleep 2
+adb shell screenrecord --size 720x1520 --time-limit 30 /sdcard/syncforge-demo.mp4 &
+sleep 26
+pkill -f "adb shell screenrecord" || true
+adb pull /sdcard/syncforge-demo.mp4 docs/images/syncforge-demo-raw.mp4
+
+# Re-enable Calendar when done (optional)
+adb shell pm enable com.google.android.calendar
 ```
 
 ### 4. Compress for README

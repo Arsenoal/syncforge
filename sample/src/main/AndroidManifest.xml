@@ -6,7 +6,7 @@
     <application
         android:name=".SampleApplication"
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_agenda"
+        android:icon="@android:drawable/ic_menu_rotate"
         android:label="SyncForge Tasks"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"

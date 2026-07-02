@@ -13,8 +13,10 @@ import dev.syncforge.sample.demo.DemoActivityLog
 import dev.syncforge.sample.tasks.SampleDatabase
 import dev.syncforge.sample.tasks.TaskRepository
 import dev.syncforge.sync.SyncManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import androidx.core.content.edit
 
 class SampleApplication : Application(), Configuration.Provider {
@@ -70,9 +72,11 @@ class SampleApplication : Application(), Configuration.Provider {
             "Clearing local Room DB + sync cursor + outbox (server/mock-server unchanged)",
             highlight = true,
         )
-        database.clearAllTables()
-        syncManager.debug.clearOutbox()
-        syncManager.debug.clearEventLog()
+        withContext(Dispatchers.IO) {
+            database.clearAllTables()
+            syncManager.debug.clearOutbox()
+            syncManager.debug.clearEventLog()
+        }
         getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit { clear() }
         DemoActivityLog.log(
             "Local DB empty — tap Sync to PULL tasks from mock-server into Room",

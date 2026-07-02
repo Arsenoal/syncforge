@@ -1,12 +1,15 @@
 package dev.syncforge.sample
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import dev.syncforge.sample.demo.DemoRecordingRunner
 import dev.syncforge.sample.demo.attachDemoPresentation
 import dev.syncforge.sample.navigation.SampleApp
+import kotlinx.coroutines.delay
 import dev.syncforge.sample.notes.NotesViewModel
 import dev.syncforge.sample.tags.TagsViewModel
 import dev.syncforge.sample.tasks.TasksViewModel
@@ -14,9 +17,16 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private val autoDemo: Boolean
+        get() = intent.getBooleanExtra(DemoRecordingRunner.EXTRA_AUTO_DEMO, false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (autoDemo) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
 
         val app = application as SampleApplication
         val tasksViewModel = TasksViewModel(
@@ -42,6 +52,13 @@ class MainActivity : ComponentActivity() {
                 },
                 onClearLocalData = { app.resetForDemoPresentation() },
             )
+        }
+
+        if (autoDemo) {
+            lifecycleScope.launch {
+                delay(1_000)
+                DemoRecordingRunner.run(app)
+            }
         }
     }
 }
