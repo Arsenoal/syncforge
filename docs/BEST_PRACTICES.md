@@ -172,7 +172,7 @@ Provide a fresh token on each request:
 authToken { tokenStore.accessToken }  // not a cached stale value
 ```
 
-Token refresh on 401 is planned (see [ROADMAP](ROADMAP.md)).
+For expiring access tokens, use `SyncAuthProvider.refreshing { }` so `KtorSyncTransport` refreshes on HTTP 401 and retries once. See [Recipes → Token refresh on 401](RECIPES.md#token-refresh-on-401).
 
 ---
 

@@ -36,6 +36,8 @@ data class SyncError(
     val entityType: String? = null,
     val entityId: String? = null,
     val cause: Throwable? = null,
+    /** Original HTTP status when the error originated from [dev.syncforge.network.KtorSyncTransport]. */
+    val httpStatus: Int? = null,
 ) {
     enum class Code {
         NETWORK,

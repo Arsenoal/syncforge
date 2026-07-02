@@ -60,7 +60,7 @@
 ### Not yet included
 
 
-- Token refresh on 401 (interface stub only)
+
 - Packaged desktop sample app (`:sample-desktop`)
 - Maven Central publication
 - Maven BOM / version catalog for consumers
@@ -138,7 +138,7 @@
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |
-| **401 token refresh** | Full `RefreshingSyncAuthProvider` in transport |
+| **401 token refresh** | ✅ `RefreshingSyncAuthProvider` in `KtorSyncTransport` |
 | **Supabase adapter** | Optional hosted-backend transport |
 
 ---

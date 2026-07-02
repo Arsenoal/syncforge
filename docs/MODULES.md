@@ -416,6 +416,24 @@ KtorSyncTransport(
 )
 ```
 
+### `RefreshingSyncAuthProvider` (commonMain)
+
+Bearer auth with a suspend refresh hook. `KtorSyncTransport` calls `refreshAccessToken()` on HTTP **401** and retries the request once (not on 403).
+
+```kotlin
+auth(
+    SyncAuthProvider.refreshing(
+        accessTokenProvider = { tokenStore.accessToken },
+        refresh = {
+            tokenStore.update(oauth.refresh(tokenStore.refreshToken))
+            tokenStore.accessToken
+        },
+    ),
+)
+```
+
+See [RECIPES.md → Token refresh on 401](RECIPES.md#token-refresh-on-401).
+
 ### `dev.syncforge.network.api` (commonMain)
 
 Serializable DTOs (`PushRequest`, `PushResponse`, `PullResponse`, etc.) shared with
@@ -676,6 +694,7 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `jvmTest/.../SqlDelightConflictStoreTest` | SQLDelight conflict store (JDBC in-memory) |
 | `jvmTest/.../FileSyncCursorStoreTest` | Desktop file cursor persistence |
 | `androidUnitTest/.../KtorSyncTransportTest` | REST transport push/pull parsing |
+| `jvmTest/.../KtorSyncTransportAuthRefreshTest` | 401 refresh + retry, 403 no-retry |
 | `androidUnitTest/.../SyncCursorStoreTest` | SharedPreferences cursor persistence |
 
 ```bash

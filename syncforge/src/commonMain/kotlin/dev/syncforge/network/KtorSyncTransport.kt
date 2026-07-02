@@ -28,16 +28,22 @@ import kotlinx.serialization.json.Json
  * Reference [SyncTransport] using Ktor and the SyncForge REST API contract.
  *
  * Platform HTTP engines are selected via [createPlatformHttpClient].
+ * Pass [RefreshingSyncAuthProvider] to retry once after HTTP 401 following [RefreshingSyncAuthProvider.refreshAccessToken].
  */
 class KtorSyncTransport private constructor(
     private val baseUrl: String,
     private val httpClient: HttpClient,
+    private val refreshingAuth: RefreshingSyncAuthProvider?,
 ) : SyncTransport {
 
     constructor(
         baseUrl: String,
         auth: SyncAuthProvider? = null,
-    ) : this(baseUrl, createPlatformHttpClient(auth, defaultJson))
+    ) : this(
+        baseUrl = baseUrl,
+        httpClient = createPlatformHttpClient(auth, defaultJson),
+        refreshingAuth = auth as? RefreshingSyncAuthProvider,
+    )
 
     constructor(
         baseUrl: String,
@@ -47,7 +53,7 @@ class KtorSyncTransport private constructor(
     private val normalizedBaseUrl = baseUrl.trimEnd('/')
 
     override suspend fun push(entries: List<OutboxEntry>): PushResult =
-        runTransport {
+        runTransportWithAuthRetry {
             httpClient.post("$normalizedBaseUrl/sync/push") {
                 contentType(ContentType.Application.Json)
                 setBody(PushRequest(entries = entries.map { it.toDto() }))
@@ -59,7 +65,7 @@ class KtorSyncTransport private constructor(
         entityTypes: Set<String>,
         pageSize: Int,
         pageCursor: String?,
-    ): PullResult = runTransport {
+    ): PullResult = runTransportWithAuthRetry {
         httpClient.get("$normalizedBaseUrl/sync/pull") {
             parameter("since", sinceTimestampMillis)
             parameter("types", entityTypes.joinToString(","))
@@ -68,7 +74,7 @@ class KtorSyncTransport private constructor(
         }.body<PullResponse>().toPullResult()
     }
 
-    private inline fun <T> runTransport(block: () -> T): T =
+    private suspend inline fun <T> runTransport(block: suspend () -> T): T =
         try {
             block()
         } catch (e: SyncTransportException) {
@@ -83,9 +89,33 @@ class KtorSyncTransport private constructor(
             )
         }
 
+    private suspend inline fun <T> runTransportWithAuthRetry(block: suspend () -> T): T {
+        return try {
+            runTransport(block)
+        } catch (e: SyncTransportException) {
+            val auth = refreshingAuth
+            if (
+                auth != null &&
+                e.error.code == SyncError.Code.AUTH &&
+                e.error.httpStatus == HTTP_UNAUTHORIZED
+            ) {
+                val refreshed = auth.refreshAccessToken()
+                if (!refreshed.isNullOrBlank()) {
+                    return runTransport(block)
+                }
+            }
+            throw e
+        }
+    }
+
     companion object {
-        fun createForTest(baseUrl: String, httpClient: HttpClient): KtorSyncTransport =
-            KtorSyncTransport(baseUrl, httpClient)
+        private const val HTTP_UNAUTHORIZED: Int = 401
+
+        fun createForTest(
+            baseUrl: String,
+            httpClient: HttpClient,
+            refreshingAuth: RefreshingSyncAuthProvider? = null,
+        ): KtorSyncTransport = KtorSyncTransport(baseUrl, httpClient, refreshingAuth)
 
         val defaultJson: Json = Json {
             ignoreUnknownKeys = true

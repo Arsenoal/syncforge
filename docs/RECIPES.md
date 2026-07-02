@@ -334,6 +334,38 @@ SyncForge.android(this) {
 
 Token is sent as `Authorization: Bearer <token>` on every push/pull request.
 
+### Token refresh on 401
+
+Use [RefreshingSyncAuthProvider](../syncforge/src/commonMain/kotlin/dev/syncforge/network/RefreshingSyncAuthProvider.kt) when access tokens expire. `KtorSyncTransport` calls your refresh lambda once per failed request and retries with the updated token.
+
+```kotlin
+val store = TokenStore()
+
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    registry(SyncForgeHandlers.registry(taskDao))
+    auth(
+        SyncAuthProvider.refreshing(
+            accessTokenProvider = { store.accessToken },
+            refresh = {
+                val tokens = oauthClient.refresh(store.refreshToken)
+                store.update(tokens)
+                store.accessToken
+            },
+        ),
+    )
+}
+```
+
+Requirements:
+
+- `accessTokenProvider` must read the **current** token (same store `refresh` writes to).
+- Refresh is serialized — parallel syncs share one in-flight refresh.
+- Only **401** triggers refresh; **403** and other auth errors are not retried.
+- Each request is retried at most **once** after refresh.
+
+Works on all platforms (`SyncForge.android`, `SyncForge.ios`, `SyncForge.desktop`).
+
 ---
 
 ## Test without a backend

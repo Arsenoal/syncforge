@@ -12,6 +12,10 @@ internal object HttpStatusMapper {
             in 500..599 -> SyncError.Code.SERVER
             else -> SyncError.Code.UNKNOWN
         }
-        return SyncError(code = code, message = body.ifBlank { "HTTP ${status.value}" })
+        return SyncError(
+            code = code,
+            message = body.ifBlank { "HTTP ${status.value}" },
+            httpStatus = status.value,
+        )
     }
 }

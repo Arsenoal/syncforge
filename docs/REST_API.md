@@ -25,9 +25,14 @@ Clients may send:
 Authorization: Bearer <token>
 ```
 
-`KtorSyncTransport` supports this via `authTokenProvider: () -> String?`. The mock server
-ignores auth. Production backends should validate tokens and return `401` for invalid auth
-(mapped to `SyncError.Code.AUTH` by convention).
+`KtorSyncTransport` supports this via `authTokenProvider: () -> String?` or
+`RefreshingSyncAuthProvider` for automatic refresh on expired tokens. The mock server
+ignores auth. Production backends should:
+
+| Status | Meaning | Client behavior |
+|--------|---------|-----------------|
+| `401` | Missing/invalid/expired token | `SyncError.Code.AUTH`; with `RefreshingSyncAuthProvider`, refresh once and retry |
+| `403` | Valid auth but forbidden | `SyncError.Code.AUTH`; no automatic retry |
 
 ---
 
