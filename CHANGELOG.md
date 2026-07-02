@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`RoomToSqlDelightMigrator` hardening** — batched inserts, `Log` diagnostics, `Status`/`FAILED` result, safe retry after partial failure
+- **Migrator tests** — 250-row outbox batch migration and partial-failure recovery coverage
 - **Multi-entity E2E tests** — `MultiEntityE2ETest` (task + note flows, conflict isolation) via `./gradlew androidE2e`
 - **CI `android-e2e` job** — GitHub Actions emulator + `:mock-server` runs connected instrumented tests
 - **`:syncforge-android-deps`** — bundles Room, kotlinx-serialization, and WorkManager as transitive `api` deps for Android consumers

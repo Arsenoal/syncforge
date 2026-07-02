@@ -83,10 +83,13 @@ Since **0.6.0**, `SyncForge.android { }` uses SQLDelight by default and runs [Ro
 
 The migrator:
 
-1. Copies all Room outbox rows and conflict records into SQLDelight (preserving row ids).
+1. Copies Room outbox rows and conflict records into SQLDelight in batches (preserving row ids).
 2. Reseeds SQLite AUTOINCREMENT counters.
 3. Deletes `syncforge_outbox.db` after a successful copy.
 4. Records completion in `syncforge_migration` SharedPreferences (runs once).
+
+On failure, the migrator logs to `SyncForgeMigrator`, leaves the preference unset, and retries on
+the next launch (`INSERT OR REPLACE` makes partial progress safe).
 
 ### Manual migration (advanced)
 
