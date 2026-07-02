@@ -12,6 +12,8 @@ plugins {
 }
 
 apply(from = "gradle/publish-convention.gradle.kts")
+apply(from = "gradle/e2e.gradle.kts")
+apply(from = "gradle/ios-xcode.gradle.kts")
 
 tasks.register("publishAllToMavenLocal") {
     group = "publishing"
@@ -25,18 +27,6 @@ tasks.register("publishAllToMavenLocal") {
         ":syncforge-bom:publishToMavenLocal",
         gradle.includedBuild("syncforge-gradle-plugin").task(":publishToMavenLocal"),
     )
-}
-
-tasks.register<Exec>("androidE2e") {
-    group = "verification"
-    description = "Runs sample connected Android tests against mock-server (requires emulator/device)."
-    commandLine("bash", "${rootProject.projectDir}/scripts/run-android-e2e.sh")
-}
-
-tasks.register<Exec>("iosE2e") {
-    group = "verification"
-    description = "Runs ios-sample XCUITest UI tests against mock-server (requires macOS + Xcode Simulator)."
-    commandLine("bash", "${rootProject.projectDir}/scripts/run-ios-e2e.sh")
 }
 
 tasks.register("publishAllToMavenCentral") {
