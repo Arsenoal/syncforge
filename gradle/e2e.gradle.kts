@@ -79,6 +79,7 @@ tasks.register("iosE2e") {
         val process = startMockServer(port, logFile)
         try {
             waitForMockServerHealth(port, logFile)
+            resetMockServerState(port)
 
             val kotlinTarget = if (System.getProperty("os.arch") == "aarch64") {
                 "IosSimulatorArm64"
@@ -97,6 +98,7 @@ tasks.register("iosE2e") {
 
             val destination = System.getenv("IOS_SIMULATOR_DESTINATION")
                 ?: project.resolveIosSimulatorDestination()
+            project.bootIosSimulatorForDestination(destination)
             logger.lifecycle("Running XCUITest on $destination...")
 
             val result = exec {
@@ -132,6 +134,55 @@ tasks.register("iosE2e") {
             process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
         }
     }
+}
+
+fun Project.resetMockServerState(port: Int) {
+    val resetUrl = "http://127.0.0.1:$port/dev/reset"
+    repeat(3) {
+        runCatching {
+            val connection = URL(resetUrl).openConnection() as HttpURLConnection
+            connection.connectTimeout = 5_000
+            connection.readTimeout = 5_000
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.connect()
+            if (connection.responseCode in 200..299) {
+                logger.lifecycle("Mock server reset at $resetUrl")
+                return
+            }
+        }
+        Thread.sleep(500)
+    }
+    logger.warn("Mock server reset at $resetUrl did not return 2xx (continuing)")
+}
+
+fun Project.bootIosSimulatorForDestination(destination: String) {
+    val name = Regex("name=([^,]+)").find(destination)?.groupValues?.getOrNull(1) ?: return
+    val udid = resolveIosSimulatorUdid(name) ?: run {
+        logger.warn("Could not resolve simulator UDID for $name — skipping explicit boot")
+        return
+    }
+
+    logger.lifecycle("Booting iOS Simulator $name ($udid) if needed...")
+    exec {
+        commandLine("xcrun", "simctl", "boot", udid)
+        isIgnoreExitValue = true
+    }
+    exec {
+        commandLine("xcrun", "simctl", "bootstatus", udid, "-b")
+    }
+}
+
+fun Project.resolveIosSimulatorUdid(deviceName: String): String? {
+    val listOutput = java.io.ByteArrayOutputStream()
+    exec {
+        commandLine("xcrun", "simctl", "list", "devices", "available")
+        standardOutput = listOutput
+    }
+    val udidPattern = Regex("""\Q$deviceName\E \(([0-9A-Fa-f-]{36})\)""")
+    return listOutput.toString().lineSequence()
+        .mapNotNull { line -> udidPattern.find(line)?.groupValues?.getOrNull(1) }
+        .firstOrNull()
 }
 
 fun Project.resolveIosSimulatorDestination(): String {

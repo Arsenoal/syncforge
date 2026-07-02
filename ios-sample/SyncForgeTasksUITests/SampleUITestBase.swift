@@ -9,16 +9,20 @@ class SampleUITestBase: XCTestCase {
         try super.setUpWithError()
         continueAfterFailure = false
 
-        guard Self.isMockServerHealthy() else {
-            throw XCTSkip("Mock server must be running on 127.0.0.1:8080 (./gradlew iosE2e)")
-        }
-
+        // Gradle :iosE2e already waits for mock-server health before xcodebuild.
         resetMockServer()
 
-        app = XCUIApplication()
+        app = XCUIApplication(bundleIdentifier: "dev.syncforge.sample.ios")
         app.launchEnvironment["MOCK_SERVER_BASE_URL"] = Self.mockServerBaseUrl
         app.launch()
         waitForAppReady()
+    }
+
+    override func tearDownWithError() throws {
+        if app != nil {
+            app.terminate()
+        }
+        try super.tearDownWithError()
     }
 
     func waitForAppReady(file: StaticString = #filePath, line: UInt = #line) {
@@ -204,35 +208,25 @@ class SampleUITestBase: XCTestCase {
         guard let url = URL(string: "\(Self.mockServerBaseUrl)/dev/reset") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 3
+        request.timeoutInterval = 10
 
-        let semaphore = DispatchSemaphore(value: 0)
-        URLSession.shared.dataTask(with: request) { _, _, _ in
-            semaphore.signal()
-        }.resume()
-        _ = semaphore.wait(timeout: .now() + 5)
+        for _ in 0..<3 {
+            let semaphore = DispatchSemaphore(value: 0)
+            var statusCode = 0
+            URLSession.shared.dataTask(with: request) { _, response, _ in
+                if let http = response as? HTTPURLResponse {
+                    statusCode = http.statusCode
+                }
+                semaphore.signal()
+            }.resume()
+            if semaphore.wait(timeout: .now() + 12) == .success, (200...299).contains(statusCode) {
+                return
+            }
+            Thread.sleep(forTimeInterval: 0.5)
+        }
     }
 
-    private static let mockServerBaseUrl = "http://127.0.0.1:8080"
-
-    private static func isMockServerHealthy() -> Bool {
-        let urlString = ProcessInfo.processInfo.environment["MOCK_SERVER_HEALTH_URL"]
-            ?? "\(mockServerBaseUrl)/health"
-        guard let url = URL(string: urlString) else { return false }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 2
-
-        let semaphore = DispatchSemaphore(value: 0)
-        var ok = false
-        URLSession.shared.dataTask(with: request) { _, response, _ in
-            if let http = response as? HTTPURLResponse {
-                ok = http.statusCode == 200
-            }
-            semaphore.signal()
-        }.resume()
-        _ = semaphore.wait(timeout: .now() + 3)
-        return ok
+    private static var mockServerBaseUrl: String {
+        ProcessInfo.processInfo.environment["MOCK_SERVER_BASE_URL"] ?? "http://127.0.0.1:8080"
     }
 }
