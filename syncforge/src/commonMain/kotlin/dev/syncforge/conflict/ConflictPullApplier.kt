@@ -1,0 +1,137 @@
+package dev.syncforge.conflict
+
+import dev.syncforge.entity.PullApplyOutcome
+import dev.syncforge.entity.RemoteMetadata
+import dev.syncforge.entity.TypedEntitySyncHandler
+import dev.syncforge.model.SyncState
+import dev.syncforge.network.RemoteDelta
+
+internal class ConflictPullApplier(
+    private val policy: ConflictPolicy,
+    private val conflictStore: ConflictStore,
+    private val clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
+) {
+
+    suspend fun <T : dev.syncforge.entity.SyncedEntity> applyDelta(
+        handler: TypedEntitySyncHandler<T>,
+        delta: RemoteDelta,
+    ): PullApplyOutcome {
+        val local = handler.findLocal(delta.entityId)
+        if (local == null) {
+            if (delta.isDeleted) return PullApplyOutcome.SKIPPED
+            val remote = delta.payloadJson?.let { handler.decodePayload(it) } ?: return PullApplyOutcome.SKIPPED
+            handler.persistEntity(handler.withSyncState(remote, SyncState.SYNCED), insert = true)
+            return PullApplyOutcome.INSERTED
+        }
+
+        val remoteMeta = RemoteMetadata(
+            serverVersion = delta.serverVersion,
+            updatedAtMillis = delta.updatedAtMillis,
+            isDeleted = delta.isDeleted,
+        )
+        val remotePayload = delta.payloadJson?.let { handler.decodePayload(it) }
+
+        if (!ConflictDetector.isConflict(local, remoteMeta)) {
+            return applyNonConflict(handler, delta, local, remotePayload, remoteMeta)
+        }
+
+        val strategy = policy.strategyFor(handler.entityType)
+        val context = ConflictContext(
+            entityType = handler.entityType,
+            local = local,
+            remote = remoteMeta,
+            remotePayload = remotePayload,
+        )
+        val outcome = strategy.resolve(context)
+        val now = clock()
+        val localJson = handler.encodePayload(local)
+        val remoteJson = remotePayload?.let { handler.encodePayload(it) }
+
+        return when (outcome) {
+            is ConflictOutcome.Deferred -> {
+                conflictStore.closeOpenForEntity(handler.entityType, delta.entityId)
+                conflictStore.recordDeferred(
+                    entityType = handler.entityType,
+                    entityId = delta.entityId,
+                    localJson = localJson,
+                    remoteJson = remoteJson,
+                    localUpdatedAtMillis = local.updatedAtMillis,
+                    remoteServerVersion = remoteMeta.serverVersion,
+                    remoteUpdatedAtMillis = remoteMeta.updatedAtMillis,
+                    detectedAtMillis = now,
+                )
+                handler.persistEntity(
+                    handler.withSyncState(outcome.local, SyncState.CONFLICT),
+                    insert = false,
+                )
+                PullApplyOutcome.CONFLICT_RESOLVED
+            }
+
+            is ConflictOutcome.Resolved -> {
+                conflictStore.recordAutoResolved(
+                    entityType = handler.entityType,
+                    entityId = delta.entityId,
+                    localJson = localJson,
+                    remoteJson = remoteJson,
+                    localUpdatedAtMillis = local.updatedAtMillis,
+                    remoteServerVersion = remoteMeta.serverVersion,
+                    remoteUpdatedAtMillis = remoteMeta.updatedAtMillis,
+                    detectedAtMillis = now,
+                    resolutionKind = outcome.resolution.toKind(),
+                )
+                applyResolution(handler, delta.entityId, outcome.resolution)
+            }
+        }
+    }
+
+    private suspend fun <T : dev.syncforge.entity.SyncedEntity> applyNonConflict(
+        handler: TypedEntitySyncHandler<T>,
+        delta: RemoteDelta,
+        local: T,
+        remotePayload: T?,
+        remoteMeta: RemoteMetadata,
+    ): PullApplyOutcome {
+        if (remoteMeta.isDeleted) {
+            handler.deleteLocal(delta.entityId)
+            return PullApplyOutcome.DELETED
+        }
+        val remote = remotePayload ?: return PullApplyOutcome.SKIPPED
+        handler.persistEntity(handler.withSyncState(remote, SyncState.SYNCED), insert = false)
+        return PullApplyOutcome.UPDATED
+    }
+
+    suspend fun <T : dev.syncforge.entity.SyncedEntity> applyResolution(
+        handler: TypedEntitySyncHandler<T>,
+        entityId: String,
+        resolution: ConflictResolution<T>,
+    ): PullApplyOutcome = when (resolution) {
+        ConflictResolution.DeleteLocal -> {
+            handler.deleteLocal(entityId)
+            PullApplyOutcome.DELETED
+        }
+
+        is ConflictResolution.KeepLocal -> {
+            handler.persistEntity(
+                handler.withSyncState(resolution.entity, SyncState.PENDING),
+                insert = false,
+            )
+            PullApplyOutcome.CONFLICT_RESOLVED
+        }
+
+        is ConflictResolution.AcceptRemote -> {
+            handler.persistEntity(
+                handler.withSyncState(resolution.entity, SyncState.SYNCED),
+                insert = false,
+            )
+            PullApplyOutcome.CONFLICT_RESOLVED
+        }
+
+        is ConflictResolution.Merged -> {
+            handler.persistEntity(
+                handler.withSyncState(resolution.entity, SyncState.SYNCED),
+                insert = false,
+            )
+            PullApplyOutcome.CONFLICT_RESOLVED
+        }
+    }
+}

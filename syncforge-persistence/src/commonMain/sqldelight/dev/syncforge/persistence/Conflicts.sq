@@ -1,0 +1,108 @@
+-- SyncForge internal conflict audit table (mirrors Room syncforge_conflicts v3).
+CREATE TABLE syncforge_conflicts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    localJson TEXT NOT NULL,
+    remoteJson TEXT,
+    localUpdatedAtMillis INTEGER NOT NULL,
+    remoteServerVersion INTEGER NOT NULL,
+    remoteUpdatedAtMillis INTEGER NOT NULL,
+    detectedAtMillis INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    resolutionKind TEXT
+);
+
+CREATE INDEX conflict_entity_idx ON syncforge_conflicts(entityType, entityId);
+CREATE INDEX conflict_status_idx ON syncforge_conflicts(status);
+
+observeAll:
+SELECT * FROM syncforge_conflicts
+ORDER BY detectedAtMillis DESC;
+
+observeOpen:
+SELECT * FROM syncforge_conflicts
+WHERE status = :openStatus
+ORDER BY detectedAtMillis DESC;
+
+countOpen:
+SELECT COUNT(*) FROM syncforge_conflicts
+WHERE status = :openStatus;
+
+insertConflict:
+INSERT INTO syncforge_conflicts (
+    entityType,
+    entityId,
+    localJson,
+    remoteJson,
+    localUpdatedAtMillis,
+    remoteServerVersion,
+    remoteUpdatedAtMillis,
+    detectedAtMillis,
+    status,
+    resolutionKind
+) VALUES (
+    :entityType,
+    :entityId,
+    :localJson,
+    :remoteJson,
+    :localUpdatedAtMillis,
+    :remoteServerVersion,
+    :remoteUpdatedAtMillis,
+    :detectedAtMillis,
+    :status,
+    :resolutionKind
+);
+
+findOpen:
+SELECT * FROM syncforge_conflicts
+WHERE entityType = :entityType
+AND entityId = :entityId
+AND status = :openStatus
+LIMIT 1;
+
+markResolved:
+UPDATE syncforge_conflicts
+SET status = :resolvedStatus, resolutionKind = :resolutionKind
+WHERE id = :id;
+
+closeOpenForEntity:
+UPDATE syncforge_conflicts
+SET status = :autoResolvedStatus, resolutionKind = :resolutionKind
+WHERE entityType = :entityType
+AND entityId = :entityId
+AND status = :openStatus;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+-- Used by Room → SQLDelight migrator to preserve row ids.
+insertConflictWithId:
+INSERT OR REPLACE INTO syncforge_conflicts (
+    id,
+    entityType,
+    entityId,
+    localJson,
+    remoteJson,
+    localUpdatedAtMillis,
+    remoteServerVersion,
+    remoteUpdatedAtMillis,
+    detectedAtMillis,
+    status,
+    resolutionKind
+) VALUES (
+    :id,
+    :entityType,
+    :entityId,
+    :localJson,
+    :remoteJson,
+    :localUpdatedAtMillis,
+    :remoteServerVersion,
+    :remoteUpdatedAtMillis,
+    :detectedAtMillis,
+    :status,
+    :resolutionKind
+);
+
+maxConflictId:
+SELECT MAX(id) FROM syncforge_conflicts;

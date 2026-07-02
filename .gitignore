@@ -1,0 +1,29 @@
+.gradle/
+build/
+.idea/
+*.iml
+local.properties
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# Local tooling / generated artifacts
+.venv-pdf/
+.docx-gen/
+*.log
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Xcode / iOS
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa

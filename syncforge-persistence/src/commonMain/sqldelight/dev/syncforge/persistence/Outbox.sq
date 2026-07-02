@@ -1,0 +1,137 @@
+-- SyncForge internal outbox table (mirrors Room syncforge_outbox v3).
+CREATE TABLE syncforge_outbox (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    changeType TEXT NOT NULL,
+    payloadJson TEXT,
+    rollbackSnapshotJson TEXT,
+    localVersion INTEGER NOT NULL,
+    createdAtMillis INTEGER NOT NULL,
+    retryCount INTEGER NOT NULL DEFAULT 0,
+    lastError TEXT,
+    nextRetryAtMillis INTEGER
+);
+
+observeAwaitingCount:
+SELECT COUNT(*) FROM syncforge_outbox
+WHERE retryCount < :maxRetries;
+
+observeAwaiting:
+SELECT * FROM syncforge_outbox
+WHERE retryCount < :maxRetries
+ORDER BY createdAtMillis ASC;
+
+observeAll:
+SELECT * FROM syncforge_outbox
+ORDER BY createdAtMillis DESC;
+
+countAwaiting:
+SELECT COUNT(*) FROM syncforge_outbox
+WHERE retryCount < :maxRetries;
+
+countPermanentlyFailed:
+SELECT COUNT(*) FROM syncforge_outbox
+WHERE retryCount >= :maxRetries;
+
+insertOutboxEntry:
+INSERT INTO syncforge_outbox (
+    entityType,
+    entityId,
+    changeType,
+    payloadJson,
+    rollbackSnapshotJson,
+    localVersion,
+    createdAtMillis,
+    retryCount,
+    lastError,
+    nextRetryAtMillis
+) VALUES (
+    :entityType,
+    :entityId,
+    :changeType,
+    :payloadJson,
+    :rollbackSnapshotJson,
+    :localVersion,
+    :createdAtMillis,
+    0,
+    NULL,
+    NULL
+);
+
+peekReady:
+SELECT * FROM syncforge_outbox
+WHERE retryCount < :maxRetries
+AND (
+    lastError IS NULL
+    OR (nextRetryAtMillis IS NOT NULL AND nextRetryAtMillis <= :nowMillis)
+)
+ORDER BY createdAtMillis ASC
+LIMIT :limit;
+
+findById:
+SELECT * FROM syncforge_outbox
+WHERE id = :id
+LIMIT 1;
+
+deleteByIds:
+DELETE FROM syncforge_outbox
+WHERE id IN :ids;
+
+updateOutboxEntry:
+UPDATE syncforge_outbox
+SET
+    entityType = :entityType,
+    entityId = :entityId,
+    changeType = :changeType,
+    payloadJson = :payloadJson,
+    rollbackSnapshotJson = :rollbackSnapshotJson,
+    localVersion = :localVersion,
+    createdAtMillis = :createdAtMillis,
+    retryCount = :retryCount,
+    lastError = :lastError,
+    nextRetryAtMillis = :nextRetryAtMillis
+WHERE id = :id;
+
+earliestFutureRetryAtMillis:
+SELECT MIN(nextRetryAtMillis) FROM syncforge_outbox
+WHERE retryCount < :maxRetries
+AND nextRetryAtMillis IS NOT NULL
+AND nextRetryAtMillis > :nowMillis;
+
+clearAll:
+DELETE FROM syncforge_outbox;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+-- Used by Room → SQLDelight migrator to preserve row ids.
+insertOutboxEntryWithId:
+INSERT OR REPLACE INTO syncforge_outbox (
+    id,
+    entityType,
+    entityId,
+    changeType,
+    payloadJson,
+    rollbackSnapshotJson,
+    localVersion,
+    createdAtMillis,
+    retryCount,
+    lastError,
+    nextRetryAtMillis
+) VALUES (
+    :id,
+    :entityType,
+    :entityId,
+    :changeType,
+    :payloadJson,
+    :rollbackSnapshotJson,
+    :localVersion,
+    :createdAtMillis,
+    :retryCount,
+    :lastError,
+    :nextRetryAtMillis
+);
+
+maxOutboxId:
+SELECT MAX(id) FROM syncforge_outbox;

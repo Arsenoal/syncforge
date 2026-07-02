@@ -1,0 +1,100 @@
+# Desktop setup guide
+
+Run SyncForge on JVM desktop (Linux, macOS, Windows) via `SyncForge.desktop { }`.
+
+**Requirements:** JDK 17+, Kotlin 2.1+
+
+---
+
+## Quick start
+
+```kotlin
+import dev.syncforge.SyncForge
+import dev.syncforge.desktop
+import dev.syncforge.persistence.createDefaultSyncForgePersistence
+
+val syncManager = SyncForge.desktop {
+    baseUrl("http://localhost:8080")
+    registry(handlers)
+}
+```
+
+### Defaults applied automatically
+
+| Component | Implementation |
+|-----------|----------------|
+| Outbox + conflicts | SQLDelight (JDBC SQLite in temp dir via `createDefaultSyncForgePersistence()`) |
+| Pull cursor | `FileSyncCursorStore` in `~/.syncforge/syncforge_cursor.properties` |
+| Network | `AlwaysOnlineNetworkMonitor` |
+| Transport | `KtorSyncTransport` (OkHttp engine) |
+| Background sync | `NoOpSyncWorkScheduler` |
+
+---
+
+## Local development with mock server
+
+```bash
+./gradlew :mock-server:run
+```
+
+Use `http://localhost:8080` as `baseUrl`.
+
+---
+
+## macOS native target
+
+For native macOS apps (not JVM), use `SyncForge.macos { }` — same defaults as iOS:
+
+```kotlin
+val syncManager = SyncForge.macos {
+    baseUrl("https://api.example.com")
+    registry(handlers)
+}
+```
+
+Build the framework on macOS:
+
+```bash
+./gradlew :syncforge:linkDebugFrameworkMacosArm64
+```
+
+---
+
+## Gradle targets (M5)
+
+| Target | Use case | Source set |
+|--------|----------|------------|
+| `jvm` | Desktop apps, CLI, integration tests | `jvmMain` |
+| `macosArm64` / `macosX64` | Native macOS Xcode apps | `macosMain` (+ `iosMain` shared services) |
+
+---
+
+## Cursor store
+
+Override the default file location:
+
+```kotlin
+import dev.syncforge.sync.SyncCursorStoreFactory
+import java.io.File
+
+SyncForge.desktop {
+    cursorStore(SyncCursorStoreFactory.create(directory = File("/var/app/syncforge")))
+}
+```
+
+DataStore Preferences multiplatform cursor is planned for a later M5 iteration.
+
+---
+
+## Verification
+
+```bash
+./gradlew :syncforge:compileKotlinJvm
+./gradlew :syncforge:jvmTest
+```
+
+Native macOS compilation requires a Mac with Xcode:
+
+```bash
+./gradlew :syncforge:compileKotlinMacosArm64
+```

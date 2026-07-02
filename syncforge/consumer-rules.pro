@@ -1,0 +1,1 @@
+# SyncForge consumer ProGuard rules — expanded as public API stabilizes.
