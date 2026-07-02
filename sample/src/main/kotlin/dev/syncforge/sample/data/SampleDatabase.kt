@@ -25,7 +25,7 @@ abstract class SampleDatabase : RoomDatabase() {
                 context.applicationContext,
                 SampleDatabase::class.java,
                 "syncforge_sample_tasks.db",
-            ).fallbackToDestructiveMigration()
+            ).fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
     }
 }

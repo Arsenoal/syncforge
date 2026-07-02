@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package dev.syncforge.entity
 
 import dev.syncforge.conflict.ConflictPolicy
@@ -24,6 +26,7 @@ abstract class TypedEntitySyncHandler<T : SyncedEntity> : EntitySyncHandler {
         message = "Configure conflict resolution via SyncForge.android { conflicts { } }. This constructor is ignored.",
         level = DeprecationLevel.WARNING,
     )
+    @Suppress("DEPRECATION")
     constructor(
         @Suppress("UNUSED_PARAMETER")
         legacyResolver: ConflictResolver,

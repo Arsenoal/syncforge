@@ -19,6 +19,7 @@ import dev.syncforge.entity.SyncedEntity
     ),
 )
 @ExperimentalSyncForgeApi
+@Suppress("DEPRECATION")
 class LastWriteWinsResolver : ConflictResolver {
 
     override fun <T : SyncedEntity> resolve(

@@ -12,13 +12,13 @@ internal object SyncForgeDatabaseFactory {
             context.applicationContext,
             SyncForgeDatabase::class.java,
             name,
-        ).fallbackToDestructiveMigration().build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
 
     fun createInMemory(context: Context): SyncForgeDatabase =
         Room.inMemoryDatabaseBuilder(
             context.applicationContext,
             SyncForgeDatabase::class.java,
-        ).fallbackToDestructiveMigration().build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
 
     fun createOutboxRepository(context: Context, maxRetries: Int = 5): RoomOutboxRepository =
         RoomOutboxRepository(create(context).outboxDao(), maxRetries = maxRetries)

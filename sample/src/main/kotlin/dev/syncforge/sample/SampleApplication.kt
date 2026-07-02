@@ -5,7 +5,7 @@ import androidx.work.Configuration
 import dev.syncforge.SyncForge
 import dev.syncforge.SyncForgeAndroid
 import dev.syncforge.android
-import dev.syncforge.sample.note.SyncForgeHandlers
+import dev.syncforge.sample.notes.SyncForgeHandlers
 import dev.syncforge.sample.notes.NoteRepository
 import dev.syncforge.sample.tags.TagRepository
 import dev.syncforge.sample.tasks.SampleDatabase

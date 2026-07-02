@@ -27,14 +27,10 @@ tasks.register("publishAllToMavenLocal") {
     )
 }
 
-tasks.register("androidE2e") {
+tasks.register<Exec>("androidE2e") {
     group = "verification"
     description = "Runs sample connected Android tests against mock-server (requires emulator/device)."
-    doLast {
-        project.exec {
-            commandLine("bash", "${rootProject.projectDir}/scripts/run-android-e2e.sh")
-        }
-    }
+    commandLine("bash", "${rootProject.projectDir}/scripts/run-android-e2e.sh")
 }
 
 tasks.register("publishAllToMavenCentral") {

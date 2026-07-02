@@ -2,6 +2,7 @@ package dev.syncforge.conflict
 
 import dev.syncforge.entity.SyncedEntity
 
+@Suppress("DEPRECATION")
 internal class LegacyResolverStrategy(
     private val resolver: ConflictResolver,
 ) : ConflictStrategy {

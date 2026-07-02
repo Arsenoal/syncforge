@@ -26,5 +26,6 @@ object ConflictStrategies {
         ),
     )
     @ExperimentalSyncForgeApi
+    @Suppress("DEPRECATION")
     fun fromResolver(resolver: ConflictResolver): ConflictStrategy = LegacyResolverStrategy(resolver)
 }
