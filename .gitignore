@@ -12,6 +12,7 @@ captures/
 # Local tooling / generated artifacts
 .venv-pdf/
 .docx-gen/
+docs/*.docx
 .~lock.*
 scripts/*.py
 *.log

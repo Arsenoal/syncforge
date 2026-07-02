@@ -24,7 +24,7 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Look up every public type** | [Module Reference](MODULES.md) |
 | **Implement the backend HTTP contract** | [REST API](REST_API.md) |
 | **See what's planned next** | [Roadmap](ROADMAP.md) |
-| **Track 1.0 release blockers (P0)** | [SyncForge-1.0-P0.docx](SyncForge-1.0-P0.docx) |
+| **Track 1.0 release blockers (P0)** | Generate locally: `.venv-pdf/bin/python scripts/generate-p0-docx.py` → `docs/SyncForge-1.0-P0.docx` |
 | **Track release changes** | [Changelog](../CHANGELOG.md) |
 
 ---
@@ -45,7 +45,7 @@ docs/
 ├── MODULES.md                ← Package-by-package API reference
 ├── REST_API.md               ← Backend push/pull contract
 ├── ROADMAP.md                ← Phases, limitations, future work
-└── SyncForge-1.0-P0.docx     ← P0 checklist for 1.0.0
+└── SyncForge-1.0-P0.docx     ← P0 checklist (local only; generate via scripts/generate-p0-docx.py)
 ```
 
 ---
@@ -95,7 +95,7 @@ Key files:
 | `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution |
 | `sample/.../tasks/TasksScreen.kt` | `SyncDebugLauncher`, conflict sheet |
 
-The sample satisfies the multi-entity proof in [1.0 P0](SyncForge-1.0-P0.docx); run `./gradlew androidE2e` locally or see CI `android-e2e` job.
+The sample satisfies the multi-entity proof in the 1.0 P0 checklist; run `./gradlew androidE2e` locally or see CI `android-e2e` job.
 
 ---
 
