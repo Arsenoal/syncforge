@@ -95,7 +95,7 @@ Key files:
 | `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution |
 | `sample/.../tasks/TasksScreen.kt` | `SyncDebugLauncher`, conflict sheet |
 
-The sample satisfies most [1.0 P0 Sample App Proof](SyncForge-1.0-P0.docx) criteria; multi-entity E2E tests remain.
+The sample satisfies the multi-entity proof in [1.0 P0](SyncForge-1.0-P0.docx); E2E automation and distribution items remain.
 
 ---
 
