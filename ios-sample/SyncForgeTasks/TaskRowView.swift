@@ -12,7 +12,7 @@ struct TaskRowView: View {
                 Text(task.title)
                     .font(.body)
 
-                Text(task.syncStateLabel)
+                Text(SyncStateStyle.displayLabel(for: task.syncStateLabel))
                     .font(.caption)
                     .foregroundColor(SyncStateStyle.color(for: task.syncStateLabel))
             }

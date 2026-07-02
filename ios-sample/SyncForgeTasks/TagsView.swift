@@ -18,8 +18,10 @@ struct TagsView: View {
                 viewModel.addTag()
             })
             .textFieldStyle(RoundedBorderTextFieldStyle())
+            .accessibilityIdentifier("new_tag_input")
 
             Button("Add", action: viewModel.addTag)
+                .accessibilityIdentifier("add_tag_button")
         }
     }
 

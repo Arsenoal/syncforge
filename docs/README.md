@@ -95,7 +95,7 @@ Key files:
 | `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution |
 | `sample/.../tasks/TasksScreen.kt` | `SyncDebugLauncher`, conflict sheet |
 
-The sample satisfies the multi-entity proof in the 1.0 P0 checklist; run `./gradlew androidE2e` locally or see CI `android-e2e` job.
+The sample satisfies the multi-entity proof in the 1.0 P0 checklist; run `./gradlew androidE2e` (Android) or `./gradlew iosE2e` (macOS/Xcode) locally, or see CI `android-e2e` / `ios-e2e` jobs.
 
 ---
 

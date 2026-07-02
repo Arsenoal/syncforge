@@ -13,7 +13,7 @@ struct TagRowView: View {
                 Text(tag.label)
                     .font(.body)
 
-                Text(tag.syncStateLabel)
+                Text(SyncStateStyle.displayLabel(for: tag.syncStateLabel))
                     .font(.caption)
                     .foregroundColor(SyncStateStyle.color(for: tag.syncStateLabel))
             }

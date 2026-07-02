@@ -24,6 +24,8 @@
 		B100000000000000000000A0 /* SampleStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* SampleStatusBanner.swift */; };
 		B100000000000000000000A1 /* SyncStateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SyncStateStyle.swift */; };
 		B10000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* Assets.xcassets */; };
+		B20000000000000000000001 /* SampleUITestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* SampleUITestBase.swift */; };
+		B20000000000000000000002 /* MultiEntityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000012 /* MultiEntityUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,10 +49,20 @@
 		B10000000000000000000021 /* TagRowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagRowModel.swift; sourceTree = "<group>"; };
 		B10000000000000000000022 /* SampleStatusBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStatusBanner.swift; sourceTree = "<group>"; };
 		B10000000000000000000023 /* SyncStateStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateStyle.swift; sourceTree = "<group>"; };
+		B20000000000000000000010 /* SyncForgeTasksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SyncForgeTasksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000011 /* SampleUITestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleUITestBase.swift; sourceTree = "<group>"; };
+		B20000000000000000000012 /* MultiEntityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiEntityUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		B10000000000000000000020 /* Frameworks */ = {
+		B100000000000000000000A2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B20000000000000000000020 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -59,11 +71,22 @@
 		};
 /* End PBXFrameworksBuildPhase section */
 
+/* Begin PBXContainerItemProxy section */
+		B20000000000000000000050 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B10000000000000000000050 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000040;
+			remoteInfo = SyncForgeTasks;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXGroup section */
 		B10000000000000000000030 = {
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000031 /* SyncForgeTasks */,
+				B20000000000000000000031 /* SyncForgeTasksUITests */,
 				B10000000000000000000032 /* Configuration */,
 				B10000000000000000000033 /* Products */,
 			);
@@ -106,8 +129,18 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000010 /* SyncForgeTasks.app */,
+				B20000000000000000000010 /* SyncForgeTasksUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000031 /* SyncForgeTasksUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000011 /* SampleUITestBase.swift */,
+				B20000000000000000000012 /* MultiEntityUITests.swift */,
+			);
+			path = SyncForgeTasksUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +152,7 @@
 			buildPhases = (
 				B10000000000000000000041 /* Build Kotlin Frameworks */,
 				B10000000000000000000042 /* Sources */,
-				B10000000000000000000020 /* Frameworks */,
+				B100000000000000000000A2 /* Frameworks */,
 				B10000000000000000000043 /* Resources */,
 			);
 			buildRules = (
@@ -130,6 +163,23 @@
 			productName = SyncForgeTasks;
 			productReference = B10000000000000000000010 /* SyncForgeTasks.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B20000000000000000000040 /* SyncForgeTasksUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B20000000000000000000060 /* Build configuration list for PBXNativeTarget "SyncForgeTasksUITests" */;
+			buildPhases = (
+				B20000000000000000000042 /* Sources */,
+				B20000000000000000000020 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B20000000000000000000051 /* PBXTargetDependency */,
+			);
+			name = SyncForgeTasksUITests;
+			productName = SyncForgeTasksUITests;
+			productReference = B20000000000000000000010 /* SyncForgeTasksUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -143,6 +193,10 @@
 				TargetAttributes = {
 					B10000000000000000000040 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					B20000000000000000000040 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = B10000000000000000000040;
 					};
 				};
 			};
@@ -160,6 +214,7 @@
 			projectRoot = "";
 			targets = (
 				B10000000000000000000040 /* SyncForgeTasks */,
+				B20000000000000000000040 /* SyncForgeTasksUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -221,7 +276,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B20000000000000000000042 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B20000000000000000000001 /* SampleUITestBase.swift in Sources */,
+				B20000000000000000000002 /* MultiEntityUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B20000000000000000000051 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000040 /* SyncForgeTasks */;
+			targetProxy = B20000000000000000000050 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B10000000000000000000070 /* Debug */ = {
@@ -317,6 +389,44 @@
 			};
 			name = Release;
 		};
+		B20000000000000000000070 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.syncforge.sample.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SyncForgeTasks;
+			};
+			name = Debug;
+		};
+		B20000000000000000000071 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.syncforge.sample.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SyncForgeTasks;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -334,6 +444,15 @@
 			buildConfigurations = (
 				B10000000000000000000072 /* Debug */,
 				B10000000000000000000073 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B20000000000000000000060 /* Build configuration list for PBXNativeTarget "SyncForgeTasksUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B20000000000000000000070 /* Debug */,
+				B20000000000000000000071 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

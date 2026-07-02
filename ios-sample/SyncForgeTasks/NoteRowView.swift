@@ -17,7 +17,7 @@ struct NoteRowView: View {
                         .lineLimit(2)
                 }
 
-                Text(note.syncStateLabel)
+                Text(SyncStateStyle.displayLabel(for: note.syncStateLabel))
                     .font(.caption)
                     .foregroundColor(SyncStateStyle.color(for: note.syncStateLabel))
             }

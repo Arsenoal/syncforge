@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Migrator tests** — 250-row outbox batch migration and partial-failure recovery coverage
 - **Multi-entity E2E tests** — `MultiEntityE2ETest` (task + note flows, conflict isolation) via `./gradlew androidE2e`
 - **CI `android-e2e` job** — GitHub Actions emulator + `:mock-server` runs connected instrumented tests
+- **iOS multi-entity UI tests** — `MultiEntityUITests` (XCUITest) via `./scripts/run-ios-e2e.sh` or `./gradlew iosE2e`
+- **CI `ios-e2e` job** — GitHub Actions `macos-14` Simulator + `:mock-server` runs XCUITest smoke tests
 - **`:syncforge-android-deps`** — bundles Room, kotlinx-serialization, and WorkManager as transitive `api` deps for Android consumers
 - **`dev.syncforge.android` Gradle plugin** — applies KSP (SyncForge + Room compiler) and Kotlin serialization; consumers no longer declare those manually
 

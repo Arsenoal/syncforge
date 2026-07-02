@@ -16,12 +16,15 @@ struct NotesView: View {
         VStack(spacing: 8) {
             TextField("Title", text: $viewModel.newNoteTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibilityIdentifier("new_note_title_input")
 
             TextField("Body (optional)", text: $viewModel.newNoteBody)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibilityIdentifier("new_note_body_input")
 
             Button("Add note", action: viewModel.addNote)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("add_note_button")
         }
     }
 

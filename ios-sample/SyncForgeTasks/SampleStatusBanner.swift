@@ -12,9 +12,11 @@ struct SampleStatusBanner: View {
                         viewModel.statusLabel.localizedCaseInsensitiveContains("error") ? .red : .secondary
                     )
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("sync_status_label")
 
                 Button(viewModel.isSyncing ? "Syncing…" : "Sync", action: viewModel.sync)
                     .disabled(viewModel.isSyncing)
+                    .accessibilityIdentifier("sync_button")
             }
 
             if viewModel.hasConflicts {

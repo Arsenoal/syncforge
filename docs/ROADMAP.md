@@ -122,7 +122,7 @@
 | Registry | `SyncForgeHandlers.registry(...)` (KSP) | `EntityRegistry.of(task, note, tag handlers)` |
 | Conflict policies | tasks `deferToUser()`, notes/tags LWW | Same |
 | UI | Compose bottom nav | SwiftUI `TabView` |
-| Verification | `MultiEntityE2ETest` + CI `android-e2e` | Manual matrix in [ios-sample/README.md](../ios-sample/README.md) (stretch: XCTest) |
+| Verification | `MultiEntityE2ETest` + CI `android-e2e` | `MultiEntityUITests` + CI `ios-e2e` |
 
 **Key paths:** `:sample-ios-shared` (`IosSampleController`), `ios-sample/SyncForgeTasks/` (SwiftUI tabs).
 

@@ -18,8 +18,10 @@ struct TasksView: View {
                 viewModel.addTask()
             })
             .textFieldStyle(RoundedBorderTextFieldStyle())
+            .accessibilityIdentifier("new_task_input")
 
             Button("Add", action: viewModel.addTask)
+                .accessibilityIdentifier("add_task_button")
         }
     }
 

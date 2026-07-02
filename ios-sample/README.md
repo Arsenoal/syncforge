@@ -49,6 +49,9 @@ ios-sample/
 │   └── Info.plist                ATS allows local networking (mock server)
 ├── Configuration/
 │   └── Frameworks.xcconfig       Framework search paths + linker flags
+├── SyncForgeTasksUITests/        XCUITest multi-entity smoke tests
+│   ├── SampleUITestBase.swift    Shared XCUITest helpers
+│   └── MultiEntityUITests.swift  Task + note + tag sync flows
 └── Scripts/
     └── build-kotlin-frameworks.sh  Run Script invoked before each Xcode build
 ```
@@ -86,7 +89,19 @@ With `:mock-server` running on the host:
 3. Confirm entries on the mock server (or pull from a second client).
 4. Optional conflict isolation: trigger a task conflict via server edit; add/sync a note — notes should still sync independently.
 
-Stretch: XCTest UI smoke tests (not yet in CI).
+## Automated UI tests (XCUITest)
+
+Multi-entity smoke tests live in `SyncForgeTasksUITests/` (mirrors Android `MultiEntityE2ETest`).
+
+**macOS only** — starts `:mock-server`, pre-builds Kotlin frameworks, runs Simulator tests:
+
+```bash
+./scripts/run-ios-e2e.sh
+# or
+./gradlew iosE2e
+```
+
+CI: GitHub Actions `ios-e2e` job (`macos-14` + iPhone Simulator).
 
 ## Physical device
 

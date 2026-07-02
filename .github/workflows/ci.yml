@@ -82,3 +82,28 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash scripts/run-android-e2e.sh
+
+  ios-e2e:
+    name: iOS E2E (Simulator + mock-server)
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Grant execute permission for iOS E2E script
+        run: chmod +x scripts/run-ios-e2e.sh
+
+      - name: Run XCUITest multi-entity UI tests
+        run: bash scripts/run-ios-e2e.sh

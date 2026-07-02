@@ -33,6 +33,12 @@ tasks.register<Exec>("androidE2e") {
     commandLine("bash", "${rootProject.projectDir}/scripts/run-android-e2e.sh")
 }
 
+tasks.register<Exec>("iosE2e") {
+    group = "verification"
+    description = "Runs ios-sample XCUITest UI tests against mock-server (requires macOS + Xcode Simulator)."
+    commandLine("bash", "${rootProject.projectDir}/scripts/run-ios-e2e.sh")
+}
+
 tasks.register("publishAllToMavenCentral") {
     group = "publishing"
     description = "Publishes all SyncForge library modules to Maven Central (set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."
