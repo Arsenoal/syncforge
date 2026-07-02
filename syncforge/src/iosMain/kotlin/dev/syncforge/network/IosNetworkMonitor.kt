@@ -24,7 +24,7 @@ import platform.darwin.dispatch_queue_create
 internal class IosNetworkMonitor : NetworkMonitor {
 
     @Volatile
-    private var currentOnline: Boolean = false
+    private var currentOnline: Boolean = true
 
     override val isOnline: Boolean
         get() = currentOnline

@@ -102,6 +102,7 @@ tasks.register("iosE2e") {
             val result = exec {
                 isIgnoreExitValue = true
                 environment("MOCK_SERVER_HEALTH_URL", healthUrl)
+                environment("MOCK_SERVER_BASE_URL", "http://127.0.0.1:$port")
                 commandLine(
                     "xcodebuild",
                     "test",
@@ -112,6 +113,10 @@ tasks.register("iosE2e") {
                     "-destination",
                     destination,
                     "-only-testing:SyncForgeTasksUITests",
+                    "-parallel-testing-enabled",
+                    "NO",
+                    "-maximum-concurrent-test-simulator-destinations",
+                    "1",
                     "CODE_SIGNING_ALLOWED=NO",
                 )
             }

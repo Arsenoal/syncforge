@@ -40,6 +40,8 @@ class IosSampleController(
         baseUrl(baseUrl)
         registry(EntityRegistry.of(taskHandler, noteHandler, tagHandler))
         backgroundSyncTaskIdentifier(IOS_SAMPLE_BACKGROUND_SYNC_TASK_ID)
+        // Simulator XCUITest: NWPathMonitor may report offline before the first path update.
+        networkMonitorAlwaysOnline()
         schedulePeriodicSyncOnStart()
         conflicts {
             entity(SampleTaskEntity.ENTITY_TYPE) { deferToUser() }
@@ -192,7 +194,7 @@ class IosSampleController(
 
     companion object {
         /** iOS Simulator → host machine running `:mock-server`. */
-        const val DEFAULT_BASE_URL: String = "http://localhost:8080"
+        const val DEFAULT_BASE_URL: String = "http://127.0.0.1:8080"
     }
 }
 

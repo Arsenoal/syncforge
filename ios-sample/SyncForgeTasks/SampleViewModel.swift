@@ -16,8 +16,11 @@ final class SampleViewModel: ObservableObject {
 
     private let controller: IosSampleController
 
-    init(baseUrl: String = SampleConfig.defaultBaseUrl) {
-        controller = IosSampleController(baseUrl: baseUrl)
+    init(baseUrl: String? = nil) {
+        let resolvedBaseUrl = baseUrl
+            ?? ProcessInfo.processInfo.environment["MOCK_SERVER_BASE_URL"]
+            ?? SampleConfig.defaultBaseUrl
+        controller = IosSampleController(baseUrl: resolvedBaseUrl)
 
         controller.setStatusListener { [weak self] label in
             DispatchQueue.main.async {
