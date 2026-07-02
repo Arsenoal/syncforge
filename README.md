@@ -92,34 +92,6 @@ sequenceDiagram
 
 ---
 
-## New here?
-
-**[Getting Started →](docs/GETTING_STARTED.md)** — zero to a working offline-first app in under 10 minutes.
-
-Then explore [Recipes](docs/RECIPES.md) for merge logic, conflict UI, and the debug console.
-
----
-
-## What you get
-
-| Feature | Description |
-|---------|-------------|
-| **Optimistic writes** | Local DB updates instantly; rollback on server rejection |
-| **Persistent outbox** | Survives process death; retries with exponential backoff |
-| **Push / pull / sync** | Full cycle or individual operations |
-| **`SyncForge.android { }`** | ~10-line setup with Android defaults |
-| **KSP codegen** | `@SyncForgeEntity` → handlers + `SyncForgeHandlers` registry |
-| **Conflict strategies** | LWW, merge, defer-to-user — per entity type |
-| **Debug console** | In-app outbox/conflict/event inspector (debug builds) |
-| **Compose helpers** | Status observation, conflict chip, resolution sheet |
-| **KMP platforms** | iOS (`SyncForge.ios`), JVM desktop (`SyncForge.desktop`), native macOS (`SyncForge.macos`) |
-| **SQLDelight persistence** | Default on all platforms since 0.6.0; automatic Room → SQLDelight migration on Android upgrade |
-| **Built-in auth (experimental)** | `auth { }` DSL — register/login/logout, token refresh on 401 — see [Auth API](docs/AUTH_API.md) |
-
-[Full capabilities table →](docs/ROADMAP.md#what-the-library-can-do-today-v060)
-
----
-
 ## Minimal setup
 
 ```kotlin
