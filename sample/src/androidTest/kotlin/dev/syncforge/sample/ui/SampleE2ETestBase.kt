@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -117,7 +118,7 @@ abstract class SampleE2ETestBase {
                 composeTestRule.waitUntil(timeoutMillis = 15_000) {
                     composeTestRule.onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty()
                 }
-                composeTestRule.onAllNodes(matcher).onFirst().performScrollTo().performClick()
+                composeTestRule.onAllNodes(matcher).onFirst().scrollToIfPossible().performClick()
             }
         }
     }
@@ -125,8 +126,22 @@ abstract class SampleE2ETestBase {
     protected fun toggleCheckboxForTask(taskTitle: String) {
         composeTestRule
             .onNodeWithTag("task_checkbox_$taskTitle")
-            .performScrollTo()
+            .scrollToIfPossible()
             .performClick()
+    }
+
+    /**
+     * Scrolls only when the node sits inside a scrollable container (e.g. off-screen LazyColumn
+     * item). No-op for top-bar actions, bottom sheets, and other non-scroll parents.
+     */
+    private fun SemanticsNodeInteraction.scrollToIfPossible(): SemanticsNodeInteraction = apply {
+        try {
+            performScrollTo()
+        } catch (error: AssertionError) {
+            if (!error.message.orEmpty().contains("Scroll SemanticsAction")) {
+                throw error
+            }
+        }
     }
 
     protected fun waitForSyncToFinish(timeoutMillis: Long = 30_000) {
