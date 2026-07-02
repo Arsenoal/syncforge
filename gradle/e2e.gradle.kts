@@ -105,6 +105,7 @@ tasks.register("iosE2e") {
                 isIgnoreExitValue = true
                 environment("MOCK_SERVER_HEALTH_URL", healthUrl)
                 environment("MOCK_SERVER_BASE_URL", "http://127.0.0.1:$port")
+                environment("E2E_TESTING", "1")
                 commandLine(
                     "xcodebuild",
                     "test",

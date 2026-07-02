@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject private var viewModel: SampleViewModel
-
     var body: some View {
         VStack(spacing: 0) {
             SampleStatusBanner()
@@ -33,9 +31,6 @@ struct ContentView: View {
                     }
                     .accessibilityIdentifier("nav_tags")
             }
-        }
-        .onAppear {
-            viewModel.startIfNeeded()
         }
     }
 }

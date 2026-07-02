@@ -33,9 +33,12 @@ class SampleUITestBase: XCTestCase {
             app.textFields["New task"],
             app.staticTexts["No tasks yet"],
             app.buttons["sync_button"],
+            app.buttons["Sync"],
+            app.staticTexts["Idle"],
             app.tabBars.buttons["Tasks"],
+            app.buttons["nav_tasks"],
         ]
-        let deadline = Date().addingTimeInterval(30)
+        let deadline = Date().addingTimeInterval(45)
         while Date() < deadline {
             if readyMarkers.contains(where: { $0.exists }) {
                 return

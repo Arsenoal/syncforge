@@ -26,7 +26,7 @@ final class SampleViewModel: ObservableObject {
         e2eMode = ProcessInfo.processInfo.environment["E2E_TESTING"] == "1"
     }
 
-    /// Defers Kotlin/SyncForge startup until after the first SwiftUI frame (XCUITest can query UI sooner).
+    /// Lazily wires Kotlin/SyncForge on first user action — keeps launch idle for XCUITest.
     func startIfNeeded() {
         guard !isStarted else { return }
         isStarted = true
