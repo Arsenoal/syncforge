@@ -24,8 +24,9 @@ struct NoteRowView: View {
 
             Spacer()
 
-            Button("Delete", role: .destructive, action: onDelete)
+            Button("Delete", action: onDelete)
                 .font(.caption)
+                .foregroundColor(.red)
         }
         .padding(.vertical, 4)
     }
