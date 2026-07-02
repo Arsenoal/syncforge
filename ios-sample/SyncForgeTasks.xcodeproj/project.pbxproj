@@ -15,6 +15,14 @@
 		B10000000000000000000007 /* KotlinInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* KotlinInterop.swift */; };
 		B10000000000000000000008 /* TaskRowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* TaskRowModel.swift */; };
 		B10000000000000000000009 /* SampleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* SampleConfig.swift */; };
+		B1000000000000000000000A /* NotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* NotesView.swift */; };
+		B1000000000000000000000B /* TagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* TagsView.swift */; };
+		B1000000000000000000000C /* NoteRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* NoteRowView.swift */; };
+		B1000000000000000000000D /* TagRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* TagRowView.swift */; };
+		B1000000000000000000000E /* NoteRowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* NoteRowModel.swift */; };
+		B1000000000000000000000F /* TagRowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* TagRowModel.swift */; };
+		B100000000000000000000A0 /* SampleStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* SampleStatusBanner.swift */; };
+		B100000000000000000000A1 /* SyncStateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* SyncStateStyle.swift */; };
 		B10000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +39,14 @@
 		B10000000000000000000019 /* KotlinInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinInterop.swift; sourceTree = "<group>"; };
 		B1000000000000000000001A /* TaskRowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowModel.swift; sourceTree = "<group>"; };
 		B1000000000000000000001B /* SampleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleConfig.swift; sourceTree = "<group>"; };
+		B1000000000000000000001C /* NotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001D /* TagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001E /* NoteRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteRowView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001F /* TagRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagRowView.swift; sourceTree = "<group>"; };
+		B10000000000000000000020 /* NoteRowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteRowModel.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* TagRowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagRowModel.swift; sourceTree = "<group>"; };
+		B10000000000000000000022 /* SampleStatusBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStatusBanner.swift; sourceTree = "<group>"; };
+		B10000000000000000000023 /* SyncStateStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateStyle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +80,14 @@
 				B10000000000000000000019 /* KotlinInterop.swift */,
 				B1000000000000000000001A /* TaskRowModel.swift */,
 				B1000000000000000000001B /* SampleConfig.swift */,
+				B1000000000000000000001C /* NotesView.swift */,
+				B1000000000000000000001D /* TagsView.swift */,
+				B1000000000000000000001E /* NoteRowView.swift */,
+				B1000000000000000000001F /* TagRowView.swift */,
+				B10000000000000000000020 /* NoteRowModel.swift */,
+				B10000000000000000000021 /* TagRowModel.swift */,
+				B10000000000000000000022 /* SampleStatusBanner.swift */,
+				B10000000000000000000023 /* SyncStateStyle.swift */,
 				B10000000000000000000016 /* Assets.xcassets */,
 				B10000000000000000000017 /* Info.plist */,
 			);
@@ -186,6 +210,14 @@
 				B10000000000000000000007 /* KotlinInterop.swift in Sources */,
 				B10000000000000000000008 /* TaskRowModel.swift in Sources */,
 				B10000000000000000000009 /* SampleConfig.swift in Sources */,
+				B1000000000000000000000A /* NotesView.swift in Sources */,
+				B1000000000000000000000B /* TagsView.swift in Sources */,
+				B1000000000000000000000C /* NoteRowView.swift in Sources */,
+				B1000000000000000000000D /* TagRowView.swift in Sources */,
+				B1000000000000000000000E /* NoteRowModel.swift in Sources */,
+				B1000000000000000000000F /* TagRowModel.swift in Sources */,
+				B100000000000000000000A0 /* SampleStatusBanner.swift in Sources */,
+				B100000000000000000000A1 /* SyncStateStyle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

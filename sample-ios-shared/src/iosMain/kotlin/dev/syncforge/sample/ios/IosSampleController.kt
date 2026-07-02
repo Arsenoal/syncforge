@@ -21,8 +21,7 @@ import kotlinx.coroutines.launch
 /**
  * Swift-friendly facade for the SyncForge iOS sample.
  *
- * Callback APIs remain for UIKit/SwiftUI without async/await wiring.
- * [syncManager] and [observeStatusLabel] expose SKIE-improved Flow/suspend interop.
+ * Mirrors Android :sample — tasks, notes, and tags on one [SyncManager].
  */
 @FlowInterop.Enabled
 @SuspendInterop.Enabled
@@ -31,18 +30,26 @@ class IosSampleController(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val taskStore = InMemoryTaskStore()
+    private val noteStore = InMemoryNoteStore()
+    private val tagStore = InMemoryTagStore()
     private val taskHandler = SampleTaskSyncHandler(taskStore)
+    private val noteHandler = SampleNoteSyncHandler(noteStore)
+    private val tagHandler = SampleTagSyncHandler(tagStore)
 
     val syncManager: SyncManager = SyncForge.ios {
         baseUrl(baseUrl)
-        registry(EntityRegistry.of(taskHandler))
+        registry(EntityRegistry.of(taskHandler, noteHandler, tagHandler))
         conflicts {
             entity(SampleTaskEntity.ENTITY_TYPE) { deferToUser() }
+            entity(SampleNoteEntity.ENTITY_TYPE) { lastWriteWins() }
+            entity(SampleTagEntity.ENTITY_TYPE) { lastWriteWins() }
         }
     }
 
     private var statusListener: ((String) -> Unit)? = null
     private var tasksListener: ((List<TaskItem>) -> Unit)? = null
+    private var notesListener: ((List<NoteItem>) -> Unit)? = null
+    private var tagsListener: ((List<TagItem>) -> Unit)? = null
 
     init {
         syncManager.status
@@ -51,6 +58,14 @@ class IosSampleController(
 
         taskStore.observeAll()
             .onEach { tasks -> tasksListener?.invoke(tasks.map { it.toTaskItem() }) }
+            .launchIn(scope)
+
+        noteStore.observeAll()
+            .onEach { notes -> notesListener?.invoke(notes.map { it.toNoteItem() }) }
+            .launchIn(scope)
+
+        tagStore.observeAll()
+            .onEach { tags -> tagsListener?.invoke(tags.map { it.toTagItem() }) }
             .launchIn(scope)
     }
 
@@ -62,6 +77,16 @@ class IosSampleController(
     fun setTasksListener(listener: ((List<TaskItem>) -> Unit)?) {
         tasksListener = listener
         listener?.invoke(taskStore.snapshotAll().map { it.toTaskItem() })
+    }
+
+    fun setNotesListener(listener: ((List<NoteItem>) -> Unit)?) {
+        notesListener = listener
+        listener?.invoke(noteStore.snapshotAll().map { it.toNoteItem() })
+    }
+
+    fun setTagsListener(listener: ((List<TagItem>) -> Unit)?) {
+        tagsListener = listener
+        listener?.invoke(tagStore.snapshotAll().map { it.toTagItem() })
     }
 
     fun currentStatusLabel(): String = syncManager.status.value.toUiModel().label
@@ -78,6 +103,76 @@ class IosSampleController(
             runCatching {
                 val task = taskStore.createTask(title, iosNowMillis())
                 syncManager.enqueueChange(Change.create(SampleTaskEntity.ENTITY_TYPE, task))
+            }.fold(
+                onSuccess = { onComplete(true, null) },
+                onFailure = { error -> onComplete(false, error.message) },
+            )
+        }
+    }
+
+    fun addNote(title: String, body: String, onComplete: (Boolean, String?) -> Unit) {
+        if (title.isBlank()) {
+            onComplete(false, "Title must not be blank")
+            return
+        }
+        scope.launch {
+            runCatching {
+                val note = noteStore.createNote(title, body, iosNowMillis())
+                syncManager.enqueueChange(Change.create(SampleNoteEntity.ENTITY_TYPE, note))
+            }.fold(
+                onSuccess = { onComplete(true, null) },
+                onFailure = { error -> onComplete(false, error.message) },
+            )
+        }
+    }
+
+    fun addTag(label: String, onComplete: (Boolean, String?) -> Unit) {
+        if (label.isBlank()) {
+            onComplete(false, "Label must not be blank")
+            return
+        }
+        scope.launch {
+            runCatching {
+                val tag = tagStore.createTag(label, iosNowMillis())
+                syncManager.enqueueChange(Change.create(SampleTagEntity.ENTITY_TYPE, tag))
+            }.fold(
+                onSuccess = { onComplete(true, null) },
+                onFailure = { error -> onComplete(false, error.message) },
+            )
+        }
+    }
+
+    fun deleteNote(noteId: String, onComplete: (Boolean, String?) -> Unit) {
+        scope.launch {
+            runCatching {
+                val note = noteStore.findById(noteId) ?: error("Note not found")
+                syncManager.enqueueChange(
+                    Change.delete<SampleNoteEntity>(
+                        entityType = SampleNoteEntity.ENTITY_TYPE,
+                        entityId = note.id,
+                        localVersion = note.localVersion + 1,
+                        updatedAtMillis = iosNowMillis(),
+                    ),
+                )
+            }.fold(
+                onSuccess = { onComplete(true, null) },
+                onFailure = { error -> onComplete(false, error.message) },
+            )
+        }
+    }
+
+    fun deleteTag(tagId: String, onComplete: (Boolean, String?) -> Unit) {
+        scope.launch {
+            runCatching {
+                val tag = tagStore.findById(tagId) ?: error("Tag not found")
+                syncManager.enqueueChange(
+                    Change.delete<SampleTagEntity>(
+                        entityType = SampleTagEntity.ENTITY_TYPE,
+                        entityId = tag.id,
+                        localVersion = tag.localVersion + 1,
+                        updatedAtMillis = iosNowMillis(),
+                    ),
+                )
             }.fold(
                 onSuccess = { onComplete(true, null) },
                 onFailure = { error -> onComplete(false, error.message) },

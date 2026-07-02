@@ -14,20 +14,11 @@ struct TaskRowView: View {
 
                 Text(task.syncStateLabel)
                     .font(.caption)
-                    .foregroundColor(syncStateColor)
+                    .foregroundColor(SyncStateStyle.color(for: task.syncStateLabel))
             }
 
             Spacer()
         }
         .padding(.vertical, 4)
-    }
-
-    private var syncStateColor: Color {
-        switch task.syncStateLabel.uppercased() {
-        case "SYNCED": return .green
-        case "PENDING": return .orange
-        case "FAILED": return .red
-        default: return .secondary
-        }
     }
 }

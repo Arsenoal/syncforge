@@ -29,7 +29,7 @@ A full Xcode project lives in [`ios-sample/`](../ios-sample/):
 open ios-sample/SyncForgeTasks.xcodeproj
 ```
 
-The app uses `SampleViewModel` → `IosSampleController` with a task list, add/sync controls, and status banner. See [ios-sample/README.md](../ios-sample/README.md).
+The app uses `SampleViewModel` → `IosSampleController` with Tasks / Notes / Tags tabs, shared sync controls, and status banner. See [ios-sample/README.md](../ios-sample/README.md).
 
 ## Run with mock server
 
@@ -103,14 +103,15 @@ Static frameworks — **Do Not Embed**; link via `OTHER_LDFLAGS`.
 
 | Method / type | Description |
 |---------------|-------------|
-| `IosSampleController(baseUrl)` | Wires `SyncForge.ios` with SQLDelight, UserDefaults cursor, NWPathMonitor, `deferToUser()` for tasks |
+| `IosSampleController(baseUrl)` | Wires `SyncForge.ios` with tasks + notes + tags, SQLDelight, UserDefaults cursor, NWPathMonitor |
 | `IOS_SAMPLE_DEFAULT_BASE_URL` | `http://localhost:8080` — exported for Swift |
-| `TaskItem` | Swift-friendly task row (`id`, `title`, `completed`, `syncStateLabel`) |
-| `addTask(title, onComplete)` | Creates a task and enqueues a sync change |
-| `sync(onComplete)` | Runs full push + pull cycle |
+| `TaskItem` / `NoteItem` / `TagItem` | Swift-friendly row DTOs with sync state labels |
+| `addTask` / `addNote` / `addTag` | Create entity and enqueue a sync change |
+| `deleteNote` / `deleteTag` | Enqueue delete change |
+| `sync(onComplete)` | Runs full push + pull cycle for all entity types |
 | `setStatusListener(listener)` | Receives status label updates (callback API) |
 | `observeStatusLabel()` | SKIE `Flow` → Swift `AsyncSequence` for status labels |
-| `setTasksListener(listener)` | Receives task list updates |
+| `setTasksListener` / `setNotesListener` / `setTagsListener` | Entity list updates |
 | `currentStatusLabel()` | Synchronous status snapshot |
 
 See [docs/IOS_SETUP.md](../docs/IOS_SETUP.md) for full iOS configuration options.

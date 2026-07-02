@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.random.Random
 
 /**
  * In-memory task storage for the iOS sample — consumer apps use Room/GRDB on each platform.
@@ -22,7 +21,7 @@ class InMemoryTaskStore {
 
     suspend fun createTask(title: String, nowMillis: Long): SampleTaskEntity = mutex.withLock {
         val task = SampleTaskEntity(
-            id = randomId(),
+            id = randomSampleId(),
             title = title.trim(),
             completed = false,
             localVersion = 1,
@@ -48,11 +47,4 @@ class InMemoryTaskStore {
     suspend fun deleteById(id: String) = mutex.withLock {
         tasks.value = tasks.value.filter { it.id != id }
     }
-
-    private fun randomId(): String =
-        buildString {
-            repeat(4) { append(Random.nextInt(0, 256).toString(16).padStart(2, '0')) }
-            append('-')
-            repeat(7) { append(Random.nextInt(0, 256).toString(16).padStart(2, '0')) }
-        }
 }

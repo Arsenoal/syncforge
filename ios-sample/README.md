@@ -1,6 +1,6 @@
-# SyncForge Tasks — iOS Sample (SwiftUI)
+# SyncForge Sample — iOS (SwiftUI)
 
-SwiftUI app demonstrating `SyncForge.ios { }` via the `:sample-ios-shared` framework and `IosSampleController`.
+SwiftUI app demonstrating `SyncForge.ios { }` via the `:sample-ios-shared` framework and `IosSampleController`. Mirrors Android `:sample`: **tasks**, **notes**, and **tags** on one `SyncManager` with tab navigation.
 
 ## Prerequisites
 
@@ -37,10 +37,15 @@ ios-sample/
 ├── SyncForgeTasks.xcodeproj/     Xcode project
 ├── SyncForgeTasks/               SwiftUI sources
 │   ├── SyncForgeTasksApp.swift   @main entry point
-│   ├── ContentView.swift         Root view shell
-│   ├── TasksView.swift           Task list, add field, sync toolbar, status banner
+│   ├── ContentView.swift         TabView: Tasks | Notes | Tags + shared status banner
+│   ├── TasksView.swift           Task list and add field
+│   ├── NotesView.swift           Note list, title/body fields, delete
+│   ├── TagsView.swift            Tag list, add field, delete
+│   ├── SampleStatusBanner.swift  Shared sync status + Sync button
 │   ├── SampleViewModel.swift     Wraps IosSampleController (ObservableObject)
-│   ├── TaskRowView.swift         Single task row with sync state badge
+│   ├── TaskRowView.swift         Task row with sync state badge
+│   ├── NoteRowView.swift         Note row with sync state badge
+│   ├── TagRowView.swift          Tag row with sync state badge
 │   └── Info.plist                ATS allows local networking (mock server)
 ├── Configuration/
 │   └── Frameworks.xcconfig       Framework search paths + linker flags
@@ -53,7 +58,7 @@ ios-sample/
 | Swift | Kotlin |
 |-------|--------|
 | `SampleViewModel` | `IosSampleController` |
-| `TaskItem` | `dev.syncforge.sample.ios.TaskItem` |
+| `TaskItem` / `NoteItem` / `TagItem` | Swift-friendly row DTOs from `:sample-ios-shared` |
 | `IOS_SAMPLE_DEFAULT_BASE_URL` | top-level constant in `IosSampleController.kt` |
 
 The Xcode **Build Kotlin Frameworks** phase links static frameworks:
@@ -63,7 +68,7 @@ The Xcode **Build Kotlin Frameworks** phase links static frameworks:
 
 ## Conflict demo (optional)
 
-Tasks use `deferToUser()` (same as the Android `:sample` app). To trigger a conflict:
+Conflict policies match Android `:sample`: tasks `deferToUser()`, notes and tags `lastWriteWins()`. To trigger a task conflict:
 
 1. Add a task and tap **Sync**
 2. Edit the same task on the mock server (`POST /dev/simulate-edit`)
@@ -71,6 +76,17 @@ Tasks use `deferToUser()` (same as the Android `:sample` app). To trigger a conf
 4. Tap **Sync** — status banner shows conflict count
 
 Full conflict resolution UI is deferred; the status label surfaces open conflicts.
+
+## Manual verification (multi-entity)
+
+With `:mock-server` running on the host:
+
+1. Add a task on **Tasks**, a note on **Notes**, and a tag on **Tags** (no restart).
+2. Tap **Sync** once — all three entity types should push in a single cycle.
+3. Confirm entries on the mock server (or pull from a second client).
+4. Optional conflict isolation: trigger a task conflict via server edit; add/sync a note — notes should still sync independently.
+
+Stretch: XCTest UI smoke tests (not yet in CI).
 
 ## Physical device
 

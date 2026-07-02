@@ -55,9 +55,10 @@
 - **`SyncForge.macos { }`** — native macOS (`macosArm64` / `macosX64`) with iOS-parity defaults
 - **SQLDelight on Android** — default since 0.6.0; `useRoomPersistence()` for legacy opt-in
 - **SKIE** — improved Swift interop (`Flow`, suspend) on `:syncforge` and `:sample-ios-shared`
-- **`ios-sample/`** — SwiftUI Xcode reference app
+- **`ios-sample/`** — SwiftUI Xcode reference app (tasks + notes + tags; see [iOS sample parity](#ios-sample-parity-090-))
 
 ### Not yet included
+
 
 - Token refresh on 401 (interface stub only)
 - Packaged desktop sample app (`:sample-desktop`)
@@ -101,13 +102,29 @@
 | **Darwin Ktor engine** | ✅ Done | iOS HTTP transport via `ktor-client-darwin` |
 | **iOS network monitor** | ✅ M3 | `IosNetworkMonitor` + `NetworkMonitorFactory` |
 | **iOS persisted cursor** | ✅ M3 | `UserDefaultsSyncCursorStore` |
-| **iOS sample (Kotlin)** | ✅ M3 | `:sample-ios-shared` + `IosSampleController` |
-| **iOS sample (SwiftUI)** | ✅ M3 | `ios-sample/SyncForgeTasks.xcodeproj` |
+| **iOS sample (Kotlin)** | ✅ 0.9.0 | `:sample-ios-shared` + `IosSampleController` (tasks + notes + tags) |
+| **iOS sample (SwiftUI)** | ✅ 0.9.0 | `ios-sample/SyncForgeTasks.xcodeproj` (TabView: Tasks / Notes / Tags) |
 | **Room → SQLDelight migrator** | ✅ M4+ | `RoomToSqlDelightMigrator` — automatic on Android upgrade |
 | **JVM desktop** | ✅ M5 | `SyncForge.desktop { }` + SQLDelight + file cursor |
 | **macOS native** | ✅ M5 | `macosArm64`/`macosX64` + `SyncForge.macos { }` |
 | **SKIE / Swift API** | ✅ M5 | Plugin + Flow/suspend on framework modules |
 | **DataStore cursor** | ⬜ M5+ | Multiplatform cursor (file/UserDefaults today) |
+
+---
+
+## iOS sample parity (0.9.0) ✅
+
+**Status:** Complete — `ios-sample/` + `:sample-ios-shared` mirror Android `:sample` (tasks + notes + tags).
+
+| Capability | Android `:sample` | iOS (`ios-sample/`) |
+|------------|-------------------|---------------------|
+| Entity types | tasks, notes, tags | tasks, notes, tags |
+| Registry | `SyncForgeHandlers.registry(...)` (KSP) | `EntityRegistry.of(task, note, tag handlers)` |
+| Conflict policies | tasks `deferToUser()`, notes/tags LWW | Same |
+| UI | Compose bottom nav | SwiftUI `TabView` |
+| Verification | `MultiEntityE2ETest` + CI `android-e2e` | Manual matrix in [ios-sample/README.md](../ios-sample/README.md) (stretch: XCTest) |
+
+**Key paths:** `:sample-ios-shared` (`IosSampleController`), `ios-sample/SyncForgeTasks/` (SwiftUI tabs).
 
 ---
 

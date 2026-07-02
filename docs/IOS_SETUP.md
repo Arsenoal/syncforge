@@ -181,6 +181,7 @@ SwiftUI wrapper: `ios-sample/SyncForgeTasks/SampleViewModel.swift`.
 | Feature | Android | iOS |
 |---------|---------|-----|
 | Setup DSL | `SyncForge.android(context)` | `SyncForge.ios` |
+| Sample entities | tasks, notes, tags (`:sample`) | tasks, notes, tags (`ios-sample/` + `:sample-ios-shared`) |
 | Outbox + conflicts | SQLDelight (`syncforge.db`) | SQLDelight |
 | Legacy opt-in | `useRoomPersistence()` (deprecated) | — |
 | Cursor | SharedPreferences | UserDefaults |

@@ -1,38 +1,38 @@
 import SwiftUI
 
-struct TasksView: View {
+struct TagsView: View {
     @EnvironmentObject private var viewModel: SampleViewModel
 
     var body: some View {
         VStack(spacing: 12) {
-            addTaskSection
-            taskList
+            addTagSection
+            tagList
         }
         .padding(.horizontal)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var addTaskSection: some View {
+    private var addTagSection: some View {
         HStack(spacing: 8) {
-            TextField("New task", text: $viewModel.newTaskTitle, onCommit: {
-                viewModel.addTask()
+            TextField("New tag", text: $viewModel.newTagLabel, onCommit: {
+                viewModel.addTag()
             })
             .textFieldStyle(RoundedBorderTextFieldStyle())
 
-            Button("Add", action: viewModel.addTask)
+            Button("Add", action: viewModel.addTag)
         }
     }
 
-    private var taskList: some View {
+    private var tagList: some View {
         Group {
-            if viewModel.tasks.isEmpty {
+            if viewModel.tags.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "checklist")
+                    Image(systemName: "tag")
                         .font(.largeTitle)
                         .foregroundColor(.secondary)
-                    Text("No tasks yet")
+                    Text("No tags yet")
                         .font(.headline)
-                    Text("Add a task, then tap Sync to push to the mock server.")
+                    Text("Add a tag, then tap Sync to push to the mock server.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -40,8 +40,10 @@ struct TasksView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(viewModel.tasks) { task in
-                        TaskRowView(task: task)
+                    ForEach(viewModel.tags) { tag in
+                        TagRowView(tag: tag) {
+                            viewModel.deleteTag(tag)
+                        }
                     }
                 }
                 .listStyle(PlainListStyle())
@@ -52,9 +54,9 @@ struct TasksView: View {
 }
 
 #if DEBUG
-struct TasksView_Previews: PreviewProvider {
+struct TagsView_Previews: PreviewProvider {
     static var previews: some View {
-        TasksView()
+        TagsView()
             .environmentObject(SampleViewModel())
     }
 }
