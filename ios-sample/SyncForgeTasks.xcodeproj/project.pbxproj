@@ -26,6 +26,7 @@
 		B10000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* Assets.xcassets */; };
 		B20000000000000000000001 /* SampleUITestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* SampleUITestBase.swift */; };
 		B20000000000000000000002 /* MultiEntityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000012 /* MultiEntityUITests.swift */; };
+		B100000000000000000000A3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		B20000000000000000000010 /* SyncForgeTasksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SyncForgeTasksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000011 /* SampleUITestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleUITestBase.swift; sourceTree = "<group>"; };
 		B20000000000000000000012 /* MultiEntityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiEntityUITests.swift; sourceTree = "<group>"; };
+		B10000000000000000000024 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 				B10000000000000000000021 /* TagRowModel.swift */,
 				B10000000000000000000022 /* SampleStatusBanner.swift */,
 				B10000000000000000000023 /* SyncStateStyle.swift */,
+				B10000000000000000000024 /* AppDelegate.swift */,
 				B10000000000000000000016 /* Assets.xcassets */,
 				B10000000000000000000017 /* Info.plist */,
 			);
@@ -273,6 +276,7 @@
 				B1000000000000000000000F /* TagRowModel.swift in Sources */,
 				B100000000000000000000A0 /* SampleStatusBanner.swift in Sources */,
 				B100000000000000000000A1 /* SyncStateStyle.swift in Sources */,
+				B100000000000000000000A3 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -39,6 +39,8 @@ class IosSampleController(
     val syncManager: SyncManager = SyncForge.ios {
         baseUrl(baseUrl)
         registry(EntityRegistry.of(taskHandler, noteHandler, tagHandler))
+        backgroundSyncTaskIdentifier(IOS_SAMPLE_BACKGROUND_SYNC_TASK_ID)
+        schedulePeriodicSyncOnStart()
         conflicts {
             entity(SampleTaskEntity.ENTITY_TYPE) { deferToUser() }
             entity(SampleNoteEntity.ENTITY_TYPE) { lastWriteWins() }

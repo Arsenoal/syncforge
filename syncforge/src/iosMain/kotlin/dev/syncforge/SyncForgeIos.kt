@@ -14,10 +14,11 @@ import dev.syncforge.persistence.SyncForgePersistence
 import dev.syncforge.persistence.conflictStore
 import dev.syncforge.persistence.createDefaultSyncForgePersistence
 import dev.syncforge.persistence.outboxRepository
-import dev.syncforge.sync.NoOpSyncWorkScheduler
 import dev.syncforge.sync.SyncCursorStore
 import dev.syncforge.sync.SyncCursorStoreFactory
 import dev.syncforge.sync.SyncManager
+import dev.syncforge.work.IosBackgroundSync
+import dev.syncforge.work.IosBackgroundSyncWorkScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,6 +40,7 @@ class IosSyncForgeDsl internal constructor() {
     private var baseUrl: String? = null
     private var auth: SyncAuthProvider? = null
     private var persistence: SyncForgePersistence? = null
+    private var backgroundSyncTaskIdentifier: String = IosBackgroundSync.DEFAULT_TASK_IDENTIFIER
 
     fun baseUrl(url: String) {
         baseUrl = url
@@ -116,6 +118,19 @@ class IosSyncForgeDsl internal constructor() {
         get() = builder.periodicSyncInterval
         set(value) { builder.periodicSyncInterval = value }
 
+    /**
+     * BGTaskScheduler task identifier — must match `BGTaskSchedulerPermittedIdentifiers` in Info.plist
+     * and the identifier passed to [dev.syncforge.work.registerIosBackgroundSyncTasks] at launch.
+     */
+    fun backgroundSyncTaskIdentifier(identifier: String) {
+        backgroundSyncTaskIdentifier = identifier
+    }
+
+    /** Schedules BGAppRefreshTask after [SyncManager] is built (requires launch registration). */
+    fun schedulePeriodicSyncOnStart(enabled: Boolean = true) {
+        builder.schedulePeriodicSyncOnStart = enabled
+    }
+
     internal fun build(): SyncManager {
         builder.enableRetry = true
 
@@ -130,9 +145,15 @@ class IosSyncForgeDsl internal constructor() {
             )
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create()
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create()
-        builder.workScheduler = builder.workScheduler ?: NoOpSyncWorkScheduler
+        builder.workScheduler = builder.workScheduler
+            ?: IosBackgroundSyncWorkScheduler(backgroundSyncTaskIdentifier)
         builder.scope = builder.scope ?: CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-        return builder.build()
+        return builder.build().also { manager ->
+            IosBackgroundSync.bind { manager.sync() }
+            if (builder.schedulePeriodicSyncOnStart) {
+                manager.schedulePeriodicSync()
+            }
+        }
     }
 }

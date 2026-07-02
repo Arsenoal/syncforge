@@ -28,7 +28,7 @@ val syncManager = SyncForge.ios {
 | Transport | `KtorSyncTransport` (Darwin engine) |
 | Retry | Exponential backoff (same as Android) |
 | Reconnect sync | Auto-push when network returns (via `SyncManagerImpl`) |
-| Background sync | `NoOpSyncWorkScheduler` (BGTaskScheduler deferred) |
+| Background sync | `IosBackgroundSyncWorkScheduler` (BGAppRefreshTask via BGTaskScheduler) |
 
 ---
 
@@ -99,6 +99,58 @@ SyncForge.ios {
 ```
 
 `SyncStatus.Offline` is emitted when `requireNetwork = true` and the device has no connectivity.
+
+---
+
+## Background sync (BGTaskScheduler)
+
+iOS uses `BGAppRefreshTask` via `IosBackgroundSyncWorkScheduler` (implements [SyncWorkScheduler](MODULES.md)). The system decides when tasks run; `periodicSyncInterval` sets the earliest begin date (minimum ~15 minutes, same default as Android WorkManager).
+
+### 1. Info.plist
+
+```xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.myapp.sync.refresh</string>
+</array>
+<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+</array>
+```
+
+### 2. Register at launch (Swift)
+
+```swift
+import SyncForge
+
+func application(_ application: UIApplication,
+                 didFinishLaunchingWithOptions ...) -> Bool {
+    IosBackgroundSyncKt.registerIosBackgroundSyncTasks(taskIdentifier: "com.myapp.sync.refresh")
+    return true
+}
+```
+
+Use `@UIApplicationDelegateAdaptor` in SwiftUI or an `AppDelegate` in UIKit.
+
+### 3. Kotlin DSL
+
+```kotlin
+SyncForge.ios {
+    baseUrl("https://api.example.com")
+    registry(handlers)
+    backgroundSyncTaskIdentifier("com.myapp.sync.refresh")
+    schedulePeriodicSyncOnStart()
+}
+```
+
+`schedulePeriodicSyncOnStart()` binds `SyncManager.sync()` and submits the first `BGAppRefreshTaskRequest`. Each completed refresh reschedules the next request.
+
+### Testing
+
+In Xcode: **Debug → Simulate Background App Refresh** (device or simulator with background modes enabled). Background fetch timing is not guaranteed in production — unlike WorkManager, iOS throttles aggressively.
+
+See [ios-sample/SyncForgeTasks/AppDelegate.swift](../ios-sample/SyncForgeTasks/AppDelegate.swift) for a working sample.
 
 ---
 
@@ -186,7 +238,7 @@ SwiftUI wrapper: `ios-sample/SyncForgeTasks/SampleViewModel.swift`.
 | Legacy opt-in | `useRoomPersistence()` (deprecated) | — |
 | Cursor | SharedPreferences | UserDefaults |
 | Network | ConnectivityManager | NWPathMonitor |
-| Background sync | WorkManager | No-op (BGTaskScheduler deferred) |
+| Background sync | WorkManager | BGAppRefreshTask (`IosBackgroundSyncWorkScheduler`) |
 
 Both platforms share SQLDelight repository implementations in `syncPersistenceMain`.
 Android-only types (WorkManager, Compose UI) live in `androidMain`.

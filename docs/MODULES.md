@@ -114,7 +114,7 @@ packages** (folders under `dev.syncforge`) to their responsibility.
 | `dev.syncforge.sync` | commonMain + androidMain | Sync orchestration, cursor, configuration |
 | `dev.syncforge.debug` | commonMain | Developer observability API |
 | `dev.syncforge.compose` | commonMain + androidMain | Compose helpers for sync status, conflicts, debug |
-| `dev.syncforge.work` | androidMain | WorkManager background scheduling |
+| `dev.syncforge.work` | androidMain + iosMain | Background sync (`WorkManager` / `BGTaskScheduler`) |
 | `dev.syncforge.persistence` | syncPersistenceMain + `:syncforge-persistence` | SQLDelight outbox + conflict storage (KMP) |
 
 ---
@@ -620,9 +620,11 @@ SyncDebugLauncher(
 
 ---
 
-## `dev.syncforge.work` — Android background sync
+## `dev.syncforge.work` — Background sync
 
-**What it is:** WorkManager integration for periodic sync. Android-only (`androidMain`).
+**What it is:** Platform schedulers implementing [SyncWorkScheduler](../syncforge/src/commonMain/kotlin/dev/syncforge/sync/SyncManagerImpl.kt) for periodic background `SyncManager.sync()`.
+
+### Android (`androidMain`)
 
 | Type | Description |
 |------|-------------|
@@ -631,15 +633,31 @@ SyncDebugLauncher(
 | `SyncWorkerFactory` | DI-friendly worker creation |
 | `SyncForgeAndroid.workManagerConfiguration` | Wires factory into `Configuration.Provider` |
 
-The `:sample` app demonstrates periodic + retry sync via WorkManager:
-
 ```kotlin
 override val workManagerConfiguration: Configuration
     get() = SyncForgeAndroid.workManagerConfiguration { syncManager }
 
-// Inside SyncForge.android { } block:
-schedulePeriodicSyncOnStart()
+SyncForge.android(context) {
+    schedulePeriodicSyncOnStart()
+}
 ```
+
+### iOS (`iosMain`)
+
+| Type | Description |
+|------|-------------|
+| `IosBackgroundSyncWorkScheduler` | Submits `BGAppRefreshTaskRequest` (default in `SyncForge.ios`) |
+| `IosBackgroundSync` | Registers BGTaskScheduler handler, binds sync lambda |
+| `registerIosBackgroundSyncTasks()` | Top-level — call from `UIApplicationDelegate` at launch |
+
+```kotlin
+SyncForge.ios {
+    backgroundSyncTaskIdentifier("com.myapp.sync.refresh")
+    schedulePeriodicSyncOnStart()
+}
+```
+
+See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 
 ---
 

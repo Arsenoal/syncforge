@@ -69,7 +69,7 @@ implementations in `:syncforge` and persistence-only code in `:syncforge-persist
 | `dev.syncforge.conflict` | Legacy Room types (`internal`, deprecated opt-in only) | `SqlDelightConflictStore` (default) |
 | `dev.syncforge.sync` | `SharedPreferencesSyncCursorStore` | Multiplatform DataStore or SQLDelight |
 | `dev.syncforge.network` | `AndroidNetworkMonitor`, `NetworkMonitorFactory` | `expect/actual` network reachability |
-| `dev.syncforge.work` | `AndroidSyncWorkScheduler`, `SyncWorker` | iOS `BGTaskScheduler` / platform scheduler interface |
+| `dev.syncforge.work` | `AndroidSyncWorkScheduler`, `SyncWorker` | `IosBackgroundSyncWorkScheduler` (BGTaskScheduler) ✅ |
 | `dev.syncforge` | `SyncForge.android`, `SyncForgeAndroid` | Stays Android-only |
 | `dev.syncforge.compose` | `SyncDebugPanel`, `SyncConflictUi` | SwiftUI (Phase 6b) or CMP (later) |
 
@@ -166,7 +166,7 @@ interface SyncWorkScheduler {
 }
 
 // androidMain — WorkManager (done)
-// iosMain — NoOpSyncWorkScheduler until BGTaskScheduler (0.5.0)
+// iosMain — IosBackgroundSyncWorkScheduler (BGAppRefreshTask) ✅
 ```
 
 ### HTTP transport
@@ -209,7 +209,7 @@ interface SyncWorkScheduler {
 | Cursor | `UserDefaultsSyncCursorStore` |
 | Network | `IosNetworkMonitor` (override with `networkMonitorAlwaysOnline()` for tests) |
 | Transport | `KtorSyncTransport` (Darwin) |
-| Background sync | `NoOpSyncWorkScheduler` (BGTaskScheduler deferred) |
+| Background sync | `IosBackgroundSyncWorkScheduler` (BGAppRefreshTask) |
 
 ```kotlin
 val syncManager = SyncForge.ios {
@@ -268,7 +268,7 @@ Keeping schemas/drivers in a separate module avoids pulling SQLDelight into cons
 - [x] `:sample-ios-shared` framework + `IosSampleController` (Swift callback API)
 - [x] [IOS_SETUP.md](IOS_SETUP.md) + sample README
 - [x] Full Xcode SwiftUI project (`ios-sample/SyncForgeTasks.xcodeproj`)
-- [ ] Background sync hook (BGTaskScheduler stub) — deferred
+- [x] Background sync hook (`IosBackgroundSync` + BGAppRefreshTask)
 
 ### M4 — Android SQLDelight parity (v0.5.0-rc) ✅
 
@@ -291,7 +291,7 @@ Keeping schemas/drivers in a separate module avoids pulling SQLDelight into cons
 - [x] [DESKTOP_SETUP.md](DESKTOP_SETUP.md)
 - [ ] DataStore Preferences multiplatform cursor (deferred to M6)
 - [ ] Compose Multiplatform debug panel (optional)
-- [ ] BGTaskScheduler iOS background sync stub (deferred)
+- [x] BGTaskScheduler iOS background sync (`IosBackgroundSyncWorkScheduler`)
 
 ### M6 — Distribution (v1.0.0)
 

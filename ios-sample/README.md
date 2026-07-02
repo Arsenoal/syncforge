@@ -103,6 +103,10 @@ Multi-entity smoke tests live in `SyncForgeTasksUITests/` (mirrors Android `Mult
 
 CI: GitHub Actions `ios-e2e` job (`macos-14` + iPhone Simulator).
 
+## Background sync
+
+The sample registers `dev.syncforge.sample.ios.refresh` in `Info.plist` and `AppDelegate.swift`, and enables `schedulePeriodicSyncOnStart()` in `IosSampleController`. Test in Xcode: **Debug → Simulate Background App Refresh**.
+
 ## Physical device
 
 Replace `http://localhost:8080` with your Mac's LAN IP (e.g. `http://192.168.1.10:8080`) in `SampleViewModel.init` or pass a custom URL to `IosSampleController(baseUrl:)`.
