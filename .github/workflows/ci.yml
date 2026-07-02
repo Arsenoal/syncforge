@@ -44,8 +44,8 @@ jobs:
             :sample:compileDebugKotlin \
             --no-daemon
 
-      - name: Verify local Maven publish (Android + JVM targets)
-        run: ./gradlew publishAllToMavenLocal --no-daemon
+      - name: Verify Maven consumer smoke (publish + minimal Android app)
+        run: ./gradlew verifyConsumerSmoke --no-daemon
 
   android-e2e:
     name: Android E2E (emulator + mock-server)

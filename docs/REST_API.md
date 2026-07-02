@@ -10,6 +10,89 @@ and server.
 
 ---
 
+## API versioning and compatibility
+
+### Contract version
+
+The HTTP contract is versioned **with the SyncForge library** using [Semantic Versioning](https://semver.org/):
+
+| Library version | Contract status |
+|-----------------|-----------------|
+| `0.x.y` | Evolving — endpoints and JSON fields may change in minor releases; breaking changes are documented in [CHANGELOG.md](../CHANGELOG.md) |
+| `1.0.0+` | Stable — breaking HTTP/JSON changes only in **major** library releases |
+
+There is **no separate URL prefix** (e.g. `/v1/sync/push`) in 1.0. Paths stay `/sync/push` and
+`/sync/pull`. Backends implement the contract that matches the SyncForge client version they
+target.
+
+### What is part of the stable contract (1.0+)
+
+| In scope | Notes |
+|----------|-------|
+| `POST /sync/push` | Request/response JSON shape in this document |
+| `GET /sync/pull` | Query params and response JSON shape in this document |
+| `PushRejection.code` values | `NETWORK`, `AUTH`, `CONFLICT`, `VALIDATION`, `SERVER` (+ unknown → client `UNKNOWN`) |
+| Pagination fields | `hasMore`, `nextPageCursor`, `limit`, `cursor` — optional on server; clients handle absence |
+| `Authorization: Bearer` | Optional; `401` / `403` semantics as documented |
+
+### Out of scope (not guaranteed stable)
+
+| Item | Notes |
+|------|-------|
+| `GET /health` | Mock/dev convenience only |
+| `POST /dev/simulate-edit` | Mock/dev only — never implement in production |
+| Entity `payloadJson` schemas | **Your** domain — version per `entityType` in your API, not SyncForge semver |
+| Undocumented endpoints or fields | Clients ignore unknown JSON fields today; do not rely on that for required server behaviour |
+
+### Change categories
+
+**Patch (0.x patch / 1.x patch)** — no contract migration required:
+
+- Documentation clarifications
+- Mock-server bug fixes with no wire-format change
+- Server-side performance or idempotency improvements
+
+**Minor (0.x minor / 1.x minor)** — backward compatible for conforming servers and SyncForge clients:
+
+- New **optional** JSON fields on requests or responses (clients and servers must ignore unknown fields)
+- New **optional** query parameters on `GET /sync/pull`
+- New rejection `code` values (map to client `SyncError.Code.UNKNOWN` until library support is added)
+
+**Major (1.x → 2.x)** — breaking contract change; requires coordinated upgrade:
+
+- Removing or renaming endpoints
+- Changing required JSON fields or types
+- Changing meaning of existing fields (e.g. cursor semantics)
+- Making optional pagination fields required without a compatibility period
+
+Breaking changes are listed under **Removed** or **Changed** in `CHANGELOG.md` and require a
+major SyncForge release. Migration notes for backend authors are published in the same release.
+
+### Backend implementation checklist
+
+1. Implement `POST /sync/push` and `GET /sync/pull` as specified below.
+2. Return `200` with the documented JSON bodies on success; use `4xx`/`5xx` with a body only when
+   your framework requires it — SyncForge maps transport failures to `SyncError`, not response bodies.
+3. Treat push batches as **idempotent** where possible (safe client retries).
+4. Use monotonic `serverVersion` and `updatedAtMillis` per entity; honour tombstones on pull (`isDeleted: true`).
+5. Pin your tested contract to a SyncForge release (e.g. `1.0.0`) in your service README or OpenAPI description.
+
+### Testing against a reference server
+
+| Target | How |
+|--------|-----|
+| Local dev | `./gradlew :mock-server:run` — implements this contract |
+| CI / samples | `:mock-server` on port `8080`; Android emulator uses `http://10.0.2.2:8080` |
+| Contract drift | Run client E2E (`./gradlew androidE2e`, `./gradlew iosE2e`) against your backend before upgrading SyncForge major versions |
+
+### Future negotiation (post-1.0, if needed)
+
+If a `/v2` path or header-based negotiation is introduced later, it will be announced in
+`CHANGELOG.md` with a deprecation window for the 1.x wire format. **1.0 clients do not send
+a contract version header.**
+
+---
+
 ## Base URL
 
 All paths are relative to the configured base URL, e.g. `https://api.example.com` or

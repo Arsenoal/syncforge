@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`REST_API.md` versioning policy** — semver alignment with library releases, stable 1.0 scope, minor/major change rules, backend checklist
+
+## [0.9.0-rc.1] - 2026-07-02
+
 ### Removed
 
 - **`useSqlDelightPersistence()`** — SQLDelight is the Android default since 0.6.0; use `databaseName("…")` for a custom file name
@@ -15,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`consumer-smoke/android-minimal`** — standalone app that compiles from `mavenLocal()` / Maven Central coordinates only
+- **`verifyConsumerSmoke`** Gradle task — `publishAllToMavenLocal` + consumer compile; runs in CI
+- **`syncforge-android-deps` Maven publish fix** — `release` publication registered for local/Central publish
+- **Published consumer docs** in `GETTING_STARTED.md` (Android plugin + BOM + `syncforge`; iOS/desktop single-line deps)
 - **`databaseName()`** on `SyncForge.android` — stable replacement for removed `useSqlDelightPersistence()`
 - **Token refresh on 401** — `RefreshingSyncAuthProvider` + single retry in `KtorSyncTransport`; `SyncError.httpStatus` for status-aware handling
 - **iOS background sync** — `IosBackgroundSyncWorkScheduler` (BGAppRefreshTask / BGTaskScheduler), `registerIosBackgroundSyncTasks()`, `SyncForge.ios { schedulePeriodicSyncOnStart() }`
@@ -22,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Migrator tests** — 250-row outbox batch migration and partial-failure recovery coverage
 - **Multi-entity E2E tests** — `MultiEntityE2ETest` (task + note flows, conflict isolation) via `./gradlew androidE2e`
 - **CI `android-e2e` job** — GitHub Actions emulator + `:mock-server` runs connected instrumented tests
-- **iOS multi-entity UI tests** — `MultiEntityUITests` (XCUITest) via `./scripts/run-ios-e2e.sh` or `./gradlew iosE2e`
+- **iOS multi-entity UI tests** — `MultiEntityUITests` (XCUITest) via `./gradlew iosE2e`
 - **CI `ios-e2e` job** — GitHub Actions `macos-14` Simulator + `:mock-server` runs XCUITest smoke tests
 - **`:syncforge-android-deps`** — bundles Room, kotlinx-serialization, and WorkManager as transitive `api` deps for Android consumers
 - **`dev.syncforge.android` Gradle plugin** — applies KSP (SyncForge + Room compiler) and Kotlin serialization; consumers no longer declare those manually

@@ -1,3 +1,6 @@
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+
 plugins {
     alias(libs.plugins.androidLibrary)
     `maven-publish`
@@ -32,5 +35,16 @@ dependencies {
     api(libs.androidx.room.ktx)
     api(libs.kotlinx.serialization.json)
     api(libs.androidx.work.runtime.ktx)
+}
+
+afterEvaluate {
+    extensions.configure<PublishingExtension>("publishing") {
+        if (publications.none { it.name == "release" }) {
+            publications.create<MavenPublication>("release") {
+                from(components["release"])
+                artifactId = project.name
+            }
+        }
+    }
 }
 

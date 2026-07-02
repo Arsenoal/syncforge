@@ -37,38 +37,87 @@ By the end you will have:
 
 ## Step 0 — Add dependencies
 
-SyncForge is not yet on Maven Central (see [ROADMAP](ROADMAP.md)). For local development,
-depend on the Gradle modules directly (as the `:sample` app does).
+### Android (published — recommended)
 
-**Plugins** — the SyncForge Android plugin applies KSP (handler codegen + Room compiler)
-and Kotlin serialization for you:
+One **plugin** + one **library** line. The plugin applies KSP, Kotlin serialization, and wires
+`syncforge-ksp` + Room compiler — you do **not** declare those manually.
 
 ```kotlin
-// settings.gradle.kts — local development
+// settings.gradle.kts
 pluginManagement {
-    includeBuild("path/to/syncforge/syncforge-gradle-plugin")
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
 }
 
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("dev.syncforge.android")
+    id("dev.syncforge.android") version "0.9.0-rc.1"
+}
+
+dependencies {
+    implementation(platform("dev.syncforge:syncforge-bom:0.9.0-rc.1"))
+    implementation("dev.syncforge:syncforge")
 }
 ```
 
-**Library** — Room, serialization, and WorkManager come transitively; no manual versions:
+| Coordinate | You declare it? | Notes |
+|------------|-----------------|-------|
+| `dev.syncforge:syncforge` | **Yes** | Main KMP library |
+| `dev.syncforge:syncforge-bom` | Optional | Pins all SyncForge artifact versions |
+| `dev.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
+| `dev.syncforge:syncforge-persistence` | No | Transitive runtime |
+| `dev.syncforge:syncforge-ksp` | No | Added by `dev.syncforge.android` plugin |
+| Room / WorkManager / serialization | No | Transitive on Android via `syncforge` |
+
+Your app still adds **your** Room database (`room-runtime` for `@Database` / `@Dao` only if not
+already on the classpath — usually covered by SyncForge's Android transitive deps).
+
+### iOS / shared KMP module
+
+```kotlin
+// shared/build.gradle.kts
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("dev.syncforge:syncforge:0.9.0-rc.1")
+        }
+    }
+}
+```
+
+Apply KSP on the module that owns `@SyncForgeEntity` / `@SyncForgeDao` (typically `androidTarget`
+in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS_SETUP.md).
+
+### JVM / Desktop
 
 ```kotlin
 dependencies {
-    implementation(project(":syncforge"))
-    // or after Maven publish:
-    // implementation(platform("dev.syncforge:syncforge-bom:0.6.0"))
-    // implementation("dev.syncforge:syncforge")
+    implementation("dev.syncforge:syncforge:0.9.0-rc.1")
 }
 ```
 
-After Maven publish, add the plugin from the portal or `includeBuild` and use
-`id("dev.syncforge.android") version "0.6.0"`.
+### Local development (this repo)
+
+The `:sample` app uses project dependencies:
+
+```kotlin
+pluginManagement { includeBuild("syncforge-gradle-plugin") }
+// app/build.gradle.kts
+plugins { id("dev.syncforge.android") }
+dependencies { implementation(project(":syncforge")) }
+```
+
+Validate the published setup locally:
+
+```bash
+./gradlew verifyConsumerSmoke
+```
+
+See [consumer-smoke/README.md](../consumer-smoke/README.md).
 
 ---
 
@@ -317,7 +366,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 
 | Symptom | Fix |
 |---------|-----|
-| `SyncForgeHandlers` not found | Build once; check KSP ran (`ksp(project(":syncforge-ksp"))`) |
+| `SyncForgeHandlers` not found | Build once; ensure `id("dev.syncforge.android")` is applied (adds KSP automatically) |
 | Sync fails with network error on emulator | Use `http://10.0.2.2:8080`, not `localhost` |
 | Entity not syncing | Ensure `entityType` in `@SyncForgeEntity` matches `Change.create("tasks", …)` |
 | `findById` missing | KSP-generated handler requires it on `@SyncForgeDao` |

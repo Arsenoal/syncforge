@@ -29,6 +29,19 @@ tasks.register("publishAllToMavenLocal") {
     )
 }
 
+tasks.register<Exec>("verifyConsumerSmoke") {
+    group = "verification"
+    description =
+        "Publishes to mavenLocal, then compiles consumer-smoke/android-minimal from Maven coordinates only."
+    dependsOn("publishAllToMavenLocal")
+    workingDir = rootProject.file("consumer-smoke/android-minimal")
+    commandLine(
+        rootProject.file("gradlew").absolutePath,
+        ":app:compileDebugKotlin",
+        "--no-daemon",
+    )
+}
+
 tasks.register("publishAllToMavenCentral") {
     group = "publishing"
     description = "Publishes all SyncForge library modules to Maven Central (set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."

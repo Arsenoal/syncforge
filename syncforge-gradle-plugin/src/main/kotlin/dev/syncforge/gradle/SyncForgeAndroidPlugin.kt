@@ -45,7 +45,7 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
     }
 
     companion object {
-        const val DEFAULT_SYNCFORGE_VERSION = "0.6.0-SNAPSHOT"
+        const val DEFAULT_SYNCFORGE_VERSION = "0.9.0-rc.1"
         const val DEFAULT_ROOM_VERSION = "2.7.1"
     }
 }
