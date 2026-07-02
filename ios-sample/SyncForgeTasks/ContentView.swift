@@ -32,6 +32,7 @@ struct ContentView: View {
                     .accessibilityIdentifier("nav_tags")
             }
         }
+        .accessibilityIdentifier("syncforge_tasks_root")
     }
 }
 

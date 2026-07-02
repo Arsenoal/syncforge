@@ -6,4 +6,10 @@ enum SampleConfig {
 
     /// Matches [IOS_SAMPLE_BACKGROUND_SYNC_TASK_ID] in `:sample-ios-shared` / Info.plist.
     static let backgroundSyncTaskId = "dev.syncforge.sample.ios.refresh"
+
+    /// XCUITest / CI — env or launch argument from [SampleUITestBase].
+    static var isE2eTesting: Bool {
+        ProcessInfo.processInfo.environment["E2E_TESTING"] == "1"
+            || ProcessInfo.processInfo.arguments.contains("-E2E_TESTING")
+    }
 }

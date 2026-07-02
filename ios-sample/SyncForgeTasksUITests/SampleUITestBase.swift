@@ -15,7 +15,7 @@ class SampleUITestBase: XCTestCase {
         app = XCUIApplication()
         app.launchEnvironment["MOCK_SERVER_BASE_URL"] = Self.mockServerBaseUrl
         app.launchEnvironment["E2E_TESTING"] = "1"
-        app.launchArguments += ["-UIViewAnimationEnabled", "NO"]
+        app.launchArguments += ["-E2E_TESTING", "-UIViewAnimationEnabled", "NO"]
         app.launch()
         waitForAppReady()
     }
@@ -23,12 +23,15 @@ class SampleUITestBase: XCTestCase {
     override func tearDownWithError() throws {
         if app != nil {
             app.terminate()
+            // Let Kotlin/Native runtime shut down before the next test launches.
+            Thread.sleep(forTimeInterval: 1.0)
         }
         try super.tearDownWithError()
     }
 
     func waitForAppReady(file: StaticString = #filePath, line: UInt = #line) {
         let readyMarkers = [
+            app.otherElements["syncforge_tasks_root"],
             app.textFields["new_task_input"],
             app.textFields["New task"],
             app.staticTexts["No tasks yet"],

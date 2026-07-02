@@ -1,5 +1,4 @@
 import Foundation
-import SyncForgeSample
 
 @MainActor
 final class SampleViewModel: ObservableObject {
@@ -16,47 +15,37 @@ final class SampleViewModel: ObservableObject {
 
     private let resolvedBaseUrl: String
     private let e2eMode: Bool
-    private var controller: IosSampleController?
-    private var isStarted = false
+    private var bridge: SampleKotlinBridgeProtocol?
 
     init(baseUrl: String? = nil) {
         resolvedBaseUrl = baseUrl
             ?? ProcessInfo.processInfo.environment["MOCK_SERVER_BASE_URL"]
             ?? SampleConfig.defaultBaseUrl
-        e2eMode = ProcessInfo.processInfo.environment["E2E_TESTING"] == "1"
+        e2eMode = SampleConfig.isE2eTesting
     }
 
-    /// Lazily wires Kotlin/SyncForge on first user action — keeps launch idle for XCUITest.
+    /// Lazily loads Kotlin/SyncForge on first user action — keeps cold launch SwiftUI-only for XCUITest.
     func startIfNeeded() {
-        guard !isStarted else { return }
-        isStarted = true
+        guard bridge == nil else { return }
 
-        let controller = IosSampleController(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
-        self.controller = controller
+        let bridge = SampleKotlinBridge(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
+        self.bridge = bridge
 
-        controller.setStatusListener { [weak self] label in
-            DispatchQueue.main.async {
-                self?.statusLabel = label
-                self?.isSyncing = label.localizedCaseInsensitiveContains("syncing")
-            }
+        bridge.setStatusListener { [weak self] label in
+            self?.statusLabel = label
+            self?.isSyncing = label.localizedCaseInsensitiveContains("syncing")
         }
 
-        controller.setTasksListener { [weak self] items in
-            DispatchQueue.main.async {
-                self?.tasks = KotlinInterop.mapTasks(items)
-            }
+        bridge.setTasksListener { [weak self] items in
+            self?.tasks = items
         }
 
-        controller.setNotesListener { [weak self] items in
-            DispatchQueue.main.async {
-                self?.notes = KotlinInterop.mapNotes(items)
-            }
+        bridge.setNotesListener { [weak self] items in
+            self?.notes = items
         }
 
-        controller.setTagsListener { [weak self] items in
-            DispatchQueue.main.async {
-                self?.tags = KotlinInterop.mapTags(items)
-            }
+        bridge.setTagsListener { [weak self] items in
+            self?.tags = items
         }
     }
 
@@ -69,14 +58,12 @@ final class SampleViewModel: ObservableObject {
         }
 
         errorMessage = nil
-        requireController().addTask(title: title) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if KotlinInterop.bool(success) {
-                    self.newTaskTitle = ""
-                } else {
-                    self.errorMessage = error ?? "Failed to add task"
-                }
+        requireBridge().addTask(title: title) { [weak self] success, error in
+            guard let self else { return }
+            if success {
+                self.newTaskTitle = ""
+            } else {
+                self.errorMessage = error ?? "Failed to add task"
             }
         }
     }
@@ -91,15 +78,13 @@ final class SampleViewModel: ObservableObject {
 
         let body = newNoteBody.trimmingCharacters(in: .whitespacesAndNewlines)
         errorMessage = nil
-        requireController().addNote(title: title, body: body) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if KotlinInterop.bool(success) {
-                    self.newNoteTitle = ""
-                    self.newNoteBody = ""
-                } else {
-                    self.errorMessage = error ?? "Failed to add note"
-                }
+        requireBridge().addNote(title: title, body: body) { [weak self] success, error in
+            guard let self else { return }
+            if success {
+                self.newNoteTitle = ""
+                self.newNoteBody = ""
+            } else {
+                self.errorMessage = error ?? "Failed to add note"
             }
         }
     }
@@ -113,14 +98,12 @@ final class SampleViewModel: ObservableObject {
         }
 
         errorMessage = nil
-        requireController().addTag(label: label) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if KotlinInterop.bool(success) {
-                    self.newTagLabel = ""
-                } else {
-                    self.errorMessage = error ?? "Failed to add tag"
-                }
+        requireBridge().addTag(label: label) { [weak self] success, error in
+            guard let self else { return }
+            if success {
+                self.newTagLabel = ""
+            } else {
+                self.errorMessage = error ?? "Failed to add tag"
             }
         }
     }
@@ -128,12 +111,10 @@ final class SampleViewModel: ObservableObject {
     func deleteNote(_ note: NoteRowModel) {
         startIfNeeded()
         errorMessage = nil
-        requireController().deleteNote(noteId: note.id) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if !KotlinInterop.bool(success) {
-                    self.errorMessage = error ?? "Failed to delete note"
-                }
+        requireBridge().deleteNote(noteId: note.id) { [weak self] success, error in
+            guard let self else { return }
+            if !success {
+                self.errorMessage = error ?? "Failed to delete note"
             }
         }
     }
@@ -141,12 +122,10 @@ final class SampleViewModel: ObservableObject {
     func deleteTag(_ tag: TagRowModel) {
         startIfNeeded()
         errorMessage = nil
-        requireController().deleteTag(tagId: tag.id) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if !KotlinInterop.bool(success) {
-                    self.errorMessage = error ?? "Failed to delete tag"
-                }
+        requireBridge().deleteTag(tagId: tag.id) { [weak self] success, error in
+            guard let self else { return }
+            if !success {
+                self.errorMessage = error ?? "Failed to delete tag"
             }
         }
     }
@@ -155,12 +134,10 @@ final class SampleViewModel: ObservableObject {
         startIfNeeded()
         errorMessage = nil
         isSyncing = true
-        requireController().sync { [weak self] _, status in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.isSyncing = status.localizedCaseInsensitiveContains("syncing")
-                self.statusLabel = status
-            }
+        requireBridge().sync { [weak self] _, status in
+            guard let self else { return }
+            self.isSyncing = status.localizedCaseInsensitiveContains("syncing")
+            self.statusLabel = status
         }
     }
 
@@ -168,10 +145,10 @@ final class SampleViewModel: ObservableObject {
         statusLabel.localizedCaseInsensitiveContains("conflict")
     }
 
-    private func requireController() -> IosSampleController {
-        guard let controller else {
+    private func requireBridge() -> SampleKotlinBridgeProtocol {
+        guard let bridge else {
             fatalError("SampleViewModel.startIfNeeded() must run before calling SyncForge APIs")
         }
-        return controller
+        return bridge
     }
 }

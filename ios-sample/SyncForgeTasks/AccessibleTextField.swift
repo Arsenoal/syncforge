@@ -13,6 +13,7 @@ struct AccessibleTextField: UIViewRepresentable {
         field.placeholder = placeholder
         field.borderStyle = .roundedRect
         field.accessibilityIdentifier = accessibilityIdentifier
+        field.isAccessibilityElement = true
         field.delegate = context.coordinator
         field.addTarget(
             context.coordinator,
