@@ -16,6 +16,12 @@ import kotlinx.coroutines.flow.first
 @ExperimentalSyncForgeApi
 object MigrationTestSupport {
 
+    /**
+     * Isolated SQLDelight file for instrumented migration tests in the [:sample] process.
+     * Must not use [DEFAULT_DATABASE_NAME] — [SampleApplication] keeps `syncforge.db` open.
+     */
+    const val INSTRUMENTED_TEST_DATABASE_NAME: String = "syncforge_migration_instrumented_test.db"
+
     fun resetMigrationState(
         context: Context,
         sqlDelightDatabaseName: String = DEFAULT_DATABASE_NAME,

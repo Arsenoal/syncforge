@@ -88,7 +88,7 @@ The migrator:
 |------|---------|
 | Migrator unit tests (Robolectric) | `./gradlew :syncforge:testDebugUnitTest` |
 | `SyncForge.android` upgrade path | `SyncForgeAndroidMigrationTest` in the same task |
-| Sample instrumented upgrade + push | `./gradlew androidE2e` — `RoomMigrationInstrumentedTest` |
+| Sample instrumented upgrade + push | `./gradlew androidE2e` — `RoomMigrationInstrumentedTest` (isolated DB, does not touch app `syncforge.db`) |
 
 On failure, the migrator logs to `SyncForgeMigrator`, leaves the preference unset, and retries on
 the next launch (`INSERT OR REPLACE` makes partial progress safe).
@@ -113,10 +113,44 @@ Both database files can exist simultaneously — useful for A/B testing persiste
 
 ---
 
+## Built-in auth
+
+Use `auth { }` when your backend exposes register/login/refresh endpoints. SyncForge becomes the
+single API for **login + sync** — no separate auth SDK required for the default flow.
+
+```kotlin
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    registry(SyncForgeHandlers.registry(taskDao))
+    auth {
+        tokenFields(
+            accessToken = "access_token",
+            refreshToken = "refresh_token",
+            expiresInSeconds = "expires_in",
+        )
+    }
+}
+
+// From UI / ViewModel:
+syncManager.login(mapOf("email" to email, "password" to password))
+syncManager.sync()
+```
+
+- Observe `syncManager.authState` (`LoggedOut`, `LoggedIn`, `Refreshing`, `Error`)
+- Tokens persist via `TokenStore` (SharedPreferences on Android)
+- Bearer token and 401 refresh are wired into `KtorSyncTransport` automatically
+- Local reference backend: `./gradlew :backend-starter:run` (emulator: `http://10.0.2.2:8080`)
+
+Full walkthrough with sequence diagram: [AUTH_API.md → Android auth flow](AUTH_API.md#android-auth-flow).
+
+---
+
 ## DSL reference
 
 | Method | Description |
 |--------|-------------|
+| `auth { }` | Built-in register/login/refresh — see [AUTH_API.md](AUTH_API.md) |
+| `authToken { }` / `auth(provider)` | Manual bearer or custom `SyncAuthProvider` |
 | `databaseName(name)` | SQLDelight database file name (default `syncforge.db`) |
 | `useRoomPersistence()` | Deprecated legacy Room backend |
 | `persistence(SyncForgePersistence)` | Inject a custom persistence instance |
