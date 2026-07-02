@@ -16,6 +16,18 @@ Compose status observation, and an in-app debug console.
 
 ## See it in action
 
+<p align="center">
+  <img src="docs/images/syncforge-demo-placeholder.svg" alt="SyncForge demo: offline task, sync, and conflict resolution" width="800" />
+</p>
+
+<p align="center">
+  <sub>
+    <a href="docs/images/README.md"><strong>Record the animated demo</strong></a>
+    → commit <code>docs/images/syncforge-demo.gif</code>
+    → set the <code>img src</code> above to that file
+  </sub>
+</p>
+
 The `:sample` app is a multi-tab Tasks / Notes / Tags demo. Run it against the mock server in two terminals:
 
 ```bash
@@ -58,7 +70,7 @@ sequenceDiagram
 |----------|------------|--------------|
 | **1. Offline-first** | Add a task with airplane mode on | Task appears in Room immediately; status shows pending / offline |
 | **2. Sync** | Turn network on → tap **Sync** | Push + pull run; row shows **Synced**; outbox drains |
-| **3. Conflict** | Sync a task → edit it on the server (mock `/dev` routes) → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+| **3. Conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
 
 **Debug console (debug builds):** tap the **SF** button on the Tasks tab to inspect the outbox, sync health, events, and open conflicts.
 
