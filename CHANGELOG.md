@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`ConflictResolver`**, **`LastWriteWinsResolver`**, and **`ConflictStrategies.fromResolver()`** — use `ConflictPolicy` + `ConflictStrategies` instead
+- **`TypedEntitySyncHandler(legacyResolver)`** constructor — use parameterless constructor; configure via `conflicts { }`
+
 ### Added
 
 - **`RoomToSqlDelightMigrator` hardening** — batched inserts, `Log` diagnostics, `Status`/`FAILED` result, safe retry after partial failure

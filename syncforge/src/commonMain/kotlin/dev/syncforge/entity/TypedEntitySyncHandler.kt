@@ -1,11 +1,7 @@
-@file:Suppress("DEPRECATION")
-
 package dev.syncforge.entity
 
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPullApplier
-import dev.syncforge.conflict.ConflictResolver
-import dev.syncforge.conflict.LastWriteWinsResolver
 import dev.syncforge.conflict.NoOpConflictStore
 import dev.syncforge.model.Change
 import dev.syncforge.model.ChangeType
@@ -17,22 +13,8 @@ import dev.syncforge.network.RemoteDelta
  * Convenience base class — implement typed DAO operations; JSON wiring is handled here.
  *
  * Conflict resolution is configured via [SyncForge.android] `conflicts { }` block.
- * The optional [legacyResolver] constructor parameter is deprecated and ignored when
- * a [ConflictPolicy] is supplied through [SyncForge].
  */
 abstract class TypedEntitySyncHandler<T : SyncedEntity> : EntitySyncHandler {
-
-    @Deprecated(
-        message = "Configure conflict resolution via SyncForge.android { conflicts { } }. This constructor is ignored.",
-        level = DeprecationLevel.WARNING,
-    )
-    @Suppress("DEPRECATION")
-    constructor(
-        @Suppress("UNUSED_PARAMETER")
-        legacyResolver: ConflictResolver,
-    ) : this()
-
-    protected constructor()
 
     protected abstract fun toJson(entity: T): String
     protected abstract fun fromJson(json: String): T

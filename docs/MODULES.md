@@ -47,8 +47,7 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
 | `SyncManager` — `status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync contract. |
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
-| `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Preferred conflict-resolution API. |
-| `ConflictResolver`, `LastWriteWinsResolver`, `ConflictStrategies.fromResolver` | **Deprecated / Experimental** | Legacy adapter path; **will be removed in 1.0**. Prefer `ConflictPolicy`. |
+| `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Conflict-resolution API. |
 | `SyncDebug`, `SyncHealth`, `SyncEvent` | **Experimental** | Developer observability. |
 | `SyncDebugLauncher`, `SyncDebugPanel` | **Experimental** | Debug Compose UI (Android). |
 | `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict Compose UI | **Stable** | Production UI helpers on Android. |
@@ -452,7 +451,6 @@ conflicts {
 | `alwaysRemote()` | Accept server version |
 | `deferToUser()` | Persist conflict in SQLDelight; surface via `SyncManager.conflicts` |
 | `merge { }` | Custom field-level merge via `MergeScope` helpers |
-| `fromResolver(resolver)` | Adapts legacy `ConflictResolver` implementations |
 
 ### `MergeScope` helpers
 
@@ -468,11 +466,6 @@ conflicts {
 | `InMemoryConflictStore` | In-memory implementation for tests |
 | `ConflictRecord` | Full JSON snapshots for debug and resolution UI |
 | `ConflictSummary` | Lightweight summary for `SyncManager.conflicts` flow |
-
-### Legacy `ConflictResolver`
-
-The original `ConflictResolver` / `LastWriteWinsResolver` API remains for backward compatibility.
-New code should prefer `ConflictPolicy` + `ConflictStrategies`.
 
 ### User resolution
 
@@ -655,7 +648,7 @@ schedulePeriodicSyncOnStart()
 | Location | What is tested |
 |----------|----------------|
 | `commonTest/.../ChangeTest` | `Change` validation and factory methods |
-| `commonTest/.../LastWriteWinsResolverTest` | LWW conflict scenarios |
+| `commonTest/.../LastWriteWinsStrategyTest` | LWW conflict scenarios |
 | `commonTest/.../OptimisticSyncCoordinatorTest` | Optimistic write + outbox flow |
 | `commonTest/.../PullPaginationTest` | Multi-page pull loop |
 | `commonTest/.../SyncForgeBuilderTest` | Builder entity type derivation |

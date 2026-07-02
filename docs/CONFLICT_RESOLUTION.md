@@ -189,18 +189,6 @@ See [Best Practices → Choosing a strategy](BEST_PRACTICES.md#choosing-a-confli
 
 ---
 
-## Legacy `ConflictResolver`
-
-Pre-0.4.0 code may pass a `ConflictResolver` to `TypedEntitySyncHandler`. This still works:
-
-```kotlin
-ConflictStrategies.fromResolver(myCustomResolver)
-```
-
-New projects should use `conflicts { }` on the builder instead.
-
----
-
 ## Debugging conflicts
 
 1. Enable `SyncDebugLauncher` (debug builds only)
