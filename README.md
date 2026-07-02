@@ -6,10 +6,63 @@ Your app entities live in Room (or your own store on iOS). SyncForge queues muta
 SQLDelight outbox, syncs with your backend through a pluggable transport, and handles conflicts,
 Compose status observation, and an in-app debug console.
 
-**Current version:** `0.6.0-SNAPSHOT`
+**Current version:** `0.9.0-rc.1`
 
-> SyncForge is an **alpha library** (pre-1.0). iOS, JVM desktop, and native macOS targets are
-> available; Maven Central publication is planned — see [docs/ROADMAP.md](docs/ROADMAP.md).
+> SyncForge is a **pre-1.0** library. Android is the reference platform; iOS, JVM desktop, and
+> native macOS targets are available. First Maven Central release: `0.9.0-rc.1` — see
+> [docs/MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
+
+---
+
+## See it in action
+
+The `:sample` app is a multi-tab Tasks / Notes / Tags demo. Run it against the mock server in two terminals:
+
+```bash
+./gradlew :mock-server:run          # Terminal 1
+./gradlew :sample:installDebug      # Terminal 2 (emulator → http://10.0.2.2:8080)
+```
+
+```mermaid
+sequenceDiagram
+    participant UI as Your UI
+    participant Room as Room (your DB)
+    participant SF as SyncForge
+    participant API as Your backend
+
+    UI->>Room: Save task (instant)
+    UI->>SF: enqueueChange()
+    Note over SF: Outbox persists — survives app kill
+
+    alt Offline
+        SF-->>UI: Status: Offline / Pending
+    end
+
+    UI->>SF: sync()
+    SF->>API: POST /sync/push
+    SF->>API: GET /sync/pull
+    API-->>SF: deltas
+    SF->>Room: Apply remote changes
+
+    opt Conflict (same task edited twice)
+        SF-->>UI: Conflict chip + Resolve sheet
+        UI->>SF: resolveConflict(keepLocal | keepRemote)
+    end
+
+    SF-->>UI: Status: Synced
+```
+
+### What the demo shows
+
+| Scenario | What to do | What you see |
+|----------|------------|--------------|
+| **1. Offline-first** | Add a task with airplane mode on | Task appears in Room immediately; status shows pending / offline |
+| **2. Sync** | Turn network on → tap **Sync** | Push + pull run; row shows **Synced**; outbox drains |
+| **3. Conflict** | Sync a task → edit it on the server (mock `/dev` routes) → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+
+**Debug console (debug builds):** tap the **SF** button on the Tasks tab to inspect the outbox, sync health, events, and open conflicts.
+
+**iOS:** same flows in SwiftUI — `open ios-sample/SyncForgeTasks.xcodeproj` (see [iOS setup](docs/IOS_SETUP.md)).
 
 ---
 
@@ -59,17 +112,6 @@ Step-by-step walkthrough with entity, DAO, repository, and Compose: **[Getting S
 
 ---
 
-## Try the sample
-
-```bash
-./gradlew :mock-server:run          # Terminal 1
-./gradlew :sample:installDebug      # Terminal 2 (emulator → 10.0.2.2:8080)
-```
-
-**Conflict demo:** add task → Sync → Server edit → edit locally → Sync → resolve via chip or **SF** debug button.
-
----
-
 ## Documentation
 
 | Guide | Description |
@@ -85,6 +127,7 @@ Step-by-step walkthrough with entity, DAO, repository, and Compose: **[Getting S
 | [Desktop setup](docs/DESKTOP_SETUP.md) | `SyncForge.desktop { }` / `SyncForge.macos { }` |
 | [KMP migration](docs/KMP_MIGRATION.md) | iOS/SQLDelight transition plan |
 | [Roadmap](docs/ROADMAP.md) | Limitations and future phases |
+| [Launch playbook](docs/SyncForge-GitHub-Launch-Playbook.docx) | 1.0 soak, Maven Central, GitHub growth |
 | [Changelog](CHANGELOG.md) | Release history |
 
 [Documentation index →](docs/README.md)
