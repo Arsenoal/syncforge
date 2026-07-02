@@ -14,11 +14,12 @@ struct TasksView: View {
 
     private var addTaskSection: some View {
         HStack(spacing: 8) {
-            TextField("New task", text: $viewModel.newTaskTitle, onCommit: {
-                viewModel.addTask()
-            })
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .accessibilityIdentifier("new_task_input")
+            AccessibleTextField(
+                placeholder: "New task",
+                text: $viewModel.newTaskTitle,
+                accessibilityIdentifier: "new_task_input",
+                onCommit: viewModel.addTask
+            )
 
             Button("Add", action: viewModel.addTask)
                 .accessibilityIdentifier("add_task_button")

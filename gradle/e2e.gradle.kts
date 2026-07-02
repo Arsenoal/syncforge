@@ -156,10 +156,45 @@ fun Project.resetMockServerState(port: Int) {
     logger.warn("Mock server reset at $resetUrl did not return 2xx (continuing)")
 }
 
+data class IosSimulatorDevice(
+    val name: String,
+    val udid: String,
+    val runtime: String,
+)
+
+fun Project.listIosSimulators(): List<IosSimulatorDevice> {
+    val listOutput = java.io.ByteArrayOutputStream()
+    exec {
+        commandLine("xcrun", "simctl", "list", "devices", "available")
+        standardOutput = listOutput
+    }
+
+    val devices = mutableListOf<IosSimulatorDevice>()
+    var currentRuntime = ""
+    val runtimePattern = Regex("""-- (.+) --""")
+    val devicePattern = Regex("""^\s+(.+?) \(([0-9A-Fa-f-]{36})\)""")
+
+    listOutput.toString().lineSequence().forEach { line ->
+        runtimePattern.find(line)?.let {
+            currentRuntime = it.groupValues[1]
+            return@forEach
+        }
+        devicePattern.find(line)?.let { match ->
+            devices += IosSimulatorDevice(
+                name = match.groupValues[1],
+                udid = match.groupValues[2],
+                runtime = currentRuntime,
+            )
+        }
+    }
+    return devices
+}
+
 fun Project.bootIosSimulatorForDestination(destination: String) {
-    val name = Regex("name=([^,]+)").find(destination)?.groupValues?.getOrNull(1) ?: return
-    val udid = resolveIosSimulatorUdid(name) ?: run {
-        logger.warn("Could not resolve simulator UDID for $name — skipping explicit boot")
+    val name = Regex("""name=([^,]+)""").find(destination)?.groupValues?.getOrNull(1) ?: return
+    val os = Regex("""OS=([^,]+)""").find(destination)?.groupValues?.getOrNull(1)
+    val udid = resolveIosSimulatorUdid(name, os) ?: run {
+        logger.warn("Could not resolve simulator UDID for $name (OS=$os) — skipping explicit boot")
         return
     }
 
@@ -173,30 +208,39 @@ fun Project.bootIosSimulatorForDestination(destination: String) {
     }
 }
 
-fun Project.resolveIosSimulatorUdid(deviceName: String): String? {
-    val listOutput = java.io.ByteArrayOutputStream()
-    exec {
-        commandLine("xcrun", "simctl", "list", "devices", "available")
-        standardOutput = listOutput
+fun Project.resolveIosSimulatorUdid(deviceName: String, osVersion: String? = null): String? {
+    val devices = listIosSimulators()
+    if (osVersion != null) {
+        val runtime = devices.firstOrNull { it.name == deviceName && it.runtime.endsWith(osVersion) }
+        if (runtime != null) {
+            return runtime.udid
+        }
     }
-    val udidPattern = Regex("""\Q$deviceName\E \(([0-9A-Fa-f-]{36})\)""")
-    return listOutput.toString().lineSequence()
-        .mapNotNull { line -> udidPattern.find(line)?.groupValues?.getOrNull(1) }
-        .firstOrNull()
+    return devices.firstOrNull { it.name == deviceName }?.udid
 }
 
 fun Project.resolveIosSimulatorDestination(): String {
-    val candidates = listOf("iPhone 16", "iPhone 15", "iPhone 14")
-    val listOutput = java.io.ByteArrayOutputStream()
-    exec {
-        commandLine("xcrun", "simctl", "list", "devices", "available")
-        standardOutput = listOutput
-    }
-    val deviceList = listOutput.toString()
-    for (name in candidates) {
-        if (deviceList.contains("$name (")) {
-            return "platform=iOS Simulator,name=$name"
+    val devices = listIosSimulators()
+    val preferredRuntimes = listOf("17.5", "17.4", "17.2", "17.0", "17.1")
+    val preferredNames = listOf("iPhone 15", "iPhone 14", "iPhone SE (3rd generation)", "iPhone 16")
+
+    for (os in preferredRuntimes) {
+        for (name in preferredNames) {
+            val match = devices.firstOrNull { it.name == name && it.runtime.contains(os) }
+            if (match != null) {
+                return "platform=iOS Simulator,name=${match.name},OS=$os"
+            }
         }
     }
-    return "platform=iOS Simulator,name=iPhone 16"
+
+    val fallback = devices.firstOrNull { it.name.startsWith("iPhone") }
+    if (fallback != null) {
+        val os = Regex("""\d+\.\d+""").find(fallback.runtime)?.value
+        return if (os != null) {
+            "platform=iOS Simulator,name=${fallback.name},OS=$os"
+        } else {
+            "platform=iOS Simulator,name=${fallback.name}"
+        }
+    }
+    return "platform=iOS Simulator,name=iPhone 15,OS=17.5"
 }

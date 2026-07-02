@@ -14,11 +14,12 @@ struct TagsView: View {
 
     private var addTagSection: some View {
         HStack(spacing: 8) {
-            TextField("New tag", text: $viewModel.newTagLabel, onCommit: {
-                viewModel.addTag()
-            })
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .accessibilityIdentifier("new_tag_input")
+            AccessibleTextField(
+                placeholder: "New tag",
+                text: $viewModel.newTagLabel,
+                accessibilityIdentifier: "new_tag_input",
+                onCommit: viewModel.addTag
+            )
 
             Button("Add", action: viewModel.addTag)
                 .accessibilityIdentifier("add_tag_button")

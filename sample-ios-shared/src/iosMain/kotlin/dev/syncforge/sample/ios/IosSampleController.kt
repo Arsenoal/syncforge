@@ -27,6 +27,8 @@ import kotlinx.coroutines.launch
  */
 class IosSampleController(
     baseUrl: String = IOS_SAMPLE_DEFAULT_BASE_URL,
+    /** When true, skips BGTask periodic scheduling (XCUITest / CI). */
+    e2eMode: Boolean = false,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val taskStore = InMemoryTaskStore()
@@ -42,7 +44,9 @@ class IosSampleController(
         backgroundSyncTaskIdentifier(IOS_SAMPLE_BACKGROUND_SYNC_TASK_ID)
         // Simulator XCUITest: NWPathMonitor may report offline before the first path update.
         networkMonitorAlwaysOnline()
-        schedulePeriodicSyncOnStart()
+        if (!e2eMode) {
+            schedulePeriodicSyncOnStart()
+        }
         conflicts {
             entity(SampleTaskEntity.ENTITY_TYPE) { deferToUser() }
             entity(SampleNoteEntity.ENTITY_TYPE) { lastWriteWins() }

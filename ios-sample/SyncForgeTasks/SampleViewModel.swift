@@ -14,13 +14,25 @@ final class SampleViewModel: ObservableObject {
     @Published var isSyncing: Bool = false
     @Published var errorMessage: String?
 
-    private let controller: IosSampleController
+    private let resolvedBaseUrl: String
+    private let e2eMode: Bool
+    private var controller: IosSampleController?
+    private var isStarted = false
 
     init(baseUrl: String? = nil) {
-        let resolvedBaseUrl = baseUrl
+        resolvedBaseUrl = baseUrl
             ?? ProcessInfo.processInfo.environment["MOCK_SERVER_BASE_URL"]
             ?? SampleConfig.defaultBaseUrl
-        controller = IosSampleController(baseUrl: resolvedBaseUrl)
+        e2eMode = ProcessInfo.processInfo.environment["E2E_TESTING"] == "1"
+    }
+
+    /// Defers Kotlin/SyncForge startup until after the first SwiftUI frame (XCUITest can query UI sooner).
+    func startIfNeeded() {
+        guard !isStarted else { return }
+        isStarted = true
+
+        let controller = IosSampleController(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
+        self.controller = controller
 
         controller.setStatusListener { [weak self] label in
             DispatchQueue.main.async {
@@ -49,6 +61,7 @@ final class SampleViewModel: ObservableObject {
     }
 
     func addTask() {
+        startIfNeeded()
         let title = newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else {
             errorMessage = "Enter a task title"
@@ -56,7 +69,7 @@ final class SampleViewModel: ObservableObject {
         }
 
         errorMessage = nil
-        controller.addTask(title: title) { [weak self] success, error in
+        requireController().addTask(title: title) { [weak self] success, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if KotlinInterop.bool(success) {
@@ -69,6 +82,7 @@ final class SampleViewModel: ObservableObject {
     }
 
     func addNote() {
+        startIfNeeded()
         let title = newNoteTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else {
             errorMessage = "Enter a note title"
@@ -77,7 +91,7 @@ final class SampleViewModel: ObservableObject {
 
         let body = newNoteBody.trimmingCharacters(in: .whitespacesAndNewlines)
         errorMessage = nil
-        controller.addNote(title: title, body: body) { [weak self] success, error in
+        requireController().addNote(title: title, body: body) { [weak self] success, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if KotlinInterop.bool(success) {
@@ -91,6 +105,7 @@ final class SampleViewModel: ObservableObject {
     }
 
     func addTag() {
+        startIfNeeded()
         let label = newTagLabel.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !label.isEmpty else {
             errorMessage = "Enter a tag label"
@@ -98,7 +113,7 @@ final class SampleViewModel: ObservableObject {
         }
 
         errorMessage = nil
-        controller.addTag(label: label) { [weak self] success, error in
+        requireController().addTag(label: label) { [weak self] success, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if KotlinInterop.bool(success) {
@@ -111,8 +126,9 @@ final class SampleViewModel: ObservableObject {
     }
 
     func deleteNote(_ note: NoteRowModel) {
+        startIfNeeded()
         errorMessage = nil
-        controller.deleteNote(noteId: note.id) { [weak self] success, error in
+        requireController().deleteNote(noteId: note.id) { [weak self] success, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if !KotlinInterop.bool(success) {
@@ -123,8 +139,9 @@ final class SampleViewModel: ObservableObject {
     }
 
     func deleteTag(_ tag: TagRowModel) {
+        startIfNeeded()
         errorMessage = nil
-        controller.deleteTag(tagId: tag.id) { [weak self] success, error in
+        requireController().deleteTag(tagId: tag.id) { [weak self] success, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if !KotlinInterop.bool(success) {
@@ -135,9 +152,10 @@ final class SampleViewModel: ObservableObject {
     }
 
     func sync() {
+        startIfNeeded()
         errorMessage = nil
         isSyncing = true
-        controller.sync { [weak self] _, status in
+        requireController().sync { [weak self] _, status in
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.isSyncing = status.localizedCaseInsensitiveContains("syncing")
@@ -148,5 +166,12 @@ final class SampleViewModel: ObservableObject {
 
     var hasConflicts: Bool {
         statusLabel.localizedCaseInsensitiveContains("conflict")
+    }
+
+    private func requireController() -> IosSampleController {
+        guard let controller else {
+            fatalError("SampleViewModel.startIfNeeded() must run before calling SyncForge APIs")
+        }
+        return controller
     }
 }

@@ -12,8 +12,10 @@ class SampleUITestBase: XCTestCase {
         // Gradle :iosE2e already waits for mock-server health before xcodebuild.
         resetMockServer()
 
-        app = XCUIApplication(bundleIdentifier: "dev.syncforge.sample.ios")
+        app = XCUIApplication()
         app.launchEnvironment["MOCK_SERVER_BASE_URL"] = Self.mockServerBaseUrl
+        app.launchEnvironment["E2E_TESTING"] = "1"
+        app.launchArguments += ["-UIViewAnimationEnabled", "NO"]
         app.launch()
         waitForAppReady()
     }
@@ -26,15 +28,22 @@ class SampleUITestBase: XCTestCase {
     }
 
     func waitForAppReady(file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(
-            app.textFields["new_task_input"].waitForExistence(timeout: 20),
-            "Tasks screen did not appear",
-            file: file,
-            line: line
-        )
-        XCTAssertTrue(
-            app.buttons["sync_button"].waitForExistence(timeout: 5),
-            "Sync button did not appear",
+        let readyMarkers = [
+            app.textFields["new_task_input"],
+            app.textFields["New task"],
+            app.staticTexts["No tasks yet"],
+            app.buttons["sync_button"],
+            app.tabBars.buttons["Tasks"],
+        ]
+        let deadline = Date().addingTimeInterval(30)
+        while Date() < deadline {
+            if readyMarkers.contains(where: { $0.exists }) {
+                return
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        XCTFail(
+            "Tasks screen did not appear. Debug:\n\(app.debugDescription)",
             file: file,
             line: line
         )
@@ -43,7 +52,7 @@ class SampleUITestBase: XCTestCase {
     func navigateToTasks(file: StaticString = #filePath, line: UInt = #line) {
         tapTab("Tasks", identifier: "nav_tasks", file: file, line: line)
         XCTAssertTrue(
-            app.textFields["new_task_input"].waitForExistence(timeout: 15),
+            textField(identifier: "new_task_input", fallbackLabel: "New task").waitForExistence(timeout: 15),
             file: file,
             line: line
         )
@@ -69,7 +78,7 @@ class SampleUITestBase: XCTestCase {
 
     func addTask(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
         navigateToTasks()
-        let field = app.textFields["new_task_input"]
+        let field = textField(identifier: "new_task_input", fallbackLabel: "New task")
         field.tap()
         field.typeText(title)
         dismissKeyboardIfNeeded()
@@ -84,11 +93,11 @@ class SampleUITestBase: XCTestCase {
 
     func addNote(title: String, body: String = "", file: StaticString = #filePath, line: UInt = #line) {
         navigateToNotes()
-        let titleField = app.textFields["new_note_title_input"]
+        let titleField = textField(identifier: "new_note_title_input", fallbackLabel: "Title")
         titleField.tap()
         titleField.typeText(title)
         if !body.isEmpty {
-            let bodyField = app.textFields["new_note_body_input"]
+            let bodyField = textField(identifier: "new_note_body_input", fallbackLabel: "Body (optional)")
             bodyField.tap()
             bodyField.typeText(body)
         }
@@ -104,7 +113,7 @@ class SampleUITestBase: XCTestCase {
 
     func addTag(_ label: String, file: StaticString = #filePath, line: UInt = #line) {
         navigateToTags()
-        let field = app.textFields["new_tag_input"]
+        let field = textField(identifier: "new_tag_input", fallbackLabel: "New tag")
         field.tap()
         field.typeText(label)
         dismissKeyboardIfNeeded()
@@ -195,6 +204,14 @@ class SampleUITestBase: XCTestCase {
         let fallback = app.buttons[identifier]
         XCTAssertTrue(fallback.waitForExistence(timeout: 10), "Tab \(label) not found", file: file, line: line)
         fallback.tap()
+    }
+
+    private func textField(identifier: String, fallbackLabel: String) -> XCUIElement {
+        let byId = app.textFields[identifier]
+        if byId.exists {
+            return byId
+        }
+        return app.textFields[fallbackLabel]
     }
 
     private func dismissKeyboardIfNeeded() {
