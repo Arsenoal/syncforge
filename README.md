@@ -40,7 +40,16 @@ sequenceDiagram
     participant UI as Your UI
     participant Room as Room (your DB)
     participant SF as SyncForge
+    participant Auth as Auth (TokenStore)
     participant API as Your backend
+
+    opt Built-in auth (optional)
+        UI->>SF: login(email, password)
+        SF->>API: POST /auth/login
+        API-->>SF: access_token + refresh_token
+        SF->>Auth: persist tokens
+        SF-->>UI: authState → logged in
+    end
 
     UI->>Room: Save task (instant)
     UI->>SF: enqueueChange()
@@ -51,8 +60,14 @@ sequenceDiagram
     end
 
     UI->>SF: sync()
-    SF->>API: POST /sync/push
-    SF->>API: GET /sync/pull
+    SF->>API: POST /sync/push (Bearer token)
+    alt HTTP 401 — token expired
+        SF->>API: POST /auth/refresh
+        API-->>SF: new tokens
+        SF->>Auth: update tokens
+        SF->>API: retry push
+    end
+    SF->>API: GET /sync/pull (Bearer token)
     API-->>SF: deltas
     SF->>Room: Apply remote changes
 
@@ -100,6 +115,7 @@ Then explore [Recipes](docs/RECIPES.md) for merge logic, conflict UI, and the de
 | **Compose helpers** | Status observation, conflict chip, resolution sheet |
 | **KMP platforms** | iOS (`SyncForge.ios`), JVM desktop (`SyncForge.desktop`), native macOS (`SyncForge.macos`) |
 | **SQLDelight persistence** | Default on all platforms since 0.6.0; automatic Room → SQLDelight migration on Android upgrade |
+| **Built-in auth (experimental)** | `auth { }` DSL — register/login/logout, token refresh on 401 — see [Auth API](docs/AUTH_API.md) |
 
 [Full capabilities table →](docs/ROADMAP.md#what-the-library-can-do-today-v060)
 
@@ -122,47 +138,7 @@ syncManager.sync()
 
 Step-by-step walkthrough with entity, DAO, repository, and Compose: **[Getting Started](docs/GETTING_STARTED.md)**.
 
----
-
-## Documentation
-
-| Guide | Description |
-|-------|-------------|
-| **[Getting Started](docs/GETTING_STARTED.md)** | 10-minute integration walkthrough |
-| **[Recipes](docs/RECIPES.md)** | Merge, deferToUser, debug console, status observation |
-| **[Conflict Resolution](docs/CONFLICT_RESOLUTION.md)** | Strategies, lifecycle, decision guide |
-| **[Best Practices](docs/BEST_PRACTICES.md)** | Entity design, performance, error handling |
-| [Module reference](docs/MODULES.md) | Package-by-package API |
-| [REST API contract](docs/REST_API.md) | Backend endpoints |
-| [Android setup](docs/ANDROID_SETUP.md) | SQLDelight default, legacy Room opt-in, migration |
-| [iOS setup](docs/IOS_SETUP.md) | `SyncForge.ios { }` configuration |
-| [Desktop setup](docs/DESKTOP_SETUP.md) | `SyncForge.desktop { }` / `SyncForge.macos { }` |
-| [KMP migration](docs/KMP_MIGRATION.md) | iOS/SQLDelight transition plan |
-| [Roadmap](docs/ROADMAP.md) | Limitations and future phases |
-| [Launch playbook](docs/SyncForge-GitHub-Launch-Playbook.docx) | 1.0 soak, Maven Central, GitHub growth |
-| [Changelog](CHANGELOG.md) | Release history |
-
-[Documentation index →](docs/README.md)
-
----
-
-## Project structure
-
-| Module | Description |
-|--------|-------------|
-| `:syncforge` | Library — all public API; SQLDelight repo impls in `syncPersistenceMain` |
-| `:syncforge-annotations` | `@SyncForgeEntity` / `@SyncForgeDao` |
-| `:syncforge-ksp` | KSP processor |
-| `:syncforge-persistence` | SQLDelight schemas + platform drivers (KMP) |
-| `:syncforge-android-deps` | Transitive Android runtime deps (Room, serialization, WorkManager) |
-| `:syncforge-gradle-plugin` | `dev.syncforge.android` — KSP + serialization setup for app modules |
-| `:syncforge-bom` | Maven BOM — aligned versions for all library artifacts |
-| `:syncforge-server` | Shared Ktor sync routes and `SyncStore` contract |
-| `:backend-starter` | Minimal reference backend (production starter) |
-| `:mock-server` | JVM Ktor dev server (+ conflict demo routes) |
-| `:sample` | Android Compose Tasks demo |
-| `:sample-ios-shared` | iOS sample framework (`IosSampleController`) |
-| `ios-sample/` | SwiftUI Xcode app wired to `:sample-ios-shared` |
+Auth setup: **[Auth API](docs/AUTH_API.md)** · runnable backend: `./gradlew :backend-starter:run`
 
 ---
 
