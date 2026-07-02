@@ -102,7 +102,9 @@ Step-by-step walkthrough with entity, DAO, repository, and Compose: **[Getting S
 | `:syncforge-android-deps` | Transitive Android runtime deps (Room, serialization, WorkManager) |
 | `:syncforge-gradle-plugin` | `dev.syncforge.android` — KSP + serialization setup for app modules |
 | `:syncforge-bom` | Maven BOM — aligned versions for all library artifacts |
-| `:mock-server` | JVM Ktor server for local dev |
+| `:syncforge-server` | Shared Ktor sync routes and `SyncStore` contract |
+| `:backend-starter` | Minimal reference backend (production starter) |
+| `:mock-server` | JVM Ktor dev server (+ conflict demo routes) |
 | `:sample` | Android Compose Tasks demo |
 | `:sample-ios-shared` | iOS sample framework (`IosSampleController`) |
 | `ios-sample/` | SwiftUI Xcode app wired to `:sample-ios-shared` |

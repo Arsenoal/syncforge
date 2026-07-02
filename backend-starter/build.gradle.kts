@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.kotlinSerialization)
     application
 }
 
@@ -8,15 +7,12 @@ group = providers.gradleProperty("syncforge.group").get()
 version = providers.gradleProperty("syncforge.version").get()
 
 application {
-    mainClass.set("dev.syncforge.mockserver.MockSyncServerKt")
+    mainClass.set("dev.syncforge.backendstarter.BackendStarterKt")
 }
 
 dependencies {
     implementation(project(":syncforge-server"))
 
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.junit)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
@@ -24,8 +20,4 @@ dependencies {
 
 kotlin {
     jvmToolchain(17)
-}
-
-tasks.test {
-    useJUnit()
 }

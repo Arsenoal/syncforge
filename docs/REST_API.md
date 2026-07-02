@@ -3,7 +3,8 @@
 SyncForge defines a minimal delta-sync HTTP contract. The reference implementations are:
 
 - **Client:** `KtorSyncTransport` (`:syncforge` androidMain)
-- **Server:** `:mock-server` (JVM Ktor app for local development)
+- **Server (production starter):** `:backend-starter` + `:syncforge-server` library
+- **Server (local dev / demos):** `:mock-server` (adds `/dev/*` routes for conflict demos)
 
 DTOs live in `dev.syncforge.network.api` (`commonMain`) and are shared between client
 and server.
@@ -81,7 +82,8 @@ major SyncForge release. Migration notes for backend authors are published in th
 
 | Target | How |
 |--------|-----|
-| Local dev | `./gradlew :mock-server:run` — implements this contract |
+| Production starter | `./gradlew :backend-starter:run` — contract routes only; see `backend-starter/README.md` |
+| Local dev + conflict demos | `./gradlew :mock-server:run` — contract + `/dev/simulate-edit` |
 | CI / samples | `:mock-server` on port `8080`; Android emulator uses `http://10.0.2.2:8080` |
 | Contract drift | Run client E2E (`./gradlew androidE2e`, `./gradlew iosE2e`) against your backend before upgrading SyncForge major versions |
 

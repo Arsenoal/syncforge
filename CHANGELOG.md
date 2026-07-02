@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:syncforge-server`** — shared Ktor sync routes (`POST /sync/push`, `GET /sync/pull`), `SyncStore` contract, and `InMemorySyncStore`
+- **`:backend-starter`** — minimal runnable reference backend (`./gradlew :backend-starter:run`); copy and replace storage for production
 - **`docs/MAVEN_PUBLISH.md`** — Maven Central one-time setup, GitHub secrets, tag publish, and post-release verification checklist
 
 ### Changed
+
+- **`:mock-server`** — uses `:syncforge-server` for contract routes; keeps `/dev/*` endpoints for conflict demos only
+- **`InMemorySyncStore.pull`** — empty `types` query returns all entity types (matches REST_API.md)
+
+### Changed (earlier unreleased)
 
 - **POM metadata** — `syncforge.pom.url` and SCM URLs point to `github.com/Arsenoal/syncforge`
 

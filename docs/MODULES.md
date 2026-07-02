@@ -96,7 +96,9 @@ Companion modules:
 | `:syncforge-annotations` | `@SyncForgeEntity`, `@SyncForgeDao`, `@ExperimentalSyncForgeApi` |
 | `:syncforge-ksp` | KSP processor — generates handlers + `SyncForgeHandlers` registry |
 | `:syncforge-persistence` | SQLDelight schemas + platform drivers (`SyncForgePersistence.create()`) |
-| `:mock-server` | JVM Ktor server implementing [REST_API.md](REST_API.md) |
+| `:syncforge-server` | Shared Ktor sync routes and `SyncStore` contract |
+| `:backend-starter` | Minimal runnable reference backend (contract routes only) |
+| `:mock-server` | JVM Ktor dev server — contract + `/dev/*` conflict demos |
 | `:sample` | Android Compose demo app |
 | `:sample-ios-shared` | iOS sample framework (`IosSampleController`; SKIE-enabled) |
 | `ios-sample/` | SwiftUI Xcode app wired to `:sample-ios-shared` |
@@ -707,14 +709,33 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 
 ## Additional Gradle modules
 
+### `:syncforge-server`
+
+JVM library: `SyncStore`, `InMemorySyncStore`, `syncRoutes()`, and Ktor plugins shared by
+`:backend-starter` and `:mock-server`. Depends on `:syncforge` JVM for REST DTOs.
+
+```bash
+./gradlew :syncforge-server:test
+```
+
+### `:backend-starter`
+
+```bash
+./gradlew :backend-starter:run
+```
+
+Minimal reference backend on port `8080` (override with `PORT`). Implements
+[REST_API.md](REST_API.md) contract routes only — copy and replace `InMemorySyncStore` for
+production. See [backend-starter/README.md](../backend-starter/README.md).
+
 ### `:mock-server`
 
 ```bash
 ./gradlew :mock-server:run
 ```
 
-JVM Ktor server on port `8080` (override with `PORT` env var). Implements
-[REST_API.md](REST_API.md) including `POST /dev/simulate-edit` for conflict demos.
+JVM Ktor dev server on port `8080` (override with `PORT` env var). Same contract as
+`:backend-starter` plus `POST /dev/simulate-edit` and `POST /dev/reset` for conflict demos.
 
 ### `:sample`
 

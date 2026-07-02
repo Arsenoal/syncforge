@@ -24,6 +24,8 @@ include(
     ":syncforge-persistence",
     ":syncforge-android-deps",
     ":syncforge-bom",
+    ":syncforge-server",
+    ":backend-starter",
     ":mock-server",
     ":sample",
     ":sample-ios-shared",

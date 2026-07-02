@@ -36,11 +36,13 @@ jobs:
             :syncforge:compileDebugKotlinAndroid \
             :syncforge:compileKotlinJvm \
             :syncforge:jvmTest \
+            :syncforge-server:test \
             :syncforge-persistence:compileDebugKotlinAndroid \
             :syncforge-persistence:compileKotlinJvm \
             :syncforge-annotations:compileDebugKotlinAndroid \
             :syncforge-annotations:compileKotlinJvm \
             :syncforge-ksp:compileKotlin \
+            :backend-starter:compileKotlin \
             :sample:compileDebugKotlin \
             --no-daemon
 

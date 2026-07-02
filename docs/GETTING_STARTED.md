@@ -309,11 +309,17 @@ TextButton(onClick = { viewModel.sync() }) {
 
 ## Step 5 — Run locally with the mock server (~1 min)
 
-If you don't have a backend yet, use the included `:mock-server`:
+If you don't have a backend yet, use the included reference server:
+
+| Goal | Module | Command |
+|------|--------|---------|
+| Minimal production starter | `:backend-starter` | `./gradlew :backend-starter:run` |
+| Conflict demo (`/dev/simulate-edit`) | `:mock-server` | `./gradlew :mock-server:run` |
 
 ```bash
-# Terminal 1
-./gradlew :mock-server:run
+# Terminal 1 — pick one
+./gradlew :backend-starter:run
+# or: ./gradlew :mock-server:run
 
 # Terminal 2 — point baseUrl at the emulator host alias
 ./gradlew :sample:installDebug
