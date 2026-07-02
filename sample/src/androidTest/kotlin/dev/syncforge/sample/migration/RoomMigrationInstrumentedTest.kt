@@ -10,11 +10,14 @@ import dev.syncforge.entity.PullApplyOutcome
 import dev.syncforge.model.Change
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncResult
+import dev.syncforge.network.NetworkMonitor
 import dev.syncforge.network.RemoteDelta
 import dev.syncforge.persistence.MigrationTestSupport
 import dev.syncforge.persistence.MigrationTestSupport.INSTRUMENTED_TEST_DATABASE_NAME
 import dev.syncforge.persistence.RoomToSqlDelightMigrator
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -90,6 +93,10 @@ class RoomMigrationInstrumentedTest {
             conflicts {
                 entity("tasks") { deferToUser() }
             }
+            // Avoid reconnect-triggered auto-push racing the explicit push() below.
+            customize {
+                networkMonitor = QuietNetworkMonitor
+            }
         }
 
         assertEquals(1, manager.debug.outboxItems.dropWhile { it.isEmpty() }.first().size)
@@ -98,6 +105,12 @@ class RoomMigrationInstrumentedTest {
         assertTrue(result is SyncResult.Success)
         assertEquals(1, (result as SyncResult.Success).pushed)
         assertEquals(0, manager.debug.outboxItems.dropWhile { it.isNotEmpty() }.first().size)
+    }
+
+    /** Online for manual push(), but does not subscribe to connectivity callbacks. */
+    private object QuietNetworkMonitor : NetworkMonitor {
+        override val isOnline: Boolean = true
+        override fun observeOnline(): Flow<Boolean> = emptyFlow()
     }
 
     private fun isMockServerHealthy(): Boolean =

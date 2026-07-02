@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var viewModel: SampleViewModel
+
     var body: some View {
         VStack(spacing: 0) {
             SampleStatusBanner()
@@ -33,6 +35,16 @@ struct ContentView: View {
             }
         }
         .accessibilityIdentifier("syncforge_tasks_root")
+        .overlay(alignment: .topLeading) {
+            if viewModel.kotlinBridgeReady {
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityIdentifier("e2e_kotlin_ready")
+            }
+        }
+        .onAppear {
+            viewModel.beginKotlinPreloadIfNeeded()
+        }
     }
 }
 

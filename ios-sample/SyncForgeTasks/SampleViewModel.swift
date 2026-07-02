@@ -12,10 +12,13 @@ final class SampleViewModel: ObservableObject {
     @Published var newTagLabel: String = ""
     @Published var isSyncing: Bool = false
     @Published var errorMessage: String?
+    /// Set after [startIfNeeded] finishes — exposed for XCUITest bridge warmup.
+    @Published private(set) var kotlinBridgeReady: Bool = false
 
     private let resolvedBaseUrl: String
     private let e2eMode: Bool
     private var bridge: SampleKotlinBridgeProtocol?
+    private var isPreloadingBridge = false
 
     init(baseUrl: String? = nil) {
         resolvedBaseUrl = baseUrl
@@ -24,9 +27,22 @@ final class SampleViewModel: ObservableObject {
         e2eMode = SampleConfig.isE2eTesting
     }
 
+    /// Kicks off Kotlin preload after SwiftUI is on screen (CI / XCUITest).
+    func beginKotlinPreloadIfNeeded() {
+        guard e2eMode else { return }
+        Task { @MainActor in
+            startIfNeeded()
+        }
+    }
+
     /// Lazily loads Kotlin/SyncForge on first user action — keeps cold launch SwiftUI-only for XCUITest.
     func startIfNeeded() {
-        guard bridge == nil else { return }
+        guard bridge == nil else {
+            kotlinBridgeReady = true
+            return
+        }
+        guard !isPreloadingBridge else { return }
+        isPreloadingBridge = true
 
         let bridge = SampleKotlinBridge(baseUrl: resolvedBaseUrl, e2eMode: e2eMode)
         self.bridge = bridge
@@ -47,6 +63,8 @@ final class SampleViewModel: ObservableObject {
         bridge.setTagsListener { [weak self] items in
             self?.tags = items
         }
+
+        kotlinBridgeReady = true
     }
 
     func addTask() {

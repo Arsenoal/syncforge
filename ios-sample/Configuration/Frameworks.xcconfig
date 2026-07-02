@@ -1,4 +1,6 @@
 // Base linker flags — framework search paths are generated per-build.
 #include? "GeneratedFrameworks.xcconfig"
 
-OTHER_LDFLAGS = $(inherited) -framework SyncForge -framework SyncForgeSample -lsqlite3
+// Weak-link KMP frameworks so cold launch stays SwiftUI-only for XCUITest (loaded on first bridge use).
+OTHER_LDFLAGS = $(inherited) -weak_framework SyncForge -weak_framework SyncForgeSample -lsqlite3
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks $(SYNCFORGE_FRAMEWORK_DIR) $(SAMPLE_FRAMEWORK_DIR)

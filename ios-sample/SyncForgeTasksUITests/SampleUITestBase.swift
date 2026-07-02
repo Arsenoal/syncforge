@@ -16,8 +16,10 @@ class SampleUITestBase: XCTestCase {
         app.launchEnvironment["MOCK_SERVER_BASE_URL"] = Self.mockServerBaseUrl
         app.launchEnvironment["E2E_TESTING"] = "1"
         app.launchArguments += ["-E2E_TESTING", "-UIViewAnimationEnabled", "NO"]
-        app.launch()
+        // Do not block on Kotlin/Native framework init — SwiftUI must be queryable first.
+        app.launchWithoutWaitingForQuiescence()
         waitForAppReady()
+        waitForKotlinBridge()
     }
 
     override func tearDownWithError() throws {
@@ -30,26 +32,38 @@ class SampleUITestBase: XCTestCase {
     }
 
     func waitForAppReady(file: StaticString = #filePath, line: UInt = #line) {
-        let readyMarkers = [
-            app.otherElements["syncforge_tasks_root"],
-            app.textFields["new_task_input"],
-            app.textFields["New task"],
-            app.staticTexts["No tasks yet"],
+        let markers: [XCUIElement] = [
             app.buttons["sync_button"],
-            app.buttons["Sync"],
+            app.textFields["new_task_input"],
+            app.otherElements["syncforge_tasks_root"],
             app.staticTexts["Idle"],
-            app.tabBars.buttons["Tasks"],
-            app.buttons["nav_tasks"],
+            app.staticTexts["No tasks yet"],
         ]
-        let deadline = Date().addingTimeInterval(45)
+        let deadline = Date().addingTimeInterval(30)
         while Date() < deadline {
-            if readyMarkers.contains(where: { $0.exists }) {
+            if markers.contains(where: { $0.waitForExistence(timeout: 0.5) }) {
                 return
             }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
         XCTFail(
             "Tasks screen did not appear. Debug:\n\(app.debugDescription)",
+            file: file,
+            line: line
+        )
+    }
+
+    /// Kotlin frameworks load lazily after SwiftUI is visible — allow time on CI simulators.
+    func waitForKotlinBridge(
+        timeout: TimeInterval = 120,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let ready = app.otherElements["e2e_kotlin_ready"]
+        if ready.waitForExistence(timeout: timeout) {
+            return
+        }
+        XCTFail(
+            "Kotlin bridge did not finish loading within \(timeout)s. Debug:\n\(app.debugDescription)",
             file: file,
             line: line
         )
