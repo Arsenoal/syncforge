@@ -5,6 +5,12 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if viewModel.kotlinBridgeReady {
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityIdentifier("e2e_kotlin_ready")
+            }
+
             SampleStatusBanner()
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -35,13 +41,6 @@ struct ContentView: View {
             }
         }
         .accessibilityIdentifier("syncforge_tasks_root")
-        .overlay(alignment: .topLeading) {
-            if viewModel.kotlinBridgeReady {
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .accessibilityIdentifier("e2e_kotlin_ready")
-            }
-        }
         .onAppear {
             viewModel.beginKotlinPreloadIfNeeded()
         }
