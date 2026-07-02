@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`useSqlDelightPersistence()`** — SQLDelight is the Android default since 0.6.0; use `databaseName("…")` for a custom file name
 - **`ConflictResolver`**, **`LastWriteWinsResolver`**, and **`ConflictStrategies.fromResolver()`** — use `ConflictPolicy` + `ConflictStrategies` instead
 - **`TypedEntitySyncHandler(legacyResolver)`** constructor — use parameterless constructor; configure via `conflicts { }`
 
 ### Added
 
+- **`databaseName()`** on `SyncForge.android` — stable replacement for removed `useSqlDelightPersistence()`
 - **Token refresh on 401** — `RefreshingSyncAuthProvider` + single retry in `KtorSyncTransport`; `SyncError.httpStatus` for status-aware handling
 - **iOS background sync** — `IosBackgroundSyncWorkScheduler` (BGAppRefreshTask / BGTaskScheduler), `registerIosBackgroundSyncTasks()`, `SyncForge.ios { schedulePeriodicSyncOnStart() }`
 - **`RoomToSqlDelightMigrator` hardening** — batched inserts, `Log` diagnostics, `Status`/`FAILED` result, safe retry after partial failure

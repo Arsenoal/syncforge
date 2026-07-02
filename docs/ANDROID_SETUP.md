@@ -29,15 +29,15 @@ SyncForge.android(this) {
 }
 ```
 
-### Explicit SQLDelight (optional since 0.6.0)
+### Custom database name
 
-`useSqlDelightPersistence()` is a no-op — SQLDelight is already the default. You may still pass a custom database name:
+SQLDelight is the default since 0.6.0. Override the file name when needed:
 
 ```kotlin
 SyncForge.android(this) {
     baseUrl("https://api.example.com")
     registry(SyncForgeHandlers.registry(taskDao))
-    useSqlDelightPersistence(databaseName = "my_app_syncforge.db")
+    databaseName("my_app_syncforge.db")
 }
 ```
 
@@ -54,12 +54,6 @@ SyncForge.android(this) {
 ```
 
 `createSyncForgePersistence(context)` is also available as a lower-level alias.
-
-### Custom database name
-
-```kotlin
-useSqlDelightPersistence(databaseName = "my_app_syncforge.db")
-```
 
 ---
 
@@ -115,7 +109,7 @@ Both database files can exist simultaneously — useful for A/B testing persiste
 
 | Method | Description |
 |--------|-------------|
-| `useSqlDelightPersistence(name?)` | No-op since 0.6.0 (SQLDelight is default); optional custom DB name |
+| `databaseName(name)` | SQLDelight database file name (default `syncforge.db`) |
 | `useRoomPersistence()` | Deprecated legacy Room backend |
 | `persistence(SyncForgePersistence)` | Inject a custom persistence instance |
 | `customize { }` | Override `outbox` / `conflictStore` manually |

@@ -118,7 +118,7 @@ implementations in `:syncforge` and persistence-only code in `:syncforge-persist
 1. **0.4.x** — Define `OutboxRepository` / `ConflictStore` contracts; add `InMemory*` impls for iOS bootstrap.
 2. **0.5.0-alpha** ✅ — `:syncforge-persistence` module with SQLDelight schemas; repository impls in `:syncforge` `syncPersistenceMain`.
 3. **0.5.0-beta** ✅ — `SyncForge.ios { }` wires SQLDelight by default.
-4. **0.5.0-rc** ✅ — Android SQLDelight opt-in via `useSqlDelightPersistence()`.
+4. **0.5.0-rc** ✅ — Android SQLDelight opt-in (superseded by 0.6.0 default; `useSqlDelightPersistence()` removed at 1.0).
 5. **0.6.0** ✅ — SQLDelight is Android default; legacy Room internals are `internal` + deprecated opt-in; `RoomToSqlDelightMigrator` runs automatically.
 
 **Consumer app entities stay in Room** (or GRDB on iOS) — SyncForge only owns its internal outbox/conflict DB.
@@ -273,7 +273,7 @@ Keeping schemas/drivers in a separate module avoids pulling SQLDelight into cons
 ### M4 — Android SQLDelight parity (v0.5.0-rc) ✅
 
 - [x] `createSyncForgePersistence(context)` + `SyncForgePersistenceFactory.create(context)` (Android)
-- [x] `SyncForge.android { persistence() / useSqlDelightPersistence() }` opt-in DSL
+- [x] `SyncForge.android { databaseName() / persistence() }` DSL
 - [x] Circular dependency resolved (`:syncforge-persistence` → schemas/drivers only)
 - [x] `syncPersistenceMain` source set for SQLDelight repository implementations
 - [x] Migration guide in [ANDROID_SETUP.md](ANDROID_SETUP.md)

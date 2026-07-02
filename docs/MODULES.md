@@ -46,12 +46,14 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }` | **Experimental** | Newer KMP platform DSLs; less production mileage than Android. |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
 | `SyncManager` — `status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync contract. |
+| `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
 | `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Conflict-resolution API. |
 | `SyncDebug`, `SyncHealth`, `SyncEvent` | **Experimental** | Developer observability. |
 | `SyncDebugLauncher`, `SyncDebugPanel` | **Experimental** | Debug Compose UI (Android). |
 | `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict Compose UI | **Stable** | Production UI helpers on Android. |
-| `useSqlDelightPersistence()`, `persistence(SyncForgePersistence)`, `outboxRepository()` / `conflictStore()` extensions | **Experimental** | SQLDelight wiring; default on Android since 0.6.0. |
+| `databaseName()` | **Stable** | SQLDelight database file name on Android (default `syncforge.db` since 0.6.0). |
+| `persistence(SyncForgePersistence)`, `outboxRepository()` / `conflictStore()` extensions | **Experimental** | Custom SQLDelight wiring. |
 | `useRoomPersistence()` | **Deprecated** | Legacy Room backend. |
 | `SyncForgePersistenceFactory`, `createSyncForgePersistence`, `createDefaultSyncForgePersistence` (`:syncforge-persistence`) | **Experimental** | Annotated with `@ExperimentalSyncForgeApi`; requires opt-in for direct factory use. |
 | `SyncEngine`, `ConflictPullApplier`, `SyncManagerImpl`, `SqlDelightOutboxRepository`, platform monitors/cursor impls | **Internal** | Orchestration and storage implementations. |
