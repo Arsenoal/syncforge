@@ -30,9 +30,13 @@ final class SampleViewModel: ObservableObject {
     /// Kicks off Kotlin preload after SwiftUI is on screen (CI / XCUITest).
     func beginKotlinPreloadIfNeeded() {
         guard e2eMode else { return }
+#if E2E_SWIFT_STUB
+        startIfNeeded()
+#else
         Task { @MainActor in
             startIfNeeded()
         }
+#endif
     }
 
     /// Lazily loads Kotlin/SyncForge on first user action — keeps cold launch SwiftUI-only for XCUITest.

@@ -58,9 +58,17 @@ class SampleUITestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let ready = app.otherElements["e2e_kotlin_ready"]
-        if ready.waitForExistence(timeout: timeout) {
-            return
+        let ready = app.descendants(matching: .any)["e2e_kotlin_ready"]
+        let syncButton = app.buttons["sync_button"]
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if ready.waitForExistence(timeout: 0.5) {
+                return
+            }
+            if syncButton.waitForExistence(timeout: 0.5) {
+                return
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
         XCTFail(
             "Kotlin bridge did not finish loading within \(timeout)s. Debug:\n\(app.debugDescription)",
@@ -217,13 +225,13 @@ class SampleUITestBase: XCTestCase {
         line: UInt = #line
     ) {
         let tabButton = app.tabBars.buttons[label]
-        if tabButton.waitForExistence(timeout: 3) {
-            tabButton.tap()
-            return
-        }
-        let fallback = app.buttons[identifier]
-        XCTAssertTrue(fallback.waitForExistence(timeout: 10), "Tab \(label) not found", file: file, line: line)
-        fallback.tap()
+        XCTAssertTrue(
+            tabButton.waitForExistence(timeout: 10),
+            "Tab \(label) not found (identifier: \(identifier))",
+            file: file,
+            line: line
+        )
+        tabButton.tap()
     }
 
     private func textField(identifier: String, fallbackLabel: String) -> XCUIElement {

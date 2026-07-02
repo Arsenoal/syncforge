@@ -6,9 +6,13 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if viewModel.kotlinBridgeReady {
-                Color.clear
-                    .frame(width: 0, height: 0)
+                Text("ready")
+                    .font(.system(size: 1))
+                    .foregroundColor(.clear)
+                    .frame(width: 1, height: 1)
                     .accessibilityIdentifier("e2e_kotlin_ready")
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Kotlin bridge ready")
             }
 
             SampleStatusBanner()
@@ -19,28 +23,23 @@ struct ContentView: View {
 
             TabView {
                 TasksView()
-                    .accessibilityIdentifier("nav_tasks_screen")
                     .tabItem {
                         Label("Tasks", systemImage: "checklist")
                     }
-                    .accessibilityIdentifier("nav_tasks")
 
                 NotesView()
-                    .accessibilityIdentifier("nav_notes_screen")
                     .tabItem {
                         Label("Notes", systemImage: "note.text")
                     }
-                    .accessibilityIdentifier("nav_notes")
 
                 TagsView()
-                    .accessibilityIdentifier("nav_tags_screen")
                     .tabItem {
                         Label("Tags", systemImage: "tag")
                     }
-                    .accessibilityIdentifier("nav_tags")
             }
         }
         .accessibilityIdentifier("syncforge_tasks_root")
+        .accessibilityElement(children: .contain)
         .onAppear {
             viewModel.beginKotlinPreloadIfNeeded()
         }
