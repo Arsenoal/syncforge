@@ -15,7 +15,8 @@ captures/
 .docx-gen/
 docs/*.docx
 !docs/SyncForge-GitHub-Launch-Playbook.docx
-docs/images/demo-screenshot-*.png
+docs/images/*-raw.mp4
+docs/images/syncforge-demo.gif
 .~lock.*
 scripts/*.py
 !scripts/generate-launch-playbook-docx.py

@@ -17,15 +17,13 @@ Compose status observation, and an in-app debug console.
 ## See it in action
 
 <p align="center">
-  <img src="docs/images/syncforge-demo-placeholder.svg" alt="SyncForge demo: offline task, sync, and conflict resolution" width="800" />
+  <video width="800" autoplay loop muted playsinline>
+    <source src="docs/images/syncforge-demo.mp4" type="video/mp4" />
+  </video>
 </p>
 
 <p align="center">
-  <sub>
-    <a href="docs/images/README.md"><strong>Record the animated demo</strong></a>
-    → commit <code>docs/images/syncforge-demo.gif</code>
-    → set the <code>img src</code> above to that file
-  </sub>
+  <sub>Offline write → sync → clear local DB → pull from server · <a href="docs/images/README.md">re-record</a></sub>
 </p>
 
 The `:sample` app is a multi-tab Tasks / Notes / Tags demo. Run it against the mock server in two terminals:

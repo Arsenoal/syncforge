@@ -4,8 +4,7 @@ Assets for the README **See it in action** section.
 
 | File | Purpose |
 |------|---------|
-| `syncforge-demo.gif` | Main README demo (target ~60s, &lt; 5 MB) |
-| `syncforge-demo-placeholder.svg` | Static stand-in until the GIF is recorded |
+| `syncforge-demo.mp4` | Main README demo video (~40s, embedded in README) |
 
 ---
 
@@ -55,40 +54,33 @@ adb shell screenrecord /sdcard/syncforge-demo.mp4
 adb pull /sdcard/syncforge-demo.mp4 /tmp/syncforge-demo.mp4
 ```
 
-### 4. Convert to GIF
+### 4. Compress for README
 
 Requires [ffmpeg](https://ffmpeg.org/).
 
 ```bash
-# Trim, scale for README (max width 800px), optimize palette
-ffmpeg -i syncforge-demo.mp4 -vf "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" \
-  -loop 0 docs/images/syncforge-demo.gif
-```
-
-If the file is too large (&gt; 5 MB for GitHub):
-
-```bash
-ffmpeg -i syncforge-demo.mp4 -t 45 -vf "fps=10,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse" \
-  -loop 0 docs/images/syncforge-demo.gif
+ffmpeg -y -i syncforge-demo-raw.mp4 -ss 1 -t 42 \
+  -vf "scale=800:-2:flags=lanczos" -c:v libx264 -pix_fmt yuv420p -crf 26 \
+  -preset medium -movflags +faststart -an docs/images/syncforge-demo.mp4
 ```
 
 ### 5. Preview locally
 
 ```bash
-ls -lh docs/images/syncforge-demo.gif
-xdg-open docs/images/syncforge-demo.gif   # Linux
-open docs/images/syncforge-demo.gif       # macOS
+ls -lh docs/images/syncforge-demo.mp4
+xdg-open docs/images/syncforge-demo.mp4   # Linux
+open docs/images/syncforge-demo.mp4       # macOS
 ```
 
 ### 6. Commit
 
 ```bash
-git add docs/images/syncforge-demo.gif
-git commit -m "docs: add README demo GIF"
+git add docs/images/syncforge-demo.mp4 README.md
+git commit -m "docs: add README demo video"
 git push
 ```
 
-In [README.md](../../README.md), change the demo `img src` from `syncforge-demo-placeholder.svg` to `syncforge-demo.gif`. Push — the animation appears on the repo front page.
+[README.md](../../README.md) embeds the video with an HTML `<video>` tag (autoplay, loop, muted).
 
 ---
 
