@@ -4,7 +4,8 @@ Assets for the README **See it in action** section.
 
 | File | Purpose |
 |------|---------|
-| `syncforge-demo.mp4` | Main README demo video (~40s, embedded in README) |
+| `syncforge-demo.gif` | Main README demo (embedded in README — GitHub renders GIF, not `<video>`) |
+| `syncforge-demo.mp4` | Source recording (optional download / re-encode) |
 
 ---
 
@@ -79,25 +80,30 @@ adb pull /sdcard/syncforge-demo.mp4 docs/images/syncforge-demo-raw.mp4
 ffmpeg -y -i docs/images/syncforge-demo-raw.mp4 \
   -vf "scale=480:-2:flags=lanczos" -c:v libx264 -pix_fmt yuv420p -crf 23 \
   -preset medium -movflags +faststart -an docs/images/syncforge-demo.mp4
+
+# GIF for GitHub README (HTML <video> is stripped on github.com)
+ffmpeg -y -i docs/images/syncforge-demo.mp4 \
+  -vf "fps=10,scale=360:-2:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" \
+  -loop 0 docs/images/syncforge-demo.gif
 ```
 
 ### 5. Preview locally
 
 ```bash
-ls -lh docs/images/syncforge-demo.mp4
-xdg-open docs/images/syncforge-demo.mp4   # Linux
-open docs/images/syncforge-demo.mp4       # macOS
+ls -lh docs/images/syncforge-demo.gif docs/images/syncforge-demo.mp4
+xdg-open docs/images/syncforge-demo.gif   # Linux
+open docs/images/syncforge-demo.gif       # macOS
 ```
 
 ### 6. Commit
 
 ```bash
-git add docs/images/syncforge-demo.mp4 README.md
-git commit -m "docs: add README demo video"
+git add docs/images/syncforge-demo.gif docs/images/syncforge-demo.mp4 README.md
+git commit -m "docs: add README demo GIF"
 git push
 ```
 
-[README.md](../../README.md) embeds the video with an HTML `<video>` tag (autoplay, loop, muted).
+[README.md](../../README.md) embeds `syncforge-demo.gif` (GitHub does not render `<video>` in README).
 
 ---
 

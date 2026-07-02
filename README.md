@@ -17,9 +17,7 @@ Compose status observation, and an in-app debug console.
 ## See it in action
 
 <p align="center">
-  <video width="360" autoplay loop muted playsinline style="max-width: 360px; border-radius: 16px; border: 1px solid #e0e0e0;">
-    <source src="docs/images/syncforge-demo.mp4" type="video/mp4" />
-  </video>
+  <img src="docs/images/syncforge-demo.gif" alt="SyncForge demo: add task, sync, clear local DB, pull from server" width="360" style="max-width: 360px; border-radius: 16px; border: 1px solid #e0e0e0;" />
 </p>
 
 <p align="center">

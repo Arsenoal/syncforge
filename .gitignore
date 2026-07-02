@@ -16,7 +16,6 @@ captures/
 docs/*.docx
 !docs/SyncForge-GitHub-Launch-Playbook.docx
 docs/images/*-raw.mp4
-docs/images/syncforge-demo.gif
 .~lock.*
 scripts/*.py
 *.sh
