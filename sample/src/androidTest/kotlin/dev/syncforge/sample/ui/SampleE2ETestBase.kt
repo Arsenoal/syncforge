@@ -1,105 +1,147 @@
 package dev.syncforge.sample.ui
 
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
+import dev.syncforge.sample.MainActivity
 import org.junit.Assume
+import org.junit.Rule
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Shared UiAutomator helpers for [:sample] E2E tests against [:mock-server] on the host
+ * Shared Compose UI Test helpers for [:sample] E2E tests against [:mock-server] on the host
  * (10.0.2.2:8080 from the emulator).
+ *
+ * Uses [createAndroidComposeRule] instead of UiAutomator — Compose buttons and navigation items
+ * are not consistently exposed to the accessibility tree that UiAutomator queries.
  */
 abstract class SampleE2ETestBase {
 
-    protected lateinit var device: UiDevice
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     protected fun prepareDevice() {
         Assume.assumeTrue(
             "Mock server must be running on host port 8080 (./gradlew androidE2e)",
             isMockServerHealthy(),
         )
-        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        launchApp()
+        waitForAppReady()
     }
 
-    protected fun launchApp() {
-        device.pressHome()
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            ?: error("Launch intent missing for ${context.packageName}")
-        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        context.startActivity(intent)
-        device.wait(Until.hasObject(By.text("Sync")), 15_000)
-        device.wait(Until.hasObject(By.text("New task")), 15_000)
+    private fun waitForAppReady() {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            composeTestRule.onAllNodesWithTag("sync_button").fetchSemanticsNodes().isNotEmpty() &&
+                composeTestRule.onAllNodesWithText("New task").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     protected fun navigateToTasks() {
-        tapText("Tasks")
-        device.wait(Until.hasObject(By.text("New task")), 10_000)
+        composeTestRule.onNodeWithTag("nav_tasks").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithText("New task").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     protected fun navigateToNotes() {
-        tapText("Notes")
-        device.wait(Until.hasObject(By.text("Add note")), 10_000)
+        composeTestRule.onNodeWithTag("nav_notes").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag("add_note_button").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     protected fun addTask(title: String) {
         navigateToTasks()
-        val field = device.wait(Until.findObject(By.text("New task")), 5_000)
-        field.click()
-        field.text = title
-        tapText("Add")
-        device.wait(Until.hasObject(By.text(title)), 10_000)
+        composeTestRule.onNodeWithTag("new_task_input").performClick()
+        composeTestRule.onNodeWithTag("new_task_input").performTextInput(title)
+        composeTestRule.onNodeWithTag("add_task_button").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithText(title).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     protected fun addNote(title: String, body: String = "") {
         navigateToNotes()
-        val fields = device.wait(
-            Until.findObjects(By.clazz("android.widget.EditText")),
-            5_000,
-        )
-        check(fields.isNotEmpty()) { "Note title field not found" }
-        fields[0].click()
-        fields[0].text = title
+        composeTestRule.onNodeWithTag("new_note_title_input").performClick()
+        composeTestRule.onNodeWithTag("new_note_title_input").performTextInput(title)
         if (body.isNotBlank()) {
-            check(fields.size >= 2) { "Note body field not found" }
-            fields[1].click()
-            fields[1].text = body
+            composeTestRule.onNodeWithTag("new_note_body_input").performClick()
+            composeTestRule.onNodeWithTag("new_note_body_input").performTextInput(body)
         }
-        tapText("Add note")
-        device.wait(Until.hasObject(By.text(title)), 10_000)
+        composeTestRule.onNodeWithTag("add_note_button").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithText(title).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     protected fun tapText(text: String) {
-        val node = device.wait(Until.findObject(By.text(text)), 10_000)
-        node.click()
+        when (text) {
+            "Sync" -> composeTestRule.onNodeWithTag("sync_button").performClick()
+            else -> composeTestRule
+                .onNode(
+                    hasText(text, substring = false, ignoreCase = false) and hasClickAction(),
+                    useUnmergedTree = true,
+                )
+                .performClick()
+        }
+    }
+
+    protected fun toggleFirstCheckbox() {
+        composeTestRule.onNode(isToggleable(), useUnmergedTree = true).performClick()
     }
 
     protected fun waitForSyncToFinish(timeoutMillis: Long = 30_000) {
-        device.wait(Until.gone(By.textContains("Syncing")), timeoutMillis)
+        composeTestRule.waitUntil(timeoutMillis) {
+            composeTestRule.onAllNodesWithText("Syncing", substring = true)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
     }
 
     protected fun waitForAnyText(vararg options: String) {
-        val deadline = System.currentTimeMillis() + 15_000
-        while (System.currentTimeMillis() < deadline) {
-            if (options.any { device.hasObject(By.textContains(it)) }) return
-            Thread.sleep(250)
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            options.any { option ->
+                composeTestRule.onAllNodesWithText(option, substring = true)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
         }
-        error("Expected one of ${options.toList()} on screen")
     }
 
-    protected fun waitForRowSyncState(itemTitle: String, stateLabel: String) {
-        val deadline = System.currentTimeMillis() + 15_000
-        while (System.currentTimeMillis() < deadline) {
-            if (device.hasObject(By.text(itemTitle)) && device.hasObject(By.text(stateLabel))) {
-                return
-            }
-            Thread.sleep(250)
+    protected fun waitForTextContains(text: String, timeoutMillis: Long = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            composeTestRule.onAllNodesWithText(text, substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
-        error("Expected '$itemTitle' with sync state '$stateLabel'")
+    }
+
+    protected fun waitForTextGone(text: String, timeoutMillis: Long = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            composeTestRule.onAllNodesWithText(text, substring = true)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+    }
+
+    protected fun waitForRowSyncState(itemTitle: String, stateLabel: String, timeoutMillis: Long = 30_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            val hasTitle = composeTestRule.onAllNodesWithText(itemTitle)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+            val hasState = composeTestRule.onAllNodesWithText(stateLabel, substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+            hasTitle && hasState
+        }
     }
 
     protected fun uniqueTitle(prefix: String): String =

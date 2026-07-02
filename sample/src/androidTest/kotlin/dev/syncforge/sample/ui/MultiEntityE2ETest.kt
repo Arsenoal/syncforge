@@ -1,8 +1,6 @@
 package dev.syncforge.sample.ui
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Until
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,13 +43,14 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         addTask(taskTitle)
         tapText("Sync")
         waitForSyncToFinish()
+        waitForRowSyncState(taskTitle, "Synced")
 
         tapText("Server edit")
-        device.wait(Until.hasObject(By.textContains("Server updated")), 15_000)
-        device.findObject(By.checkable(true)).click()
+        waitForTextContains("Server updated")
+        toggleFirstCheckbox()
 
         tapText("Sync")
-        device.wait(Until.hasObject(By.textContains("Conflict")), 30_000)
+        waitForTextContains("Conflict", timeoutMillis = 30_000)
         waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
 
         addNote(noteTitle)
@@ -61,6 +60,6 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         waitForRowSyncState(noteTitle, "Synced")
 
         navigateToTasks()
-        device.wait(Until.hasObject(By.textContains("Conflict")), 10_000)
+        waitForTextContains("Conflict")
     }
 }
