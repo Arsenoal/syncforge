@@ -30,6 +30,19 @@ Point your SyncForge client `baseUrl` at the server:
 | iOS Simulator | `http://127.0.0.1:8080` |
 | Desktop / same host | `http://localhost:8080` |
 
+## Auth (register / login / refresh)
+
+`:backend-starter` includes in-memory auth routes and **requires Bearer tokens** on sync endpoints.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /auth/register` | `{ "email", "password" }` → tokens |
+| `POST /auth/login` | Same shape |
+| `POST /auth/refresh` | `{ "refresh_token" }` → new tokens |
+| `POST /sync/push`, `GET /sync/pull` | `Authorization: Bearer <access_token>` |
+
+Client setup and Android sequence diagram: [AUTH_API.md](../docs/AUTH_API.md#android-auth-flow).
+
 ## Storage
 
 This starter uses [InMemorySyncStore](../syncforge-server/src/main/kotlin/dev/syncforge/server/InMemorySyncStore.kt) —

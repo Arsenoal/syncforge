@@ -1,5 +1,9 @@
 package dev.syncforge.sync
 
+import dev.syncforge.auth.AuthResult
+import dev.syncforge.auth.AuthState
+import dev.syncforge.auth.Session
+import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPullApplier
@@ -50,7 +54,10 @@ internal class SyncManagerImpl(
     private val conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
     private val conflictStore: ConflictStore = NoOpConflictStore,
     private val scope: CoroutineScope,
+    private val authService: SyncForgeAuthService? = null,
 ) : SyncManager {
+
+    private val loggedOutAuthState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
 
     private val engine: SyncEngine = SyncEngine(
         config = config,
@@ -71,6 +78,43 @@ internal class SyncManagerImpl(
     private val mutex = Mutex()
     private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     override val status: StateFlow<SyncStatus> = _status.asStateFlow()
+
+    override val authState: StateFlow<AuthState> =
+        authService?.authState ?: loggedOutAuthState.asStateFlow()
+
+    override val session: Session? get() = authService?.session
+
+    override suspend fun register(fields: Map<String, String>): AuthResult {
+        val service = authService ?: return authNotConfigured()
+        val result = service.register(fields)
+        if (result is AuthResult.Success && service.config.syncAfterRegister) {
+            sync()
+        }
+        return result
+    }
+
+    override suspend fun login(fields: Map<String, String>): AuthResult {
+        val service = authService ?: return authNotConfigured()
+        val result = service.login(fields)
+        if (result is AuthResult.Success && service.config.syncAfterLogin) {
+            sync()
+        }
+        return result
+    }
+
+    override suspend fun logout(): AuthResult {
+        val service = authService ?: return authNotConfigured()
+        cancelScheduledSync()
+        return service.logout()
+    }
+
+    private fun authNotConfigured(): AuthResult.Failure =
+        AuthResult.Failure(
+            dev.syncforge.auth.AuthError(
+                code = dev.syncforge.auth.AuthError.Code.UNKNOWN,
+                message = "Built-in auth not configured — add auth { } to SyncForge.android/ios/desktop",
+            ),
+        )
 
     private val _pullCursor = MutableStateFlow(cursorStore.get())
     private val syncDebugImpl = SyncDebugImpl(
@@ -216,6 +260,13 @@ internal class SyncManagerImpl(
         block: suspend () -> SyncResult,
     ): SyncResult =
         mutex.withLock {
+            authService?.requireAuthenticated()?.let { authFailure ->
+                val failure = authFailure.toSyncFailure()
+                syncDebugImpl.recordSyncResult(eventType, failure)
+                refreshStatus()
+                return@withLock failure
+            }
+
             if (config.requireNetwork && !networkMonitor.isOnline) {
                 refreshStatus()
                 val failure = SyncResult.Failure(
@@ -252,6 +303,15 @@ internal class SyncManagerImpl(
             scheduleRetryIfNeeded()
             result
         }
+
+    private fun AuthResult.Failure.toSyncFailure(): SyncResult.Failure =
+        SyncResult.Failure(
+            dev.syncforge.model.SyncError(
+                code = dev.syncforge.model.SyncError.Code.AUTH,
+                message = error.message,
+                httpStatus = error.httpStatus,
+            ),
+        )
 }
 
 /** Platform hook for background sync scheduling. */

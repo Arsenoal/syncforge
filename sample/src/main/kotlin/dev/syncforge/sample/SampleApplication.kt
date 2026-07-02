@@ -13,6 +13,7 @@ import dev.syncforge.sample.tasks.SampleDatabase
 import dev.syncforge.sample.tasks.TaskRepository
 import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.runBlocking
+import androidx.core.content.edit
 
 class SampleApplication : Application(), Configuration.Provider {
 
@@ -66,6 +67,6 @@ class SampleApplication : Application(), Configuration.Provider {
             syncManager.debug.clearOutbox()
             syncManager.debug.clearEventLog()
         }
-        getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit { clear() }
     }
 }

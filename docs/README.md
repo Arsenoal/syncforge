@@ -23,6 +23,7 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Understand the KMP migration plan** | [KMP Migration](KMP_MIGRATION.md) |
 | **Look up every public type** | [Module Reference](MODULES.md) |
 | **Implement the backend HTTP contract** | [REST API](REST_API.md) |
+| **Add login/register (built-in auth)** | [Auth API](AUTH_API.md) |
 | **See what's planned next** | [Roadmap](ROADMAP.md) |
 | **Track 1.0 release blockers (P0)** | Generate locally: `.venv-pdf/bin/python scripts/generate-p0-docx.py` → `docs/SyncForge-1.0-P0.docx` |
 | **Track release changes** | [Changelog](../CHANGELOG.md) |
@@ -44,6 +45,7 @@ docs/
 ├── KMP_MIGRATION.md          ← Room → SQLDelight, iOS targets, expect/actual plan
 ├── MODULES.md                ← Package-by-package API reference
 ├── REST_API.md               ← Backend push/pull contract
+├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
 ├── ROADMAP.md                ← Phases, limitations, future work
 └── SyncForge-1.0-P0.docx     ← P0 checklist (local only; generate via scripts/generate-p0-docx.py)
 ```

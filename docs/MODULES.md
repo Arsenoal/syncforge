@@ -438,6 +438,20 @@ auth(
 
 See [RECIPES.md → Token refresh on 401](RECIPES.md#token-refresh-on-401).
 
+### `dev.syncforge.auth` — Built-in register/login (commonMain + platform)
+
+Single developer API for auth + sync. Configure via `auth { }` on `SyncForge.android` / `ios` / `desktop`.
+
+| Type | Role |
+|------|------|
+| `BuiltInAuthDsl` / `BuiltInAuthConfig` | Endpoint paths, token field mapping, `requireAuthForSync` |
+| `SyncForgeAuthService` | `register`, `login`, `logout`, `refreshAccessToken` |
+| `TokenStore` | Persist access + refresh tokens (`expect/actual`) |
+| `AuthState` | `LoggedOut`, `LoggedIn`, `Refreshing`, `Error` — exposed on `SyncManager.authState` |
+| `SyncManager.register/login/logout` | App-facing API (experimental) |
+
+Android flow diagram and Compose examples: [AUTH_API.md → Android auth flow](AUTH_API.md#android-auth-flow).
+
 ### `dev.syncforge.network.api` (commonMain)
 
 Serializable DTOs (`PushRequest`, `PushResponse`, `PullResponse`, etc.) shared with

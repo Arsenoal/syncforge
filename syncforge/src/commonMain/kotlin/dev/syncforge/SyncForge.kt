@@ -1,6 +1,7 @@
 package dev.syncforge
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictStore
 import dev.syncforge.conflict.NoOpConflictStore
@@ -49,6 +50,7 @@ object SyncForge {
         workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
         conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
         conflictStore: ConflictStore = NoOpConflictStore,
+        authService: SyncForgeAuthService? = null,
     ): SyncManager {
         require(config.entityTypes.containsAll(registry.entityTypes())) {
             "SyncConfig.entityTypes must include all registered handler types: " +
@@ -66,6 +68,7 @@ object SyncForge {
             conflictPolicy = conflictPolicy,
             conflictStore = conflictStore,
             scope = scope,
+            authService = authService,
         )
     }
 
@@ -84,6 +87,7 @@ object SyncForge {
         workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
         conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
         conflictStore: ConflictStore = NoOpConflictStore,
+        authService: SyncForgeAuthService? = null,
     ): SyncManager {
         lateinit var manager: SyncManager
         val retryScheduler = dev.syncforge.sync.InProcessRetryScheduler(scope) {
@@ -101,6 +105,7 @@ object SyncForge {
             workScheduler = workScheduler,
             conflictPolicy = conflictPolicy,
             conflictStore = conflictStore,
+            authService = authService,
         )
         return manager
     }

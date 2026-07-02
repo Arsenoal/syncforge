@@ -1,6 +1,7 @@
 package dev.syncforge
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.conflict.ConflictStore
@@ -47,6 +48,7 @@ class SyncForgeBuilder {
     var enableOptimisticUpdates: Boolean = true
     var conflictPolicy: ConflictPolicy = ConflictPolicy.Default
     var conflictStore: ConflictStore? = null
+    var authService: SyncForgeAuthService? = null
 
     internal var schedulePeriodicSyncOnStart: Boolean = false
 
@@ -94,6 +96,7 @@ class SyncForgeBuilder {
                 workScheduler = workScheduler ?: NoOpSyncWorkScheduler,
                 conflictPolicy = conflictPolicy,
                 conflictStore = conflictStore ?: NoOpConflictStore,
+                authService = authService,
             )
         } else {
             SyncForge.create(
@@ -108,6 +111,7 @@ class SyncForgeBuilder {
                 workScheduler = workScheduler ?: NoOpSyncWorkScheduler,
                 conflictPolicy = conflictPolicy,
                 conflictStore = conflictStore ?: NoOpConflictStore,
+                authService = authService,
             )
         }
     }

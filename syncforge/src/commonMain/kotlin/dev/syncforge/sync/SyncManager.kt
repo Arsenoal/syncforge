@@ -1,6 +1,9 @@
 package dev.syncforge.sync
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.auth.AuthResult
+import dev.syncforge.auth.AuthState
+import dev.syncforge.auth.Session
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictRecord
 import dev.syncforge.conflict.ConflictSummary
@@ -19,6 +22,26 @@ interface SyncManager {
 
     /** Hot stream of sync lifecycle — ideal for Compose [androidx.compose.runtime.collectAsState]. */
     val status: StateFlow<SyncStatus>
+
+    /** Session state when built-in `auth { }` is configured; otherwise [AuthState.LoggedOut]. */
+    @ExperimentalSyncForgeApi
+    val authState: StateFlow<AuthState>
+
+    /** Current session metadata (no raw tokens). Null when logged out. */
+    @ExperimentalSyncForgeApi
+    val session: Session?
+
+    /** Register a new user. Request body fields are sent as JSON keys. Requires `auth { }` DSL. */
+    @ExperimentalSyncForgeApi
+    suspend fun register(fields: Map<String, String>): AuthResult
+
+    /** Log in. Request body fields are sent as JSON keys. Requires `auth { }` DSL. */
+    @ExperimentalSyncForgeApi
+    suspend fun login(fields: Map<String, String>): AuthResult
+
+    /** Clear local session and call logout endpoint when configured. */
+    @ExperimentalSyncForgeApi
+    suspend fun logout(): AuthResult
 
     /** In-app debug console — outbox, health, conflicts, event log. */
     @ExperimentalSyncForgeApi

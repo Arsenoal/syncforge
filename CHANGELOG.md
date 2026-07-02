@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Built-in auth (experimental)** — `auth { }` DSL on Android/iOS/desktop, `SyncManager.register`/`login`/`logout`, `authState`, configurable token JSON field mapping, `TokenStore`, `SyncForgeAuthService`, `docs/AUTH_API.md` (Android flow + mermaid diagram)
+- **`:backend-starter` auth** — `POST /auth/register`, `/auth/login`, `/auth/refresh`; Bearer-protected sync routes
 - **Room → SQLDelight migration sign-off tests** — `SyncForgeAndroidMigrationTest` (Robolectric), `RoomMigrationInstrumentedTest` (sample/androidTest, runs in `androidE2e`), and `MigrationTestSupport` helpers
 - **`verifyReleaseSignOff`** Gradle task — JVM + Android unit tests, server tests, consumer smoke, compile checks (CI `linux` job)
 - **`:syncforge-server`** — shared Ktor sync routes (`POST /sync/push`, `GET /sync/pull`), `SyncStore` contract, and `InMemorySyncStore`

@@ -7,7 +7,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 
-fun Route.syncRoutes(store: SyncStore) {
+fun Route.syncRoutes(store: SyncStore, includeHealth: Boolean = true) {
     post("/sync/push") {
         val request = call.receive<PushRequest>()
         val response = store.push(request.entries, System.currentTimeMillis())
@@ -26,8 +26,10 @@ fun Route.syncRoutes(store: SyncStore) {
         call.respond(response)
     }
 
-    get("/health") {
-        call.respond(mapOf("status" to "ok"))
+    if (includeHealth) {
+        get("/health") {
+            call.respond(mapOf("status" to "ok"))
+        }
     }
 }
 

@@ -1,6 +1,9 @@
 package dev.syncforge
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.auth.BuiltInAuthDsl
+import dev.syncforge.auth.SyncForgeAuthService
+import dev.syncforge.auth.createTokenStore
 import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.EntitySyncHandler
@@ -39,6 +42,8 @@ class IosSyncForgeDsl internal constructor() {
     private val builder = SyncForgeBuilder()
     private var baseUrl: String? = null
     private var auth: SyncAuthProvider? = null
+    private var builtInAuth: BuiltInAuthDsl.() -> Unit = {}
+    private var useBuiltInAuth: Boolean = false
     private var persistence: SyncForgePersistence? = null
     private var backgroundSyncTaskIdentifier: String = IosBackgroundSync.DEFAULT_TASK_IDENTIFIER
 
@@ -52,6 +57,11 @@ class IosSyncForgeDsl internal constructor() {
 
     fun auth(provider: SyncAuthProvider) {
         auth = provider
+    }
+
+    fun auth(block: BuiltInAuthDsl.() -> Unit) {
+        useBuiltInAuth = true
+        builtInAuth = block
     }
 
     fun scope(scope: CoroutineScope) {
@@ -138,11 +148,21 @@ class IosSyncForgeDsl internal constructor() {
         builder.outbox = builder.outbox ?: stores.outboxRepository(maxRetries = builder.maxRetries)
         builder.conflictStore = builder.conflictStore ?: stores.conflictStore()
 
-        builder.transport = builder.transport
-            ?: KtorSyncTransport(
-                requireNotNull(baseUrl) { "baseUrl is required — e.g. baseUrl(\"https://api.example.com\")" },
-                auth,
+        val resolvedBaseUrl = requireNotNull(baseUrl) { "baseUrl is required — e.g. baseUrl(\"https://api.example.com\")" }
+
+        if (useBuiltInAuth) {
+            val authConfig = BuiltInAuthDsl().apply(builtInAuth).build()
+            val authService = SyncForgeAuthService.create(
+                baseUrl = resolvedBaseUrl,
+                config = authConfig,
+                tokenStore = createTokenStore(),
             )
+            builder.authService = authService
+            auth = authService.authProvider
+        }
+
+        builder.transport = builder.transport
+            ?: KtorSyncTransport(resolvedBaseUrl, auth)
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create()
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create()
         builder.workScheduler = builder.workScheduler

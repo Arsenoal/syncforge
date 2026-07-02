@@ -33,6 +33,12 @@ By the end you will have:
 **You own:** Room schema, DAOs, UI, backend.  
 **SyncForge owns:** internal outbox + conflict DB, push/pull cycles, retry, cursor, conflict policy.
 
+### Optional — built-in auth
+
+If your backend has login/register endpoints, add `auth { }` and use the same `SyncManager` for
+login and sync (no separate auth SDK). See [AUTH_API.md → Android auth flow](AUTH_API.md#android-auth-flow)
+for the full diagram and Compose examples.
+
 ---
 
 ## Step 0 — Add dependencies
