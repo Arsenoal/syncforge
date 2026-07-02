@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-rc.1] - 2026-07-02
+
 ### Added
 
 - **Built-in auth (experimental)** — `auth { }` DSL on Android/iOS/desktop, `SyncManager.register`/`login`/`logout`, `authState`, configurable token JSON field mapping, `TokenStore`, `SyncForgeAuthService`, `docs/AUTH_API.md` (Android flow + mermaid diagram)
@@ -16,21 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`:syncforge-server`** — shared Ktor sync routes (`POST /sync/push`, `GET /sync/pull`), `SyncStore` contract, and `InMemorySyncStore`
 - **`:backend-starter`** — minimal runnable reference backend (`./gradlew :backend-starter:run`); copy and replace storage for production
 - **`docs/MAVEN_PUBLISH.md`** — Maven Central one-time setup, GitHub secrets, tag publish, and post-release verification checklist
+- **`REST_API.md` versioning policy** — semver alignment with library releases, stable 1.0 scope, minor/major change rules, backend checklist
 
 ### Changed
 
 - **`:mock-server`** — uses `:syncforge-server` for contract routes; keeps `/dev/*` endpoints for conflict demos only
 - **`InMemorySyncStore.pull`** — empty `types` query returns all entity types (matches REST_API.md)
-
-### Changed (earlier unreleased)
-
 - **POM metadata** — `syncforge.pom.url` and SCM URLs point to `github.com/Arsenoal/syncforge`
-
-### Added (earlier unreleased)
-
-- **`REST_API.md` versioning policy** — semver alignment with library releases, stable 1.0 scope, minor/major change rules, backend checklist
-
-## [0.9.0-rc.1] - 2026-07-02
 
 ### Removed
 
