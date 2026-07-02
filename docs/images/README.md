@@ -59,8 +59,18 @@ adb pull /sdcard/syncforge-demo.mp4 /tmp/syncforge-demo.mp4
 Requires [ffmpeg](https://ffmpeg.org/).
 
 ```bash
-ffmpeg -y -i syncforge-demo-raw.mp4 -ss 1 -t 42 \
-  -vf "scale=800:-2:flags=lanczos" -c:v libx264 -pix_fmt yuv420p -crf 26 \
+# Lock portrait, launch app, wait until UI is visible — then start screenrecord
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 0
+adb shell am start -n dev.syncforge.sample/.MainActivity
+sleep 5
+adb shell screenrecord --size 720x1520 --time-limit 35 /sdcard/syncforge-demo.mp4 &
+# … run demo steps …
+pkill -f "adb shell screenrecord"
+adb pull /sdcard/syncforge-demo.mp4 docs/images/syncforge-demo-raw.mp4
+
+ffmpeg -y -i docs/images/syncforge-demo-raw.mp4 \
+  -vf "scale=480:-2:flags=lanczos" -c:v libx264 -pix_fmt yuv420p -crf 23 \
   -preset medium -movflags +faststart -an docs/images/syncforge-demo.mp4
 ```
 

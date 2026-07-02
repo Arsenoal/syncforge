@@ -17,7 +17,7 @@ Compose status observation, and an in-app debug console.
 ## See it in action
 
 <p align="center">
-  <video width="800" autoplay loop muted playsinline>
+  <video width="360" autoplay loop muted playsinline style="max-width: 360px; border-radius: 16px; border: 1px solid #e0e0e0;">
     <source src="docs/images/syncforge-demo.mp4" type="video/mp4" />
   </video>
 </p>
