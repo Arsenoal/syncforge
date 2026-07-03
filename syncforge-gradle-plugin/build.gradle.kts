@@ -42,22 +42,22 @@ dependencies {
 
 // java-gradle-plugin registers the pluginMaven publication automatically.
 
+fun signingProperty(name: String): String? =
+    providers.gradleProperty(name).orNull?.trim()
+        ?: readParentGradleProperty(name)?.trim()
+
 afterEvaluate {
     val signingRequested = providers.gradleProperty("signAllPublications").orElse("false").get().toBoolean()
     if (!signingRequested) return@afterEvaluate
 
-    val inMemoryKey = providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
-    val secretKeyRingFile = providers.gradleProperty("signing.secretKeyRingFile").orNull?.trim()
-    val keyId = providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
-        ?: providers.gradleProperty("signing.keyId").orNull?.trim()
-    val keyPassword = providers.gradleProperty("signing.inMemoryKeyPassword").orNull
-        ?: providers.gradleProperty("signing.password").orNull
-    check(
-        !inMemoryKey.isNullOrBlank() ||
-            !secretKeyRingFile.isNullOrBlank() ||
-            !keyId.isNullOrBlank(),
-    ) {
-        "syncforge-gradle-plugin: signAllPublications=true but no signing key is configured"
+    val inMemoryKey = signingProperty("signing.inMemoryKey")
+    val secretKeyRingFile = signingProperty("signing.secretKeyRingFile")
+    val keyId = signingProperty("signing.inMemoryKeyId") ?: signingProperty("signing.keyId")
+    val keyPassword = signingProperty("signing.inMemoryKeyPassword") ?: signingProperty("signing.password")
+
+    if (inMemoryKey.isNullOrBlank() && secretKeyRingFile.isNullOrBlank()) {
+        // Composite includeBuild may not see ORG_GRADLE_PROJECT_*; parent gradle.properties supplies CI signing.
+        return@afterEvaluate
     }
 
     val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()

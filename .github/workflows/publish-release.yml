@@ -100,12 +100,18 @@ jobs:
             exit 1
           fi
           echo "Signing key ready ($(wc -c < "$KEY_FILE" | tr -d ' ') bytes)"
+          KEY_ID="${SIGNING_IN_MEMORY_KEY_ID:-1DF1CDEB}"
           {
             echo "ORG_GRADLE_PROJECT_signing_secretKeyRingFile=${KEY_FILE}"
-            echo "ORG_GRADLE_PROJECT_signing_keyId=${SIGNING_IN_MEMORY_KEY_ID:-1DF1CDEB}"
+            echo "ORG_GRADLE_PROJECT_signing_keyId=${KEY_ID}"
           } >> "$GITHUB_ENV"
+          {
+            echo "signing.secretKeyRingFile=${KEY_FILE}"
+            echo "signing.keyId=${KEY_ID}"
+          } >> gradle.properties
           if [ -n "${SIGNING_IN_MEMORY_KEY_PASSWORD:-}" ]; then
             echo "ORG_GRADLE_PROJECT_signing_password=${SIGNING_IN_MEMORY_KEY_PASSWORD}" >> "$GITHUB_ENV"
+            echo "signing.password=${SIGNING_IN_MEMORY_KEY_PASSWORD}" >> gradle.properties
           fi
 
       - name: Publish to Maven Central
