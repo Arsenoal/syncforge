@@ -6,7 +6,7 @@ Your app entities live in Room (or your own store on iOS). SyncForge queues muta
 SQLDelight outbox, syncs with your backend through a pluggable transport, and handles conflicts,
 Compose status observation, and an in-app debug console.
 
-**Current version:** `0.9.0-rc.2`  
+**Current version:** `0.9.0-rc.3`  
 **Maven group:** `studio.syncforge` ([Maven Central](https://central.sonatype.com/namespace/studio.syncforge))
 
 > SyncForge is a **pre-1.0** library. Android is the reference platform; iOS, JVM desktop, and
@@ -43,11 +43,11 @@ pluginManagement {
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("studio.syncforge.android") version "0.9.0-rc.2"
+    id("studio.syncforge.android") version "0.9.0-rc.3"
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.2"))
+    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.3"))
     implementation("studio.syncforge:syncforge")
     // Your Room database (@Database / @Dao) — runtime usually comes transitively
 }
@@ -81,7 +81,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")          // if you have an androidTarget for KSP
     id("com.google.devtools.ksp")
-    id("studio.syncforge.android") version "0.9.0-rc.2"  // androidTarget / KSP wiring
+    id("studio.syncforge.android") version "0.9.0-rc.3"  // androidTarget / KSP wiring
 }
 
 kotlin {
@@ -94,7 +94,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.2"))
+            implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.3"))
             implementation("studio.syncforge:syncforge")
         }
     }
@@ -122,11 +122,11 @@ Expose controllers to Swift via your shared framework (see `sample-ios-shared` i
 
 ```bash
 # After the Sonatype staging repo is released (see MAVEN_PUBLISH.md)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.2/syncforge-bom-0.9.0-rc.2.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.3/syncforge-bom-0.9.0-rc.3.pom" | head -1
 ```
 
 Expect `HTTP/2 200`. If you see `404`, complete **Close → Release** in the
-[Sonatype Central Portal](https://central.sonatype.com) for the `0.9.0-rc.2` deployment.
+[Sonatype Central Portal](https://central.sonatype.com) for the `0.9.0-rc.3` deployment.
 
 ---
 

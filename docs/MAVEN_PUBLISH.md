@@ -1,6 +1,6 @@
 # Maven Central publish checklist
 
-Step-by-step guide for publishing SyncForge to Maven Central. Use for the **0.9.0-rc.2** release
+Step-by-step guide for publishing SyncForge to Maven Central. Use for the **0.9.0-rc.3** release
 and the **1.0.0** stable release.
 
 **Repository:** [github.com/Arsenoal/syncforge](https://github.com/Arsenoal/syncforge)  
@@ -31,7 +31,7 @@ These live in [gradle.properties](../gradle.properties) and are applied by
 | `syncforge.pom.scm.developerConnection` | `scm:git:ssh://github.com/Arsenoal/syncforge.git` |
 | License | Apache 2.0 |
 
-Version is set from the git tag in CI (`v0.9.0-rc.2` → `syncforge.version=0.9.0-rc.2`).
+Version is set from the git tag in CI (`v0.9.0-rc.3` → `syncforge.version=0.9.0-rc.3`).
 
 ---
 
@@ -83,8 +83,8 @@ Close and release the staging repository in the Sonatype Central Portal UI after
 2. Create and push a version tag:
 
 ```bash
-git tag v0.9.0-rc.2
-git push origin v0.9.0-rc.2
+git tag v0.9.0-rc.3
+git push origin v0.9.0-rc.3
 ```
 
 3. Watch **Actions** → **Publish Release** on `macos-latest`:
@@ -106,7 +106,8 @@ git push origin v0.9.0-rc.2
 | `studio.syncforge:syncforge-persistence` | SQLDelight persistence |
 | `studio.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
 | `studio.syncforge:syncforge-bom` | Version alignment BOM |
-| `studio.syncforge:syncforge-gradle-plugin` | `id("studio.syncforge.android")` plugin (Maven `pluginMaven`) |
+| `studio.syncforge:syncforge-gradle-plugin` | Gradle plugin implementation (Maven `pluginMaven`) |
+| `studio.syncforge.android:studio.syncforge.android.gradle.plugin` | Plugin marker for `id("studio.syncforge.android")` |
 
 Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
@@ -118,7 +119,7 @@ Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.2/syncforge-bom-0.9.0-rc.2.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.3/syncforge-bom-0.9.0-rc.3.pom" | head -1
 ```
 
 ### Consumer smoke against Central
@@ -137,7 +138,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 
 | Step | Action |
 |------|--------|
-| Soak | Let `0.9.0-rc.2` sit; CI + optional external dogfood |
+| Soak | Let `0.9.0-rc.3` sit; CI + optional external dogfood |
 | Fixes | Tag `v0.9.0-rc.3` if needed |
 | Stable | Bump version, tag `v1.0.0`, repeat publish + verification |
 | Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
