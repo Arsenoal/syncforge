@@ -88,5 +88,49 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
+      - name: Build mock-server
+        run: ./gradlew :mock-server:installDist --no-daemon
+
+      - name: Boot iOS Simulator
+        run: ./gradlew iosE2ePrepareSimulator --no-daemon
+
+      - name: Start mock-server
+        run: |
+          set -euo pipefail
+          PORT="$(cat build/ios-e2e/port.txt)"
+          LOG="build/ios-e2e/mock-server.log"
+          mock-server/build/install/mock-server/bin/mock-server > "$LOG" 2>&1 &
+          echo $! > build/ios-e2e/mock-server.pid
+          for _ in $(seq 1 30); do
+            if curl -sf "http://127.0.0.1:${PORT}/health" >/dev/null; then
+              echo "Mock server healthy on port ${PORT}"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Mock server failed to start"
+          tail -50 "$LOG" || true
+          exit 1
+
       - name: Run XCUITest multi-entity UI tests
-        run: ./gradlew iosE2e --no-daemon
+        env:
+          MOCK_SERVER_BASE_URL: http://127.0.0.1:8080
+          E2E_TESTING: "1"
+          E2E_SWIFT_STUB: "1"
+        run: ./gradlew iosE2eXcuiTest --no-daemon
+
+      - name: Stop mock-server
+        if: always()
+        run: |
+          if [ -f build/ios-e2e/mock-server.pid ]; then
+            kill "$(cat build/ios-e2e/mock-server.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload iOS E2E debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-debug
+          path: |
+            build/ios-e2e/mock-server.log
+            build/ios-e2e/destination.txt

@@ -63,65 +63,112 @@ tasks.register("androidE2e") {
     }
 }
 
+fun Project.iosE2eMetadataDir(): File {
+    val dir = layout.buildDirectory.dir("ios-e2e").get().asFile
+    dir.mkdirs()
+    return dir
+}
+
+fun Project.requireMacOsForIosE2e() {
+    if (!System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        error("iOS UI tests require macOS with Xcode (Simulator + xcodebuild).")
+    }
+}
+
+fun Project.resolveIosE2ePort(): Int =
+    System.getenv("PORT")?.toIntOrNull()
+        ?: iosE2eMetadataDir().resolve("port.txt").takeIf { it.exists() }?.readText()?.trim()?.toIntOrNull()
+        ?: 8080
+
+fun Project.resolveIosE2eDestination(): String =
+    System.getenv("IOS_SIMULATOR_DESTINATION")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: iosE2eMetadataDir().resolve("destination.txt").takeIf { it.exists() }?.readText()?.trim()?.takeIf { it.isNotEmpty() }
+        ?: resolveIosSimulatorDestination()
+
+fun Project.runIosXcuiTest(destination: String, port: Int, mockServerLog: File? = null) {
+    val healthUrl = "http://127.0.0.1:$port/health"
+    logger.lifecycle("Using Swift-only E2E stub (no KMP frameworks linked for XCUITest)")
+    logger.lifecycle("Running XCUITest on $destination...")
+
+    val result = exec {
+        isIgnoreExitValue = true
+        environment("MOCK_SERVER_HEALTH_URL", healthUrl)
+        environment("MOCK_SERVER_BASE_URL", "http://127.0.0.1:$port")
+        environment("E2E_TESTING", "1")
+        environment("E2E_SWIFT_STUB", "1")
+        commandLine(
+            "xcodebuild",
+            "test",
+            "-project",
+            "ios-sample/SyncForgeTasks.xcodeproj",
+            "-scheme",
+            "SyncForgeTasks",
+            "-destination",
+            destination,
+            "-only-testing:SyncForgeTasksUITests",
+            "-parallel-testing-enabled",
+            "NO",
+            "-maximum-concurrent-test-simulator-destinations",
+            "1",
+            "CODE_SIGNING_ALLOWED=NO",
+            "E2E_SWIFT_STUB=1",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=E2E_SWIFT_STUB",
+            "GCC_PREPROCESSOR_DEFINITIONS=E2E_SWIFT_STUB=1",
+            "OTHER_LDFLAGS=-lsqlite3",
+        )
+    }
+    if (result.exitValue != 0) {
+        logger.error("xcodebuild test failed (exit ${result.exitValue}). Recent mock-server log:")
+        mockServerLog?.takeIf { it.exists() }?.readLines()?.takeLast(30)?.forEach { logger.error(it) }
+        error("xcodebuild test failed with exit code ${result.exitValue}")
+    }
+}
+
+tasks.register("iosE2ePrepareSimulator") {
+    group = "verification"
+    description = "Resolves an iOS Simulator destination, boots it, and writes build/ios-e2e metadata for CI steps."
+
+    doLast {
+        requireMacOsForIosE2e()
+        val destination = resolveIosE2eDestination()
+        bootIosSimulatorForDestination(destination)
+
+        val metadata = iosE2eMetadataDir()
+        metadata.resolve("destination.txt").writeText(destination)
+        metadata.resolve("port.txt").writeText(resolveIosE2ePort().toString())
+        logger.lifecycle("iOS E2E destination: $destination")
+        logger.lifecycle("iOS E2E metadata: ${metadata.absolutePath}")
+    }
+}
+
+tasks.register("iosE2eXcuiTest") {
+    group = "verification"
+    description = "Runs XCUITest against a mock-server that is already running (see ios-e2e CI workflow)."
+
+    doLast {
+        requireMacOsForIosE2e()
+        val port = resolveIosE2ePort()
+        val logFile = iosE2eMetadataDir().resolve("mock-server.log")
+        waitForMockServerHealth(port, logFile)
+        resetMockServerState(port)
+        runIosXcuiTest(resolveIosE2eDestination(), port, logFile)
+    }
+}
+
 tasks.register("iosE2e") {
     group = "verification"
     description = "Runs ios-sample XCUITest UI tests against mock-server (requires macOS + Xcode Simulator)."
-    dependsOn(":mock-server:installDist")
+    dependsOn(":mock-server:installDist", "iosE2ePrepareSimulator")
 
     doLast {
-        if (!System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-            error("iOS UI tests require macOS with Xcode (Simulator + xcodebuild).")
-        }
-
-        val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
-        val healthUrl = "http://127.0.0.1:$port/health"
-        val logFile = File(System.getProperty("java.io.tmpdir"), "syncforge-mock-server.log")
+        requireMacOsForIosE2e()
+        val port = resolveIosE2ePort()
+        val logFile = iosE2eMetadataDir().resolve("mock-server.log")
         val process = startMockServer(port, logFile)
         try {
             waitForMockServerHealth(port, logFile)
             resetMockServerState(port)
-
-            logger.lifecycle("Using Swift-only E2E stub (no KMP frameworks linked for XCUITest)")
-
-            val destination = System.getenv("IOS_SIMULATOR_DESTINATION")
-                ?: project.resolveIosSimulatorDestination()
-            project.bootIosSimulatorForDestination(destination)
-            logger.lifecycle("Running XCUITest on $destination...")
-
-            val result = exec {
-                isIgnoreExitValue = true
-                environment("MOCK_SERVER_HEALTH_URL", healthUrl)
-                environment("MOCK_SERVER_BASE_URL", "http://127.0.0.1:$port")
-                environment("E2E_TESTING", "1")
-                environment("E2E_SWIFT_STUB", "1")
-                commandLine(
-                    "xcodebuild",
-                    "test",
-                    "-project",
-                    "ios-sample/SyncForgeTasks.xcodeproj",
-                    "-scheme",
-                    "SyncForgeTasks",
-                    "-destination",
-                    destination,
-                    "-only-testing:SyncForgeTasksUITests",
-                    "-parallel-testing-enabled",
-                    "NO",
-                    "-maximum-concurrent-test-simulator-destinations",
-                    "1",
-                    "CODE_SIGNING_ALLOWED=NO",
-                    "E2E_SWIFT_STUB=1",
-                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS=E2E_SWIFT_STUB",
-                    "GCC_PREPROCESSOR_DEFINITIONS=E2E_SWIFT_STUB=1",
-                    "OTHER_LDFLAGS=-lsqlite3",
-                )
-            }
-            if (result.exitValue != 0) {
-                logger.error("xcodebuild test failed (exit ${result.exitValue}). Recent mock-server log:")
-                if (logFile.exists()) {
-                    logFile.readLines().takeLast(30).forEach { logger.error(it) }
-                }
-                error("xcodebuild test failed with exit code ${result.exitValue}")
-            }
+            runIosXcuiTest(resolveIosE2eDestination(), port, logFile)
         } finally {
             process.destroy()
             process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
