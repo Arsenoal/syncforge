@@ -1,3 +1,9 @@
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.withType
+import org.gradle.plugins.signing.Sign
+import org.gradle.plugins.signing.SigningExtension
 import java.util.Properties
 
 plugins {
@@ -40,7 +46,17 @@ dependencies {
     )
 }
 
-// java-gradle-plugin registers the pluginMaven publication automatically.
+val pluginSourcesJar = tasks.register<Jar>("pluginSourcesJar") {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
+val pluginJavadocJar = tasks.register<Jar>("pluginJavadocJar") {
+    archiveClassifier.set("javadoc")
+    from(file("../LICENSE")) {
+        rename { "README.txt" }
+    }
+}
 
 fun signingProperty(name: String): String? =
     providers.gradleProperty(name).orNull?.trim()
@@ -48,6 +64,69 @@ fun signingProperty(name: String): String? =
 
 afterEvaluate {
     val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+    val licenseName = readParentGradleProperty("syncforge.license.name")
+    val licenseUrl = readParentGradleProperty("syncforge.license.url")
+    val pomUrl = readParentGradleProperty("syncforge.pom.url")
+    val scmConnection = readParentGradleProperty("syncforge.pom.scm.connection")
+    val scmDeveloperConnection = readParentGradleProperty("syncforge.pom.scm.developerConnection")
+    val pomInceptionYear = readParentGradleProperty("syncforge.pom.inceptionYear")
+    val pluginDescription = readParentGradleProperty("syncforge.pom.description.syncforge-gradle-plugin")
+        ?: "Gradle plugin wiring SyncForge KSP and Kotlin serialization for Android apps"
+
+    publishing.publications.named<MavenPublication>("pluginMaven") {
+        val hasSources = artifacts.any { it.classifier == "sources" }
+        val hasJavadoc = artifacts.any { it.classifier == "javadoc" }
+        if (!hasSources) artifact(pluginSourcesJar)
+        if (!hasJavadoc) artifact(pluginJavadocJar)
+        pom {
+            name.set("syncforge-gradle-plugin")
+            description.set(pluginDescription)
+            inceptionYear.set(pomInceptionYear)
+            url.set(pomUrl)
+            licenses {
+                license {
+                    name.set(licenseName)
+                    url.set(licenseUrl)
+                    distribution.set("repo")
+                }
+            }
+            developers {
+                developer {
+                    name.set("SyncForge Contributors")
+                }
+            }
+            scm {
+                connection.set(scmConnection)
+                developerConnection.set(scmDeveloperConnection)
+                url.set(pomUrl)
+            }
+        }
+    }
+
+    publishing.publications.named<MavenPublication>("syncForgeAndroidPluginMarkerMaven") {
+        pom {
+            inceptionYear.set(pomInceptionYear)
+            url.set(pomUrl)
+            licenses {
+                license {
+                    name.set(licenseName)
+                    url.set(licenseUrl)
+                    distribution.set("repo")
+                }
+            }
+            developers {
+                developer {
+                    name.set("SyncForge Contributors")
+                }
+            }
+            scm {
+                connection.set(scmConnection)
+                developerConnection.set(scmDeveloperConnection)
+                url.set(pomUrl)
+            }
+        }
+    }
+
     val publishingEnabled = providers.gradleProperty("mavenCentralPublishing")
         .map { it.toBoolean() }
         .orElse(false)
@@ -83,19 +162,18 @@ afterEvaluate {
     val keyPassword = signingProperty("signing.inMemoryKeyPassword") ?: signingProperty("signing.password")
 
     if (inMemoryKey.isNullOrBlank() && secretKeyRingFile.isNullOrBlank()) {
-        // Composite includeBuild may not see ORG_GRADLE_PROJECT_*; parent gradle.properties supplies CI signing.
         return@afterEvaluate
     }
 
-    val signingExtension = extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+    val signingExtension = extensions.getByType<SigningExtension>()
     if (!inMemoryKey.isNullOrBlank()) {
         signingExtension.useInMemoryPgpKeys(keyId.orEmpty(), inMemoryKey, keyPassword.orEmpty())
     }
     signingExtension.setRequired(true)
-    publishing.publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
+    publishing.publications.withType<MavenPublication>().configureEach {
         signingExtension.sign(this)
     }
     tasks.withType<org.gradle.api.publish.maven.tasks.PublishToMavenRepository>().configureEach {
-        dependsOn(tasks.withType<org.gradle.plugins.signing.Sign>())
+        dependsOn(tasks.withType<Sign>())
     }
 }
