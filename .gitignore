@@ -19,6 +19,7 @@ docs/images/*-raw.mp4
 .~lock.*
 scripts/*.py
 *.sh
+!.github/scripts/*.sh
 *.log
 
 # Android

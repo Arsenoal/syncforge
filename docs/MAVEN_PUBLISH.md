@@ -92,7 +92,9 @@ git push origin v0.9.0-rc.3
    - Runs `:syncforge:jvmTest` and `:syncforge-persistence:jvmTest`
    - Runs `publishAllToMavenCentral`
 
-4. In Sonatype Central Portal: **close** → **release** the staging repo (if not auto-released).
+4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
+   (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
+5. In Sonatype Central Portal: **Publish** the deployment (or Close → Release on legacy flows).
 
 ---
 
@@ -152,6 +154,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | `syncforge-android-deps` missing on Central | Ensure `:syncforge-android-deps:publish` is in `publishAllToMavenCentral` (see [build.gradle.kts](../build.gradle.kts)) |
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails after publish | Pin the same version in `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) |
+| CI publish succeeded but **Deployments** is empty | Gradle `maven-publish` needs the OSSRH finalize step. Run **Actions → Finalize Maven Staging** (workflow_dispatch), then refresh **Deployments** |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing errors in CI | Check `SIGNING_IN_MEMORY_KEY` newlines; use full armored block including headers |
 
