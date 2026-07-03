@@ -18,9 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Finalize staging uploads
+      - name: Drop invalid staging and promote remaining uploads
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           FINALIZE_CURRENT_IP: "false"
+          DROP_INVALID_ON_FAILURE: "true"
         run: bash .github/scripts/finalize-maven-central-staging.sh studio.syncforge
