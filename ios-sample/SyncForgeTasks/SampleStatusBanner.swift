@@ -14,10 +14,15 @@ struct SampleStatusBanner: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityIdentifier("sync_status_label")
 
-                Button(viewModel.isSyncing ? "Syncing…" : "Sync", action: viewModel.sync)
-                    .disabled(viewModel.isSyncing)
-                    .accessibilityIdentifier("sync_button")
+                AccessibleButton(
+                    title: viewModel.isSyncing ? "Syncing…" : "Sync",
+                    accessibilityIdentifier: "sync_button",
+                    isEnabled: !viewModel.isSyncing,
+                    action: viewModel.sync
+                )
+                .frame(minWidth: 44, minHeight: 44)
             }
+            .accessibilityElement(children: .contain)
 
             if viewModel.hasConflicts {
                 HStack(spacing: 6) {

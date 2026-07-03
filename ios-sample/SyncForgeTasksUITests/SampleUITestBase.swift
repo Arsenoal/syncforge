@@ -33,8 +33,8 @@ class SampleUITestBase: XCTestCase {
 
     func waitForAppReady(file: StaticString = #filePath, line: UInt = #line) {
         let markers: [XCUIElement] = [
-            app.buttons["sync_button"],
-            app.textFields["new_task_input"],
+            element(identifier: "sync_button", fallbackLabels: ["Sync"]),
+            element(identifier: "new_task_input", fallbackLabels: ["New task"], type: .textField),
             app.otherElements["syncforge_tasks_root"],
             app.staticTexts["Idle"],
             app.staticTexts["No tasks yet"],
@@ -59,7 +59,7 @@ class SampleUITestBase: XCTestCase {
         line: UInt = #line
     ) {
         let ready = app.descendants(matching: .any)["e2e_kotlin_ready"]
-        let syncButton = app.buttons["sync_button"]
+        let syncButton = element(identifier: "sync_button", fallbackLabels: ["Sync"])
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             if ready.waitForExistence(timeout: 0.5) {
@@ -89,7 +89,7 @@ class SampleUITestBase: XCTestCase {
     func navigateToNotes(file: StaticString = #filePath, line: UInt = #line) {
         tapTab("Notes", identifier: "nav_notes", file: file, line: line)
         XCTAssertTrue(
-            app.buttons["add_note_button"].waitForExistence(timeout: 15),
+            element(identifier: "add_note_button", fallbackLabels: ["Add note"]).waitForExistence(timeout: 15),
             file: file,
             line: line
         )
@@ -98,7 +98,7 @@ class SampleUITestBase: XCTestCase {
     func navigateToTags(file: StaticString = #filePath, line: UInt = #line) {
         tapTab("Tags", identifier: "nav_tags", file: file, line: line)
         XCTAssertTrue(
-            app.textFields["new_tag_input"].waitForExistence(timeout: 15),
+            element(identifier: "new_tag_input", fallbackLabels: ["New tag"], type: .textField).waitForExistence(timeout: 15),
             file: file,
             line: line
         )
@@ -110,7 +110,7 @@ class SampleUITestBase: XCTestCase {
         field.tap()
         field.typeText(title)
         dismissKeyboardIfNeeded()
-        app.buttons["add_task_button"].tap()
+        element(identifier: "add_task_button", fallbackLabels: ["Add"]).tap()
         XCTAssertTrue(
             app.staticTexts[title].waitForExistence(timeout: 15),
             "Task row did not appear",
@@ -130,7 +130,7 @@ class SampleUITestBase: XCTestCase {
             bodyField.typeText(body)
         }
         dismissKeyboardIfNeeded()
-        app.buttons["add_note_button"].tap()
+        element(identifier: "add_note_button", fallbackLabels: ["Add note"]).tap()
         XCTAssertTrue(
             app.staticTexts[title].waitForExistence(timeout: 15),
             "Note row did not appear",
@@ -145,7 +145,7 @@ class SampleUITestBase: XCTestCase {
         field.tap()
         field.typeText(label)
         dismissKeyboardIfNeeded()
-        app.buttons["add_tag_button"].tap()
+        element(identifier: "add_tag_button", fallbackLabels: ["Add"]).tap()
         XCTAssertTrue(
             app.staticTexts[label].waitForExistence(timeout: 15),
             "Tag row did not appear",
@@ -155,9 +155,19 @@ class SampleUITestBase: XCTestCase {
     }
 
     func tapSync(file: StaticString = #filePath, line: UInt = #line) {
-        let syncButton = app.buttons["sync_button"]
-        XCTAssertTrue(syncButton.waitForExistence(timeout: 5), file: file, line: line)
-        syncButton.tap()
+        dismissKeyboardIfNeeded()
+        let syncButton = element(identifier: "sync_button", fallbackLabels: ["Sync", "Syncing…"])
+        XCTAssertTrue(
+            syncButton.waitForExistence(timeout: 15),
+            "Sync button not found. Debug:\n\(app.debugDescription)",
+            file: file,
+            line: line
+        )
+        if syncButton.isHittable {
+            syncButton.tap()
+        } else {
+            syncButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
     }
 
     func waitForSyncToFinish(timeout: TimeInterval = 45, file: StaticString = #filePath, line: UInt = #line) {
@@ -235,17 +245,39 @@ class SampleUITestBase: XCTestCase {
     }
 
     private func textField(identifier: String, fallbackLabel: String) -> XCUIElement {
-        let byId = app.textFields[identifier]
+        let byId = element(identifier: identifier, fallbackLabels: [fallbackLabel], type: .textField)
         if byId.exists {
             return byId
         }
         return app.textFields[fallbackLabel]
     }
 
+    private func element(
+        identifier: String,
+        fallbackLabels: [String] = [],
+        type: XCUIElement.ElementType = .any
+    ) -> XCUIElement {
+        let byId = app.descendants(matching: type)[identifier]
+        if byId.exists {
+            return byId
+        }
+        for label in fallbackLabels {
+            let byLabel = app.descendants(matching: type)[label]
+            if byLabel.exists {
+                return byLabel
+            }
+        }
+        return byId
+    }
+
     private func dismissKeyboardIfNeeded() {
-        let returnKey = app.keyboards.buttons["Return"]
-        if returnKey.exists {
-            returnKey.tap()
+        guard app.keyboards.count > 0 else { return }
+        for key in ["Return", "Done", "done", "Go"] {
+            let button = app.keyboards.buttons[key]
+            if button.exists {
+                button.tap()
+                return
+            }
         }
     }
 

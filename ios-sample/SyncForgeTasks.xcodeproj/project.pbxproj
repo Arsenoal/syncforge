@@ -31,6 +31,7 @@
 		B100000000000000000000A5 /* SampleKotlinBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* SampleKotlinBridge.swift */; };
 		B100000000000000000000A6 /* SampleKotlinBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* SampleKotlinBridgeProtocol.swift */; };
 		B100000000000000000000A7 /* SampleKotlinBridgeE2eStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */; };
+		B100000000000000000000A8 /* AccessibleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002A /* AccessibleButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		B10000000000000000000027 /* SampleKotlinBridgeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKotlinBridgeProtocol.swift; sourceTree = "<group>"; };
 		B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKotlinBridgeE2eStub.swift; sourceTree = "<group>"; };
 		B10000000000000000000029 /* Frameworks-E2E.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Frameworks-E2E.xcconfig"; sourceTree = "<group>"; };
+		B1000000000000000000002A /* AccessibleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +129,7 @@
 				B10000000000000000000023 /* SyncStateStyle.swift */,
 				B10000000000000000000024 /* AppDelegate.swift */,
 				B10000000000000000000025 /* AccessibleTextField.swift */,
+				B1000000000000000000002A /* AccessibleButton.swift */,
 				B10000000000000000000016 /* Assets.xcassets */,
 				B10000000000000000000017 /* Info.plist */,
 			);
@@ -295,6 +298,7 @@
 				B100000000000000000000A1 /* SyncStateStyle.swift in Sources */,
 				B100000000000000000000A3 /* AppDelegate.swift in Sources */,
 				B100000000000000000000A4 /* AccessibleTextField.swift in Sources */,
+				B100000000000000000000A8 /* AccessibleButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
