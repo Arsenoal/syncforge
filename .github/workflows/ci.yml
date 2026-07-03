@@ -10,15 +10,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Release commits push main then tag v* — Publish Release already compiles and tests on macOS.
-# Skip redundant CI when the commit message is a version bump (e.g. "Release 0.9.0-rc.4").
-env:
-  RUN_CI: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}
-
 jobs:
   linux:
     name: Android + JVM
-    if: ${{ env.RUN_CI == 'true' }}
+    # Release commits push main then tag v* — Publish Release already compiles and tests on macOS.
+    if: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -41,7 +37,7 @@ jobs:
 
   android-e2e:
     name: Android E2E (emulator + mock-server)
-    if: ${{ env.RUN_CI == 'true' }}
+    if: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -78,7 +74,7 @@ jobs:
 
   ios-e2e:
     name: iOS E2E (Simulator + mock-server)
-    if: ${{ env.RUN_CI == 'true' }}
+    if: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}
     runs-on: macos-14
     timeout-minutes: 60
 
