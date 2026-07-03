@@ -44,12 +44,21 @@ dependencies {
 
 afterEvaluate {
     val signingRequested = providers.gradleProperty("signAllPublications").orElse("false").get().toBoolean()
-    val signingConfigured = providers.gradleProperty("signing.inMemoryKey").isPresent ||
-        providers.gradleProperty("signing.keyId").isPresent
-    if (!signingRequested || !signingConfigured) return@afterEvaluate
+    if (!signingRequested) return@afterEvaluate
+
+    val inMemoryKey = providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
+    val keyId = providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
+    val keyPassword = providers.gradleProperty("signing.inMemoryKeyPassword").orNull
+    check(!inMemoryKey.isNullOrBlank() || providers.gradleProperty("signing.keyId").isPresent) {
+        "syncforge-gradle-plugin: signAllPublications=true but no signing key is configured"
+    }
 
     val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()
     val signingExtension = extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+    if (!inMemoryKey.isNullOrBlank()) {
+        signingExtension.useInMemoryPgpKeys(keyId.orEmpty(), inMemoryKey, keyPassword.orEmpty())
+    }
+    signingExtension.setRequired(true)
     publishing.publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
         signingExtension.sign(this)
     }

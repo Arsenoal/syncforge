@@ -142,14 +142,24 @@ fun configurePublicationSigning(project: Project) {
     val signingRequested = project.providers.gradleProperty("signAllPublications")
         .map { it.toBoolean() }
         .orElse(false)
-    val signingConfigured = project.providers.gradleProperty("signing.inMemoryKey").isPresent ||
-        project.providers.gradleProperty("signing.keyId").isPresent
 
     fun wireSigning() {
-        if (!signingRequested.get() || !signingConfigured) return
+        if (!signingRequested.get()) return
+
+        val inMemoryKey = project.providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
+        val keyId = project.providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
+        val keyPassword = project.providers.gradleProperty("signing.inMemoryKeyPassword").orNull
+        val legacyKeyId = project.providers.gradleProperty("signing.keyId").orNull?.trim()
+        check(!inMemoryKey.isNullOrBlank() || !legacyKeyId.isNullOrBlank()) {
+            "${project.path}: signAllPublications=true but no signing.inMemoryKey or signing.keyId is configured"
+        }
 
         val publishing = project.extensions.getByType<PublishingExtension>()
         val signing = project.extensions.getByType<SigningExtension>()
+        if (!inMemoryKey.isNullOrBlank()) {
+            signing.useInMemoryPgpKeys(keyId.orEmpty(), inMemoryKey, keyPassword.orEmpty())
+        }
+        signing.setRequired(true)
         publishing.publications.withType<MavenPublication>().configureEach {
             signing.sign(this)
         }

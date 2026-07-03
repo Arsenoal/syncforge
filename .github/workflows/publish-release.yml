@@ -73,6 +73,16 @@ jobs:
       - name: Test JVM
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
+      - name: Verify signing secret is configured
+        env:
+          SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+        run: |
+          if [ -z "$SIGNING_IN_MEMORY_KEY" ]; then
+            echo "::error::SIGNING_IN_MEMORY_KEY GitHub secret is empty — artifacts cannot be signed"
+            exit 1
+          fi
+          echo "Signing key is configured (${#SIGNING_IN_MEMORY_KEY} chars)"
+
       - name: Publish to Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralPublishing: "true"
@@ -83,7 +93,9 @@ jobs:
           ORG_GRADLE_PROJECT_signing_inMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signing_inMemoryKeyId: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
           ORG_GRADLE_PROJECT_signing_inMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
-        run: ./gradlew publishAllToMavenCentral --no-daemon --no-parallel
+        run: |
+          ./gradlew verifyPublishSigning --no-daemon --no-parallel
+          ./gradlew publishAllToMavenCentral --no-daemon --no-parallel
 
       - name: Transfer staging upload to Central Portal
         env:

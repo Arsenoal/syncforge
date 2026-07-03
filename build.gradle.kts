@@ -79,3 +79,29 @@ tasks.register("publishAllToMavenCentral") {
         providers.gradleProperty("mavenCentralPublishing").orNull == "true"
     }
 }
+
+tasks.register("verifyPublishSigning") {
+    group = "verification"
+    description = "Fails if signAllPublications=true but no Sign tasks were created (unsigned Central publish)."
+    dependsOn(
+        ":syncforge:publish",
+        ":syncforge-annotations:publish",
+        ":syncforge-ksp:publish",
+        ":syncforge-persistence:publish",
+        ":syncforge-android-deps:publish",
+        ":syncforge-bom:publish",
+        gradle.includedBuild("syncforge-gradle-plugin").task(":publish"),
+    )
+    onlyIf {
+        providers.gradleProperty("signAllPublications").orNull == "true"
+    }
+    doLast {
+        val signTaskCount = subprojects.sumOf { project ->
+            project.tasks.withType<org.gradle.plugins.signing.Sign>().count()
+        }
+        check(signTaskCount > 0) {
+            "No Sign tasks were created; Maven Central publish would be unsigned"
+        }
+        logger.lifecycle("Publish signing wired for $signTaskCount Sign task(s)")
+    }
+}
