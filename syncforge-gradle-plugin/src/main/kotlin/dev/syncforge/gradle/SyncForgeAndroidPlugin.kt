@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.findByType
  * - Kotlin serialization plugin
  * - KSP with SyncForge handler codegen + Room compiler
  *
- * Runtime deps (Room, serialization, WorkManager) come transitively via [dev.syncforge:syncforge].
+ * Runtime deps (Room, serialization, WorkManager) come transitively via [studio.syncforge:syncforge].
  */
 class SyncForgeAndroidPlugin : Plugin<Project> {
 

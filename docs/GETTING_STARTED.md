@@ -61,22 +61,22 @@ pluginManagement {
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("dev.syncforge.android") version "0.9.0-rc.1"
+    id("dev.syncforge.android") version "0.9.0-rc.2"
 }
 
 dependencies {
-    implementation(platform("dev.syncforge:syncforge-bom:0.9.0-rc.1"))
-    implementation("dev.syncforge:syncforge")
+    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.2"))
+    implementation("studio.syncforge:syncforge")
 }
 ```
 
 | Coordinate | You declare it? | Notes |
 |------------|-----------------|-------|
-| `dev.syncforge:syncforge` | **Yes** | Main KMP library |
-| `dev.syncforge:syncforge-bom` | Optional | Pins all SyncForge artifact versions |
-| `dev.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
-| `dev.syncforge:syncforge-persistence` | No | Transitive runtime |
-| `dev.syncforge:syncforge-ksp` | No | Added by `dev.syncforge.android` plugin |
+| `studio.syncforge:syncforge` | **Yes** | Main KMP library |
+| `studio.syncforge:syncforge-bom` | Optional | Pins all SyncForge artifact versions |
+| `studio.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
+| `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
+| `studio.syncforge:syncforge-ksp` | No | Added by `dev.syncforge.android` plugin |
 | Room / WorkManager / serialization | No | Transitive on Android via `syncforge` |
 
 Your app still adds **your** Room database (`room-runtime` for `@Database` / `@Dao` only if not
@@ -89,7 +89,7 @@ already on the classpath — usually covered by SyncForge's Android transitive d
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("dev.syncforge:syncforge:0.9.0-rc.1")
+            implementation("studio.syncforge:syncforge:0.9.0-rc.2")
         }
     }
 }
@@ -102,7 +102,7 @@ in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS
 
 ```kotlin
 dependencies {
-    implementation("dev.syncforge:syncforge:0.9.0-rc.1")
+    implementation("studio.syncforge:syncforge:0.9.0-rc.2")
 }
 ```
 

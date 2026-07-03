@@ -134,7 +134,7 @@
 
 | Item | Description |
 |------|-------------|
-| **Maven Central** | Publish `dev.syncforge:syncforge`, annotations, ksp |
+| **Maven Central** | Publish `studio.syncforge:syncforge`, annotations, ksp |
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |

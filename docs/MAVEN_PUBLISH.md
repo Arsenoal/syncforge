@@ -1,10 +1,10 @@
 # Maven Central publish checklist
 
-Step-by-step guide for publishing SyncForge to Maven Central. Use for the **0.9.0-rc.1** dry-run
+Step-by-step guide for publishing SyncForge to Maven Central. Use for the **0.9.0-rc.2** release
 and the **1.0.0** stable release.
 
 **Repository:** [github.com/Arsenoal/syncforge](https://github.com/Arsenoal/syncforge)  
-**Group ID:** `dev.syncforge`  
+**Group ID:** `studio.syncforge` (namespace verified via DNS on `syncforge.studio`)  
 **Workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (runs on `v*` tags)
 
 ---
@@ -12,7 +12,7 @@ and the **1.0.0** stable release.
 ## 1. One-time setup (Sonatype)
 
 1. Create an account at [central.sonatype.com](https://central.sonatype.com).
-2. **Register namespace** `dev.syncforge` and verify domain ownership (or use the GitHub verification flow for `Arsenoal/syncforge`).
+2. **Register namespace** `studio.syncforge` and verify domain ownership with a DNS TXT record on `syncforge.studio`.
 3. Generate a **Portal API token** (username + password) for publishing.
 4. Create or export a **GPG key** for artifact signing (armored private key for CI).
 
@@ -25,13 +25,13 @@ These live in [gradle.properties](../gradle.properties) and are applied by
 
 | Property | Value |
 |----------|-------|
-| `syncforge.group` | `dev.syncforge` |
+| `syncforge.group` | `studio.syncforge` |
 | `syncforge.pom.url` | `https://github.com/Arsenoal/syncforge` |
 | `syncforge.pom.scm.connection` | `scm:git:git://github.com/Arsenoal/syncforge.git` |
 | `syncforge.pom.scm.developerConnection` | `scm:git:ssh://github.com/Arsenoal/syncforge.git` |
 | License | Apache 2.0 |
 
-Version is set from the git tag in CI (`v0.9.0-rc.1` → `syncforge.version=0.9.0-rc.1`).
+Version is set from the git tag in CI (`v0.9.0-rc.2` → `syncforge.version=0.9.0-rc.2`).
 
 ---
 
@@ -83,8 +83,8 @@ Close and release the staging repository in the Sonatype Central Portal UI after
 2. Create and push a version tag:
 
 ```bash
-git tag v0.9.0-rc.1
-git push origin v0.9.0-rc.1
+git tag v0.9.0-rc.2
+git push origin v0.9.0-rc.2
 ```
 
 3. Watch **Actions** → **Publish Release** on `macos-latest`:
@@ -100,13 +100,13 @@ git push origin v0.9.0-rc.1
 
 | Artifact | Role |
 |----------|------|
-| `dev.syncforge:syncforge` | Main KMP library |
-| `dev.syncforge:syncforge-annotations` | KSP annotations |
-| `dev.syncforge:syncforge-ksp` | KSP processor |
-| `dev.syncforge:syncforge-persistence` | SQLDelight persistence |
-| `dev.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
-| `dev.syncforge:syncforge-bom` | Version alignment BOM |
-| `dev.syncforge:syncforge-gradle-plugin` | `id("dev.syncforge.android")` plugin (Maven `pluginMaven`) |
+| `studio.syncforge:syncforge` | Main KMP library |
+| `studio.syncforge:syncforge-annotations` | KSP annotations |
+| `studio.syncforge:syncforge-ksp` | KSP processor |
+| `studio.syncforge:syncforge-persistence` | SQLDelight persistence |
+| `studio.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
+| `studio.syncforge:syncforge-bom` | Version alignment BOM |
+| `studio.syncforge:syncforge-gradle-plugin` | `id("dev.syncforge.android")` plugin (Maven `pluginMaven`) |
 
 Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
@@ -118,7 +118,7 @@ Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/dev/syncforge/syncforge-bom/0.9.0-rc.1/syncforge-bom-0.9.0-rc.1.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.2/syncforge-bom-0.9.0-rc.2.pom" | head -1
 ```
 
 ### Consumer smoke against Central
@@ -137,8 +137,8 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 
 | Step | Action |
 |------|--------|
-| Soak | Let `0.9.0-rc.1` sit; CI + optional external dogfood |
-| Fixes | Tag `v0.9.0-rc.2` if needed |
+| Soak | Let `0.9.0-rc.2` sit; CI + optional external dogfood |
+| Fixes | Tag `v0.9.0-rc.3` if needed |
 | Stable | Bump version, tag `v1.0.0`, repeat publish + verification |
 | Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
 
