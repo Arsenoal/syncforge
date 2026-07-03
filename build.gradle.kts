@@ -80,66 +80,6 @@ tasks.register("publishAllToMavenCentral") {
     }
 }
 
-// Coordinates already on Maven Central for 0.9.0-rc.3 (partial first deployment).
-// Re-uploading them fails Central validation; publish only the rest.
-val publishSkipByProject = mapOf(
-    ":syncforge" to setOf(
-        "publishIosSimulatorArm64PublicationToMavenCentralRepository",
-        "publishIosX64PublicationToMavenCentralRepository",
-    ),
-    ":syncforge-annotations" to setOf(
-        "publishKotlinMultiplatformPublicationToMavenCentralRepository",
-        "publishJvmPublicationToMavenCentralRepository",
-        "publishIosSimulatorArm64PublicationToMavenCentralRepository",
-        "publishIosX64PublicationToMavenCentralRepository",
-    ),
-)
-
-val publishAllToCentralProjects = setOf(
-    ":syncforge-persistence",
-    ":syncforge-ksp",
-    ":syncforge-bom",
-    ":syncforge-android-deps",
-)
-
-tasks.register("publishMissingToMavenCentral") {
-    group = "publishing"
-    description =
-        "Publishes Maven Central coordinates not yet released (skips artifacts already on Central for this version)."
-    onlyIf {
-        providers.gradleProperty("mavenCentralPublishing").orNull == "true"
-    }
-}
-
-gradle.projectsEvaluated {
-    if (providers.gradleProperty("mavenCentralPublishing").orElse("false").get() != "true") return@projectsEvaluated
-
-    val missingPublishTasks = mutableListOf<Any>()
-    subprojects.forEach { project ->
-        when (project.path) {
-            in publishAllToCentralProjects -> {
-                missingPublishTasks.add(project.tasks.named("publish"))
-            }
-            in publishSkipByProject -> {
-                val skip = publishSkipByProject.getValue(project.path)
-                project.tasks.matching {
-                    it.name.endsWith("PublicationToMavenCentralRepository") && it.name !in skip
-                }.forEach { missingPublishTasks.add(it) }
-            }
-        }
-    }
-    missingPublishTasks.add(gradle.includedBuild("syncforge-gradle-plugin").task(":publish"))
-    tasks.named("publishMissingToMavenCentral").configure {
-        dependsOn(missingPublishTasks)
-        doFirst {
-            logger.lifecycle(
-                "Publishing ${missingPublishTasks.size} Maven Central publication task(s) " +
-                    "(skipping ${publishSkipByProject.values.flatten().size} already-released coordinates)",
-            )
-        }
-    }
-}
-
 tasks.register("verifyPublishSigning") {
     group = "verification"
     description = "Fails if signAllPublications=true but no Sign tasks were created (unsigned Central publish)."
@@ -153,20 +93,7 @@ tasks.register("verifyPublishSigning") {
         gradle.includedBuild("syncforge-gradle-plugin").task(":publish"),
     )
     onlyIf {
-        providers.gradleProperty("signAllPublications").orNull == "true" &&
-            providers.gradleProperty("publishMissingArtifacts").orNull != "true"
-    }
-    doLast {
-        verifySigningConfigured()
-    }
-}
-
-tasks.register("verifyMissingPublishSigning") {
-    group = "verification"
-    description = "Signing check for publishMissingToMavenCentral."
-    onlyIf {
-        providers.gradleProperty("signAllPublications").orNull == "true" &&
-            providers.gradleProperty("publishMissingArtifacts").orNull == "true"
+        providers.gradleProperty("signAllPublications").orNull == "true"
     }
     doLast {
         verifySigningConfigured()
