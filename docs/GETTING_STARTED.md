@@ -61,7 +61,7 @@ pluginManagement {
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("dev.syncforge.android") version "0.9.0-rc.2"
+    id("studio.syncforge.android") version "0.9.0-rc.2"
 }
 
 dependencies {
@@ -76,7 +76,7 @@ dependencies {
 | `studio.syncforge:syncforge-bom` | Optional | Pins all SyncForge artifact versions |
 | `studio.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
 | `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
-| `studio.syncforge:syncforge-ksp` | No | Added by `dev.syncforge.android` plugin |
+| `studio.syncforge:syncforge-ksp` | No | Added by `studio.syncforge.android` plugin |
 | Room / WorkManager / serialization | No | Transitive on Android via `syncforge` |
 
 Your app still adds **your** Room database (`room-runtime` for `@Database` / `@Dao` only if not
@@ -113,7 +113,7 @@ The `:sample` app uses project dependencies:
 ```kotlin
 pluginManagement { includeBuild("syncforge-gradle-plugin") }
 // app/build.gradle.kts
-plugins { id("dev.syncforge.android") }
+plugins { id("studio.syncforge.android") }
 dependencies { implementation(project(":syncforge")) }
 ```
 
@@ -378,7 +378,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 
 | Symptom | Fix |
 |---------|-----|
-| `SyncForgeHandlers` not found | Build once; ensure `id("dev.syncforge.android")` is applied (adds KSP automatically) |
+| `SyncForgeHandlers` not found | Build once; ensure `id("studio.syncforge.android")` is applied (adds KSP automatically) |
 | Sync fails with network error on emulator | Use `http://10.0.2.2:8080`, not `localhost` |
 | Entity not syncing | Ensure `entityType` in `@SyncForgeEntity` matches `Change.create("tasks", …)` |
 | `findById` missing | KSP-generated handler requires it on `@SyncForgeDao` |

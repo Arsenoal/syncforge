@@ -6,7 +6,7 @@ Minimal Gradle projects that depend **only** on published Maven coordinates (no 
 
 Verifies the documented consumer setup:
 
-- `id("dev.syncforge.android")` from `mavenLocal()` / Maven Central
+- `id("studio.syncforge.android")` from `mavenLocal()` / Maven Central
 - `implementation(platform("studio.syncforge:syncforge-bom:…"))`
 - `implementation("studio.syncforge:syncforge")`
 - KSP handler codegen via the plugin (no manual `ksp("syncforge-ksp")`)

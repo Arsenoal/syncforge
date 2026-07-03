@@ -11,4 +11,4 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 [plugins]
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-syncforgeAndroid = { id = "dev.syncforge.android", version.ref = "syncforge" }
+syncforgeAndroid = { id = "studio.syncforge.android", version.ref = "syncforge" }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Gradle plugin id** — `dev.syncforge.android` → `studio.syncforge.android` (aligns with Maven group `studio.syncforge`; Kotlin packages remain `dev.syncforge.*`)
+
 ## [0.9.0-rc.1] - 2026-07-02
 
 ### Added

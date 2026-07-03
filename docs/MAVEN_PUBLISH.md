@@ -106,7 +106,7 @@ git push origin v0.9.0-rc.2
 | `studio.syncforge:syncforge-persistence` | SQLDelight persistence |
 | `studio.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
 | `studio.syncforge:syncforge-bom` | Version alignment BOM |
-| `studio.syncforge:syncforge-gradle-plugin` | `id("dev.syncforge.android")` plugin (Maven `pluginMaven`) |
+| `studio.syncforge:syncforge-gradle-plugin` | `id("studio.syncforge.android")` plugin (Maven `pluginMaven`) |
 
 Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 

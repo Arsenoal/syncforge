@@ -17,9 +17,9 @@ Compose status observation, and an in-app debug console.
 
 ## Add to your project
 
-Artifacts: `studio.syncforge:syncforge`, BOM, Gradle plugin `dev.syncforge.android`, and KMP
-iOS/macOS/JVM variants. Kotlin **package names** stay `dev.syncforge.*`; only the Maven
-**groupId** is `studio.syncforge`.
+Artifacts: `studio.syncforge:syncforge`, BOM, Gradle plugin `studio.syncforge.android`, and KMP
+iOS/macOS/JVM variants. Kotlin **package names** stay `dev.syncforge.*`; Maven **groupId** and
+Gradle **plugin id** use `studio.syncforge`.
 
 **Requirements:** Kotlin 2.1+, JVM 17 · Android minSdk 24 · iOS 14+ / Xcode 15+ for Apple targets.
 
@@ -43,7 +43,7 @@ pluginManagement {
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("dev.syncforge.android") version "0.9.0-rc.2"
+    id("studio.syncforge.android") version "0.9.0-rc.2"
 }
 
 dependencies {
@@ -53,7 +53,7 @@ dependencies {
 }
 ```
 
-The `dev.syncforge.android` plugin applies KSP, Kotlin serialization, `studio.syncforge:syncforge-ksp`,
+The `studio.syncforge.android` plugin applies KSP, Kotlin serialization, `studio.syncforge:syncforge-ksp`,
 and the Room compiler — you do not declare those manually.
 
 Wire the engine in your `Application` or activity:
@@ -81,7 +81,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")          // if you have an androidTarget for KSP
     id("com.google.devtools.ksp")
-    id("dev.syncforge.android") version "0.9.0-rc.2"  // androidTarget / KSP wiring
+    id("studio.syncforge.android") version "0.9.0-rc.2"  // androidTarget / KSP wiring
 }
 
 kotlin {

@@ -21,7 +21,7 @@ version = readParentGradleProperty("syncforge.version") ?: "0.6.0-SNAPSHOT"
 gradlePlugin {
     plugins {
         create("syncForgeAndroid") {
-            id = "dev.syncforge.android"
+            id = "studio.syncforge.android"
             implementationClass = "dev.syncforge.gradle.SyncForgeAndroidPlugin"
             displayName = "SyncForge Android"
             description =
