@@ -47,9 +47,16 @@ afterEvaluate {
     if (!signingRequested) return@afterEvaluate
 
     val inMemoryKey = providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
+    val secretKeyRingFile = providers.gradleProperty("signing.secretKeyRingFile").orNull?.trim()
     val keyId = providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
+        ?: providers.gradleProperty("signing.keyId").orNull?.trim()
     val keyPassword = providers.gradleProperty("signing.inMemoryKeyPassword").orNull
-    check(!inMemoryKey.isNullOrBlank() || providers.gradleProperty("signing.keyId").isPresent) {
+        ?: providers.gradleProperty("signing.password").orNull
+    check(
+        !inMemoryKey.isNullOrBlank() ||
+            !secretKeyRingFile.isNullOrBlank() ||
+            !keyId.isNullOrBlank(),
+    ) {
         "syncforge-gradle-plugin: signAllPublications=true but no signing key is configured"
     }
 

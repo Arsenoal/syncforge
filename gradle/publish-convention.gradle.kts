@@ -147,11 +147,18 @@ fun configurePublicationSigning(project: Project) {
         if (!signingRequested.get()) return
 
         val inMemoryKey = project.providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
+        val secretKeyRingFile = project.providers.gradleProperty("signing.secretKeyRingFile").orNull?.trim()
         val keyId = project.providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
+            ?: project.providers.gradleProperty("signing.keyId").orNull?.trim()
         val keyPassword = project.providers.gradleProperty("signing.inMemoryKeyPassword").orNull
-        val legacyKeyId = project.providers.gradleProperty("signing.keyId").orNull?.trim()
-        check(!inMemoryKey.isNullOrBlank() || !legacyKeyId.isNullOrBlank()) {
-            "${project.path}: signAllPublications=true but no signing.inMemoryKey or signing.keyId is configured"
+            ?: project.providers.gradleProperty("signing.password").orNull
+        check(
+            !inMemoryKey.isNullOrBlank() ||
+                !secretKeyRingFile.isNullOrBlank() ||
+                !keyId.isNullOrBlank(),
+        ) {
+            "${project.path}: signAllPublications=true but no signing key is configured " +
+                "(set signing.secretKeyRingFile + signing.keyId, or signing.inMemoryKey)"
         }
 
         val publishing = project.extensions.getByType<PublishingExtension>()

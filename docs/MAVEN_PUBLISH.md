@@ -43,9 +43,19 @@ In **Arsenoal/syncforge** → Settings → Secrets and variables → Actions:
 |--------|-------------|
 | `MAVEN_CENTRAL_USERNAME` | Sonatype Portal token username |
 | `MAVEN_CENTRAL_PASSWORD` | Sonatype Portal token password |
-| `SIGNING_IN_MEMORY_KEY` | Armored GPG private key (multi-line PEM) |
-| `SIGNING_IN_MEMORY_KEY_ID` | Optional key id (last 8 hex chars) |
+| `SIGNING_IN_MEMORY_KEY_B64` | **Recommended** — base64 of armored private key (single line, reliable in CI) |
+| `SIGNING_IN_MEMORY_KEY` | Alternative — full armored private key (multi-line) |
+| `SIGNING_IN_MEMORY_KEY_ID` | Key id (e.g. `1DF1CDEB` for key `F94E03F01DF1CDEB`) |
 | `SIGNING_IN_MEMORY_KEY_PASSWORD` | Optional passphrase |
+
+Generate base64 secret locally:
+
+```bash
+gpg --armor --export-secret-keys YOUR_KEY_ID | base64 -w0   # Linux
+gpg --armor --export-secret-keys YOUR_KEY_ID | base64       # macOS
+```
+
+Paste the **single-line** output into `SIGNING_IN_MEMORY_KEY_B64`. Secret name must be exact — not `SIGN_IN_MEMORY_KEY`.
 
 ---
 
@@ -156,7 +166,8 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | Consumer smoke fails after publish | Pin the same version in `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
-| Signing errors in CI | Check `SIGNING_IN_MEMORY_KEY` newlines; use full armored block including headers |
+| Signing secret empty in CI | Use `SIGNING_IN_MEMORY_KEY_B64` on `github.com/Arsenoal/syncforge` → Settings → Secrets; name must be exact |
+| Signing errors in CI | Upload public key to keys.openpgp.org; use full armored private key or base64 secret |
 
 ---
 
