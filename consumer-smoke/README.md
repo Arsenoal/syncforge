@@ -26,5 +26,6 @@ Or manually:
 ./gradlew -p consumer-smoke/android-minimal :app:compileDebugKotlin
 ```
 
-After a Maven Central RC publish, point `consumer-smoke/android-minimal/gradle.properties` at Central
+After a Maven Central RC publish, bump `syncforge` in `gradle/libs.versions.toml` and `syncforge.version` in
+`gradle.properties` to the tagged version, then point `consumer-smoke/android-minimal` at Central
 (remove `mavenLocal()` from `settings.gradle.kts` if testing remote only).

@@ -24,6 +24,7 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
         val syncforgeGroup = project.findProperty("syncforge.group")?.toString()
             ?: DEFAULT_SYNCFORGE_GROUP
         val syncforgeVersion = project.findProperty("syncforge.version")?.toString()
+            ?: project.syncforgeVersionFromCatalog()
             ?: DEFAULT_SYNCFORGE_VERSION
         val roomCompiler = project.roomCompilerFromCatalog()
             ?: "androidx.room:room-compiler:$DEFAULT_ROOM_VERSION"
@@ -38,17 +39,25 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
     }
 
     private fun Project.roomCompilerFromCatalog(): String? {
-        val catalogs = extensions.findByType<VersionCatalogsExtension>() ?: return null
-        val libs = runCatching { catalogs.named("libs") }.getOrNull() ?: return null
+        val libs = versionCatalogLibs() ?: return null
         return runCatching {
             val version = libs.findVersion("room").get().requiredVersion
             "androidx.room:room-compiler:$version"
         }.getOrNull()
     }
 
+    private fun Project.syncforgeVersionFromCatalog(): String? {
+        val libs = versionCatalogLibs() ?: return null
+        return runCatching { libs.findVersion("syncforge").get().requiredVersion }.getOrNull()
+    }
+
+    private fun Project.versionCatalogLibs() =
+        extensions.findByType<VersionCatalogsExtension>()
+            ?.let { runCatching { it.named("libs") }.getOrNull() }
+
     companion object {
         const val DEFAULT_SYNCFORGE_GROUP = "studio.syncforge"
-        const val DEFAULT_SYNCFORGE_VERSION = "0.9.0-rc.1"
+        const val DEFAULT_SYNCFORGE_VERSION = "0.9.0-rc.3"
         const val DEFAULT_ROOM_VERSION = "2.7.1"
     }
 }
