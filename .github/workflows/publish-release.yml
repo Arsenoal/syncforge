@@ -81,13 +81,14 @@ jobs:
           SIGNING_IN_MEMORY_KEY_PASSWORD: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          KEY_FILE="${RUNNER_TEMP}/gpg-signing-key.asc"
+          KEY_FILE_ARMOR="${RUNNER_TEMP}/gpg-signing-key.asc"
+          KEY_FILE="${RUNNER_TEMP}/gpg-signing-key.gpg"
           if [ -n "${SIGNING_IN_MEMORY_KEY_B64:-}" ]; then
             echo "Using SIGNING_IN_MEMORY_KEY_B64"
-            printf '%s' "$SIGNING_IN_MEMORY_KEY_B64" | base64 --decode > "$KEY_FILE"
+            printf '%s' "$SIGNING_IN_MEMORY_KEY_B64" | base64 --decode > "$KEY_FILE_ARMOR"
           elif [ -n "${SIGNING_IN_MEMORY_KEY:-}" ]; then
             echo "Using SIGNING_IN_MEMORY_KEY"
-            printf '%s\n' "$SIGNING_IN_MEMORY_KEY" > "$KEY_FILE"
+            printf '%s\n' "$SIGNING_IN_MEMORY_KEY" > "$KEY_FILE_ARMOR"
           else
             echo "::error::No signing key secret found on this repository."
             echo "Add SIGNING_IN_MEMORY_KEY_B64 (recommended) or SIGNING_IN_MEMORY_KEY at:"
@@ -95,11 +96,13 @@ jobs:
             echo "Name must match exactly — not SIGN_IN_MEMORY_KEY."
             exit 1
           fi
-          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" "$KEY_FILE"; then
+          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" "$KEY_FILE_ARMOR"; then
             echo "::error::Signing key file is not an armored PGP private key"
             exit 1
           fi
-          echo "Signing key ready ($(wc -c < "$KEY_FILE" | tr -d ' ') bytes)"
+          # Gradle signing.secretKeyRingFile expects a binary keyring, not armored ASCII.
+          gpg --batch --yes --dearmor -o "$KEY_FILE" < "$KEY_FILE_ARMOR"
+          echo "Signing key ready (armored=$(wc -c < "$KEY_FILE_ARMOR" | tr -d ' ') bytes, binary=$(wc -c < "$KEY_FILE" | tr -d ' ') bytes)"
           KEY_ID="${SIGNING_IN_MEMORY_KEY_ID:-1DF1CDEB}"
           {
             echo "ORG_GRADLE_PROJECT_signing_secretKeyRingFile=${KEY_FILE}"
