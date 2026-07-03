@@ -112,11 +112,13 @@ tasks.register("publishMissingToMavenCentral") {
 }
 
 gradle.projectsEvaluated {
+    if (providers.gradleProperty("mavenCentralPublishing").orElse("false").get() != "true") return@projectsEvaluated
+
     val missingPublishTasks = mutableListOf<Any>()
     subprojects.forEach { project ->
         when (project.path) {
             in publishAllToCentralProjects -> {
-                missingPublishTasks.add(project.tasks.named("publishAllPublicationsToMavenCentralRepository"))
+                missingPublishTasks.add(project.tasks.named("publish"))
             }
             in publishSkipByProject -> {
                 val skip = publishSkipByProject.getValue(project.path)
