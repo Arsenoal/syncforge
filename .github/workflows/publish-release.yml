@@ -10,6 +10,11 @@ on:
         description: "Git tag to publish (e.g. v0.9.0-rc.3)"
         required: true
         default: "v0.9.0-rc.3"
+      publish_missing_only:
+        description: "Publish only coordinates not yet on Maven Central (partial re-release)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -141,9 +146,16 @@ jobs:
           ORG_GRADLE_PROJECT_org.gradle.parallel: "false"
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          PUBLISH_MISSING_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_missing_only || 'false' }}
         run: |
-          ./gradlew verifyPublishSigning --no-daemon --no-parallel
-          ./gradlew publishAllToMavenCentral --no-daemon --no-parallel
+          if [ "$PUBLISH_MISSING_ONLY" = "true" ]; then
+            export ORG_GRADLE_PROJECT_publishMissingArtifacts=true
+            ./gradlew verifyMissingPublishSigning --no-daemon --no-parallel
+            ./gradlew publishMissingToMavenCentral --no-daemon --no-parallel
+          else
+            ./gradlew verifyPublishSigning --no-daemon --no-parallel
+            ./gradlew publishAllToMavenCentral --no-daemon --no-parallel
+          fi
 
       - name: Transfer staging upload to Central Portal
         env:

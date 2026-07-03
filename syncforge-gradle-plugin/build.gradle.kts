@@ -47,6 +47,33 @@ fun signingProperty(name: String): String? =
         ?: readParentGradleProperty(name)?.trim()
 
 afterEvaluate {
+    val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+    val publishingEnabled = providers.gradleProperty("mavenCentralPublishing")
+        .map { it.toBoolean() }
+        .orElse(false)
+        .get()
+    if (publishingEnabled) {
+        publishing.repositories {
+            maven {
+                name = "MavenCentral"
+                val isSnapshot = version.toString().endsWith("SNAPSHOT")
+                url = uri(
+                    if (isSnapshot) {
+                        "https://central.sonatype.com/repository/maven-snapshots/"
+                    } else {
+                        "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+                    },
+                )
+                credentials {
+                    username = providers.gradleProperty("mavenCentralUsername").orNull
+                        ?: readParentGradleProperty("mavenCentralUsername")
+                    password = providers.gradleProperty("mavenCentralPassword").orNull
+                        ?: readParentGradleProperty("mavenCentralPassword")
+                }
+            }
+        }
+    }
+
     val signingRequested = providers.gradleProperty("signAllPublications").orElse("false").get().toBoolean()
     if (!signingRequested) return@afterEvaluate
 
@@ -60,7 +87,6 @@ afterEvaluate {
         return@afterEvaluate
     }
 
-    val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()
     val signingExtension = extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
     if (!inMemoryKey.isNullOrBlank()) {
         signingExtension.useInMemoryPgpKeys(keyId.orEmpty(), inMemoryKey, keyPassword.orEmpty())
