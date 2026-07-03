@@ -28,7 +28,9 @@ finalize_current_ip_upload() {
 
 promote_orphaned_uploads() {
   echo "Searching for orphaned staging repositories (any IP)..."
-  DROP_INVALID="$DROP_INVALID_ON_FAILURE" python3 - "$NAMESPACE" "$BASE" "$AUTH" <<'PY'
+  DROP_INVALID="$DROP_INVALID_ON_FAILURE" \
+  DROP_ALL_OPEN_STAGING="${DROP_ALL_OPEN_STAGING:-false}" \
+  python3 - "$NAMESPACE" "$BASE" "$AUTH" <<'PY'
 import json
 import os
 import sys
@@ -37,6 +39,7 @@ import urllib.request
 
 namespace, base, auth = sys.argv[1:4]
 drop_invalid = os.environ.get("DROP_INVALID", "true").lower() == "true"
+drop_all_open = os.environ.get("DROP_ALL_OPEN_STAGING", "false").lower() == "true"
 
 def request(method, path):
     req = urllib.request.Request(
@@ -60,6 +63,17 @@ for repo in repos:
     state = repo.get("state")
     portal_id = repo.get("portal_deployment_id")
     print(f"  repo={key} state={state} portal_deployment_id={portal_id}")
+    if drop_all_open and not portal_id and state == "open":
+        try:
+            drop_body = request("DELETE", f"/manual/drop/repository/{key}")
+            print(f"  -> dropped open staging repo {key}: {drop_body}")
+            dropped += 1
+            continue
+        except urllib.error.HTTPError as drop_err:
+            drop_msg = drop_err.read().decode(errors="replace")
+            print(f"  -> failed to drop open repo {key}: HTTP {drop_err.code} {drop_msg}")
+            failed += 1
+            continue
     if portal_id:
         skipped += 1
         continue

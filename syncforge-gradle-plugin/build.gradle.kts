@@ -41,3 +41,19 @@ dependencies {
 }
 
 // java-gradle-plugin registers the pluginMaven publication automatically.
+
+afterEvaluate {
+    val signingRequested = providers.gradleProperty("signAllPublications").orElse("false").get().toBoolean()
+    val signingConfigured = providers.gradleProperty("signing.inMemoryKey").isPresent ||
+        providers.gradleProperty("signing.keyId").isPresent
+    if (!signingRequested || !signingConfigured) return@afterEvaluate
+
+    val publishing = extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+    val signingExtension = extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+    publishing.publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
+        signingExtension.sign(this)
+    }
+    tasks.withType<org.gradle.api.publish.maven.tasks.PublishToMavenRepository>().configureEach {
+        dependsOn(tasks.withType<org.gradle.plugins.signing.Sign>())
+    }
+}

@@ -1,12 +1,14 @@
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 
 val publishableModules = setOf(
@@ -132,17 +134,30 @@ gradle.projectsEvaluated {
                 }
             }
 
-            val signingRequested = project.providers.gradleProperty("signAllPublications")
-                .map { it.toBoolean() }
-                .orElse(false)
-            val signingConfigured = project.providers.gradleProperty("signing.inMemoryKey").isPresent ||
-                project.providers.gradleProperty("signing.keyId").isPresent
-
-            if (signingRequested.get() && signingConfigured) {
-                project.extensions.configure<SigningExtension>("signing") {
-                    val publishing = project.extensions.getByType<PublishingExtension>()
-                    sign(publishing.publications)
-                }
-            }
+            configurePublicationSigning(project)
         }
+}
+
+fun configurePublicationSigning(project: Project) {
+    val signingRequested = project.providers.gradleProperty("signAllPublications")
+        .map { it.toBoolean() }
+        .orElse(false)
+    val signingConfigured = project.providers.gradleProperty("signing.inMemoryKey").isPresent ||
+        project.providers.gradleProperty("signing.keyId").isPresent
+
+    fun wireSigning() {
+        if (!signingRequested.get() || !signingConfigured) return
+
+        val publishing = project.extensions.getByType<PublishingExtension>()
+        val signing = project.extensions.getByType<SigningExtension>()
+        publishing.publications.withType<MavenPublication>().configureEach {
+            signing.sign(this)
+        }
+        project.tasks.withType<PublishToMavenRepository>().configureEach {
+            dependsOn(project.tasks.withType<Sign>())
+        }
+    }
+
+    wireSigning()
+    project.gradle.taskGraph.whenReady { wireSigning() }
 }
