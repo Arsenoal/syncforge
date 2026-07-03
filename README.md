@@ -6,11 +6,127 @@ Your app entities live in Room (or your own store on iOS). SyncForge queues muta
 SQLDelight outbox, syncs with your backend through a pluggable transport, and handles conflicts,
 Compose status observation, and an in-app debug console.
 
-**Current version:** `0.9.0-rc.1`
+**Current version:** `0.9.0-rc.2`  
+**Maven group:** `studio.syncforge` ([Maven Central](https://central.sonatype.com/namespace/studio.syncforge))
 
 > SyncForge is a **pre-1.0** library. Android is the reference platform; iOS, JVM desktop, and
-> native macOS targets are available. First Maven Central release: `0.9.0-rc.1` — see
-> [docs/MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
+> native macOS targets ship in the same KMP artifact. Published coordinates use `studio.syncforge`
+> — see [docs/MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
+
+---
+
+## Add to your project
+
+Artifacts: `studio.syncforge:syncforge`, BOM, Gradle plugin `dev.syncforge.android`, and KMP
+iOS/macOS/JVM variants. Kotlin **package names** stay `dev.syncforge.*`; only the Maven
+**groupId** is `studio.syncforge`.
+
+**Requirements:** Kotlin 2.1+, JVM 17 · Android minSdk 24 · iOS 14+ / Xcode 15+ for Apple targets.
+
+### Android
+
+`settings.gradle.kts` — resolve the SyncForge Gradle plugin from Maven Central:
+
+```kotlin
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+```
+
+`app/build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("dev.syncforge.android") version "0.9.0-rc.2"
+}
+
+dependencies {
+    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.2"))
+    implementation("studio.syncforge:syncforge")
+    // Your Room database (@Database / @Dao) — runtime usually comes transitively
+}
+```
+
+The `dev.syncforge.android` plugin applies KSP, Kotlin serialization, `studio.syncforge:syncforge-ksp`,
+and the Room compiler — you do not declare those manually.
+
+Wire the engine in your `Application` or activity:
+
+```kotlin
+syncManager = SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    registry(SyncForgeHandlers.registry(taskDao))
+    schedulePeriodicSyncOnStart()
+}
+```
+
+Full walkthrough (entity, DAO, Compose): **[Getting Started](docs/GETTING_STARTED.md)** ·
+**[Android setup](docs/ANDROID_SETUP.md)**
+
+### Kotlin Multiplatform + iOS
+
+Add SyncForge to the **shared** Gradle module that compiles for iOS. Use the Android Gradle
+plugin in the same project when KSP generates handlers from `@SyncForgeEntity` / `@SyncForgeDao`.
+
+`shared/build.gradle.kts` (excerpt):
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("com.android.library")          // if you have an androidTarget for KSP
+    id("com.google.devtools.ksp")
+    id("dev.syncforge.android") version "0.9.0-rc.2"  // androidTarget / KSP wiring
+}
+
+kotlin {
+    androidTarget()
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.binaries.framework {
+            baseName = "SyncForgeShared"   // name used in Xcode
+            isStatic = true
+        }
+    }
+    sourceSets {
+        commonMain.dependencies {
+            implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.2"))
+            implementation("studio.syncforge:syncforge")
+        }
+    }
+}
+```
+
+Build the iOS framework, then link it in Xcode (Embed & Sign). In Kotlin `iosMain`:
+
+```kotlin
+import dev.syncforge.SyncForge
+import dev.syncforge.ios
+
+val syncManager = SyncForge.ios {
+    baseUrl("https://api.example.com")
+    registry(handlers)
+    schedulePeriodicSyncOnStart()   // optional BGTaskScheduler — see iOS guide
+}
+```
+
+Expose controllers to Swift via your shared framework (see `sample-ios-shared` in this repo).
+
+**[iOS setup](docs/IOS_SETUP.md)** — `BGTaskScheduler`, Network framework, App Groups, mock server.
+
+### Verify resolution from Maven Central
+
+```bash
+# After the Sonatype staging repo is released (see MAVEN_PUBLISH.md)
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.2/syncforge-bom-0.9.0-rc.2.pom" | head -1
+```
+
+Expect `HTTP/2 200`. If you see `404`, complete **Close → Release** in the
+[Sonatype Central Portal](https://central.sonatype.com) for the `0.9.0-rc.2` deployment.
 
 ---
 
@@ -90,30 +206,14 @@ sequenceDiagram
 
 ---
 
-## Minimal setup
-
-```kotlin
-syncManager = SyncForge.android(this) {
-    baseUrl("https://api.example.com")
-    registry(SyncForgeHandlers.registry(taskDao))
-    schedulePeriodicSyncOnStart()
-}
-```
+## Usage (after dependencies)
 
 ```kotlin
 syncManager.enqueueChange(Change.create("tasks", task))
 syncManager.sync()
 ```
 
-Step-by-step walkthrough with entity, DAO, repository, and Compose: **[Getting Started](docs/GETTING_STARTED.md)**.
-
-Auth setup: **[Auth API](docs/AUTH_API.md)** · runnable backend: `./gradlew :backend-starter:run`
-
----
-
-## Requirements
-
-- Android minSdk 24 · Kotlin 2.1+ · JVM 17
+Auth: **[Auth API](docs/AUTH_API.md)** · runnable backend: `./gradlew :backend-starter:run`
 
 ---
 
