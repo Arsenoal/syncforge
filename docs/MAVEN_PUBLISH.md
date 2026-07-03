@@ -154,7 +154,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | `syncforge-android-deps` missing on Central | Ensure `:syncforge-android-deps:publish` is in `publishAllToMavenCentral` (see [build.gradle.kts](../build.gradle.kts)) |
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails after publish | Pin the same version in `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) |
-| CI publish succeeded but **Deployments** is empty | Gradle `maven-publish` needs the OSSRH finalize step. Run **Actions → Finalize Maven Staging** (workflow_dispatch), then refresh **Deployments** |
+| CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing errors in CI | Check `SIGNING_IN_MEMORY_KEY` newlines; use full armored block including headers |
 
