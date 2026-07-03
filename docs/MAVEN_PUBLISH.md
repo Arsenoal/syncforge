@@ -45,7 +45,7 @@ In **Arsenoal/syncforge** → Settings → Secrets and variables → Actions:
 | `MAVEN_CENTRAL_PASSWORD` | Sonatype Portal token password |
 | `SIGNING_IN_MEMORY_KEY_B64` | **Recommended** — base64 of armored private key (single line, reliable in CI) |
 | `SIGNING_IN_MEMORY_KEY` | Alternative — full armored private key (multi-line) |
-| `SIGNING_IN_MEMORY_KEY_ID` | Key id (e.g. `1DF1CDEB` for key `F94E03F01DF1CDEB`) |
+| `SIGNING_IN_MEMORY_KEY_ID` | Optional override — **8 hex chars only** (e.g. `1DF1CDEB`). Not your Sonatype username. CI auto-detects if omitted. |
 | `SIGNING_IN_MEMORY_KEY_PASSWORD` | Optional passphrase |
 
 Generate base64 secret locally:
@@ -168,6 +168,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing secret empty in CI | Use `SIGNING_IN_MEMORY_KEY_B64` on `github.com/Arsenoal/syncforge` → Settings → Secrets; name must be exact |
 | `Unable to read secret key from file` | CI converts armored key → binary via `gpg --dearmor`; store armored key in secrets, not binary |
+| `key ID must be in a valid form` | `SIGNING_IN_MEMORY_KEY_ID` must be 8 hex chars (`1DF1CDEB`), not Portal token username — or delete it and let CI auto-detect |
 | Signing errors in CI | Upload public key to keys.openpgp.org; use full armored private key or base64 secret |
 
 ---
