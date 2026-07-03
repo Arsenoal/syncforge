@@ -15,7 +15,7 @@ fun readParentGradleProperty(name: String): String? {
     return props.getProperty(name)
 }
 
-group = readParentGradleProperty("syncforge.group") ?: "dev.syncforge"
+group = readParentGradleProperty("syncforge.group") ?: "studio.syncforge"
 version = readParentGradleProperty("syncforge.version") ?: "0.6.0-SNAPSHOT"
 
 gradlePlugin {

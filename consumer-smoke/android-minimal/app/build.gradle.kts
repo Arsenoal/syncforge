@@ -33,8 +33,8 @@ kotlin {
 dependencies {
     val syncforgeVersion = libs.versions.syncforge.get()
 
-    implementation(platform("dev.syncforge:syncforge-bom:$syncforgeVersion"))
-    implementation("dev.syncforge:syncforge")
+    implementation(platform("studio.syncforge:syncforge-bom:$syncforgeVersion"))
+    implementation("studio.syncforge:syncforge")
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

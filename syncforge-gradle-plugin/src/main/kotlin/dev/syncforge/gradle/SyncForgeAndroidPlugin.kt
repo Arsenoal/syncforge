@@ -21,13 +21,15 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
         project.pluginManager.apply("com.google.devtools.ksp")
         project.pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
 
+        val syncforgeGroup = project.findProperty("syncforge.group")?.toString()
+            ?: DEFAULT_SYNCFORGE_GROUP
         val syncforgeVersion = project.findProperty("syncforge.version")?.toString()
             ?: DEFAULT_SYNCFORGE_VERSION
         val roomCompiler = project.roomCompilerFromCatalog()
             ?: "androidx.room:room-compiler:$DEFAULT_ROOM_VERSION"
 
         val kspProcessor = project.rootProject.findProject(":syncforge-ksp")
-            ?: "dev.syncforge:syncforge-ksp:$syncforgeVersion"
+            ?: "$syncforgeGroup:syncforge-ksp:$syncforgeVersion"
 
         project.dependencies.apply {
             add("ksp", kspProcessor)
@@ -45,6 +47,7 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
     }
 
     companion object {
+        const val DEFAULT_SYNCFORGE_GROUP = "studio.syncforge"
         const val DEFAULT_SYNCFORGE_VERSION = "0.9.0-rc.1"
         const val DEFAULT_ROOM_VERSION = "2.7.1"
     }
