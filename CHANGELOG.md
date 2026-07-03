@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-rc.4] - 2026-07-03
+
+### Fixed
+
+- **Maven Central** — full artifact set for `studio.syncforge` (persistence, JVM, Gradle plugin, plugin marker, and root KMP metadata) after incomplete `0.9.0-rc.3` staging
+
 ## [0.9.0-rc.3] - 2026-07-03
 
 ### Changed
