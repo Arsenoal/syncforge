@@ -126,11 +126,27 @@ jobs:
             kill "$(cat build/ios-e2e/mock-server.pid)" 2>/dev/null || true
           fi
 
+      - name: Collect iOS E2E debug info
+        if: failure()
+        run: |
+          mkdir -p build/ios-e2e
+          {
+            echo "=== All simulators ==="
+            xcrun simctl list devices
+            echo
+            echo "=== Booted simulators ==="
+            xcrun simctl list devices booted
+          } > build/ios-e2e/simulator-devices.txt 2>&1 || true
+
       - name: Upload iOS E2E debug artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-e2e-debug
+          name: ios-e2e-debug-${{ github.run_id }}
+          if-no-files-found: warn
           path: |
             build/ios-e2e/mock-server.log
             build/ios-e2e/destination.txt
+            build/ios-e2e/port.txt
+            build/ios-e2e/simulator-devices.txt
+            build/ios-e2e/SyncForgeTasks.xcresult

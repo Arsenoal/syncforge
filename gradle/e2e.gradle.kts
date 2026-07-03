@@ -87,8 +87,13 @@ fun Project.resolveIosE2eDestination(): String =
 
 fun Project.runIosXcuiTest(destination: String, port: Int, mockServerLog: File? = null) {
     val healthUrl = "http://127.0.0.1:$port/health"
+    val resultBundle = iosE2eMetadataDir().resolve("SyncForgeTasks.xcresult")
+    if (resultBundle.exists()) {
+        resultBundle.deleteRecursively()
+    }
     logger.lifecycle("Using Swift-only E2E stub (no KMP frameworks linked for XCUITest)")
     logger.lifecycle("Running XCUITest on $destination...")
+    logger.lifecycle("XCUITest result bundle: ${resultBundle.absolutePath}")
 
     val result = exec {
         isIgnoreExitValue = true
@@ -105,6 +110,8 @@ fun Project.runIosXcuiTest(destination: String, port: Int, mockServerLog: File? 
             "SyncForgeTasks",
             "-destination",
             destination,
+            "-resultBundlePath",
+            resultBundle.absolutePath,
             "-only-testing:SyncForgeTasksUITests",
             "-parallel-testing-enabled",
             "NO",
