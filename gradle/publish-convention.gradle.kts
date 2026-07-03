@@ -20,6 +20,18 @@ val publishableModules = setOf(
     "syncforge-bom",
 )
 
+fun Project.readRootGradleProperty(name: String): String? {
+    val props = java.util.Properties()
+    val file = rootProject.file("gradle.properties")
+    if (!file.exists()) return null
+    file.reader().use { props.load(it) }
+    return props.getProperty(name)?.trim()?.takeIf { it.isNotEmpty() }
+}
+
+fun Project.resolveSigningProperty(name: String): String? =
+    providers.gradleProperty(name).orNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: readRootGradleProperty(name)
+
 fun Project.javadocJarTask(): org.gradle.api.tasks.TaskProvider<Jar> {
     val dokkaTask = tasks.findByName("dokkaGeneratePublicationJavadoc")
     return if (dokkaTask != null) {
@@ -146,12 +158,12 @@ fun configurePublicationSigning(project: Project) {
     fun wireSigning() {
         if (!signingRequested.get()) return
 
-        val inMemoryKey = project.providers.gradleProperty("signing.inMemoryKey").orNull?.trim()
-        val secretKeyRingFile = project.providers.gradleProperty("signing.secretKeyRingFile").orNull?.trim()
-        val keyId = project.providers.gradleProperty("signing.inMemoryKeyId").orNull?.trim()
-            ?: project.providers.gradleProperty("signing.keyId").orNull?.trim()
-        val keyPassword = project.providers.gradleProperty("signing.inMemoryKeyPassword").orNull
-            ?: project.providers.gradleProperty("signing.password").orNull
+        val inMemoryKey = project.resolveSigningProperty("signing.inMemoryKey")
+        val secretKeyRingFile = project.resolveSigningProperty("signing.secretKeyRingFile")
+        val keyId = project.resolveSigningProperty("signing.inMemoryKeyId")
+            ?: project.resolveSigningProperty("signing.keyId")
+        val keyPassword = project.resolveSigningProperty("signing.inMemoryKeyPassword")
+            ?: project.resolveSigningProperty("signing.password")
         check(!inMemoryKey.isNullOrBlank() || !secretKeyRingFile.isNullOrBlank()) {
             "${project.path}: signAllPublications=true but no signing key is configured " +
                 "(set signing.secretKeyRingFile + signing.keyId, or signing.inMemoryKey)"

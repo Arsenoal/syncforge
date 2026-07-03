@@ -148,13 +148,28 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           PUBLISH_MISSING_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_missing_only || 'false' }}
         run: |
+          set -euo pipefail
+          KEY_FILE="${RUNNER_TEMP}/gpg-signing-key.gpg"
+          KEY_ID="$(grep '^signing.keyId=' gradle.properties | tail -1 | cut -d= -f2-)"
+          if [ ! -f "$KEY_FILE" ] || [ -z "$KEY_ID" ]; then
+            echo "::error::Signing key missing — Prepare GPG signing key step may have failed"
+            exit 1
+          fi
+          SIGNING_ARGS=(
+            "-Psigning.secretKeyRingFile=${KEY_FILE}"
+            "-Psigning.keyId=${KEY_ID}"
+          )
+          if grep -q '^signing.password=' gradle.properties; then
+            SIGNING_PASSWORD="$(grep '^signing.password=' gradle.properties | tail -1 | cut -d= -f2-)"
+            SIGNING_ARGS+=("-Psigning.password=${SIGNING_PASSWORD}")
+          fi
           if [ "$PUBLISH_MISSING_ONLY" = "true" ]; then
             export ORG_GRADLE_PROJECT_publishMissingArtifacts=true
-            ./gradlew verifyMissingPublishSigning --no-daemon --no-parallel
-            ./gradlew publishMissingToMavenCentral --no-daemon --no-parallel
+            ./gradlew verifyMissingPublishSigning publishMissingToMavenCentral \
+              --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
           else
-            ./gradlew verifyPublishSigning --no-daemon --no-parallel
-            ./gradlew publishAllToMavenCentral --no-daemon --no-parallel
+            ./gradlew verifyPublishSigning publishAllToMavenCentral \
+              --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
           fi
 
       - name: Transfer staging upload to Central Portal

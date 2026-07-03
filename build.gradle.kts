@@ -138,9 +138,6 @@ gradle.projectsEvaluated {
             )
         }
     }
-    tasks.named("verifyMissingPublishSigning").configure {
-        dependsOn(missingPublishTasks)
-    }
 }
 
 tasks.register("verifyPublishSigning") {
