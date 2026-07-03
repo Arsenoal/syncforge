@@ -41,7 +41,12 @@ jobs:
       - name: Set release version from tag
         run: |
           TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
-          echo "syncforge.version=${TAG#v}" >> gradle.properties
+          VERSION="${TAG#v}"
+          if grep -q '^syncforge\.version=' gradle.properties; then
+            sed -i.bak "s/^syncforge\.version=.*/syncforge.version=${VERSION}/" gradle.properties
+          else
+            echo "syncforge.version=${VERSION}" >> gradle.properties
+          fi
 
       - name: Drop open staging repositories
         env:
