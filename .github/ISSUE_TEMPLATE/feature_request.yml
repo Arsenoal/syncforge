@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem first — feature requests tied to real use cases are easiest to prioritize pre-1.0.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      placeholder: "I'm building … and need …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Primary platform
+      options:
+        - Android
+        - Kotlin Multiplatform
+        - iOS
+        - JVM / desktop
+        - All platforms
+    validations:
+      required: true
