@@ -1,6 +1,6 @@
 # SyncForge roadmap
 
-**Current version:** `0.6.0-SNAPSHOT` (Phase 6 persistence cutover complete)
+**Current version:** `0.9.0-rc.4` (Maven Central under `studio.syncforge`; 1.0 soak in progress)
 
 ---
 
@@ -59,11 +59,8 @@
 
 ### Not yet included
 
-
-
 - Packaged desktop sample app (`:sample-desktop`)
-- Maven Central publication
-- Maven BOM / version catalog for consumers
+- Standalone iOS distribution (Swift Package Manager / XCFramework — iOS still via KMP today)
 - Shake-to-open debug console
 - Full sync health metrics dashboard (basic `SyncHealth` exists today)
 
@@ -134,7 +131,7 @@
 
 | Item | Description |
 |------|-------------|
-| **Maven Central** | Publish `studio.syncforge:syncforge`, annotations, ksp |
+| **Maven Central** | ✅ `0.9.0-rc.4` — `studio.syncforge` BOM, KMP targets, Gradle plugin |
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |

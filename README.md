@@ -125,8 +125,9 @@ Expose controllers to Swift via your shared framework (see `sample-ios-shared` i
 curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.4/syncforge-bom-0.9.0-rc.4.pom" | head -1
 ```
 
-Expect `HTTP/2 200`. If you see `404`, complete **Close → Release** in the
-[Sonatype Central Portal](https://central.sonatype.com) for the `0.9.0-rc.4` deployment.
+Expect `HTTP/2 200`. If you see `404`, open the
+[Sonatype Central Portal](https://central.sonatype.com), confirm the deployment shows all
+components validated, then click **Publish** for `0.9.0-rc.4`.
 
 ---
 
