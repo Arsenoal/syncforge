@@ -1,6 +1,12 @@
 pluginManagement {
     repositories {
-        mavenLocal()
+        val useMavenLocal = providers.gradleProperty("syncforge.consumerSmoke.useMavenLocal")
+            .orElse("true")
+            .get()
+            .toBoolean()
+        if (useMavenLocal) {
+            mavenLocal()
+        }
         google()
         gradlePluginPortal()
         mavenCentral()
@@ -10,7 +16,13 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
+        val useMavenLocal = providers.gradleProperty("syncforge.consumerSmoke.useMavenLocal")
+            .orElse("true")
+            .get()
+            .toBoolean()
+        if (useMavenLocal) {
+            mavenLocal()
+        }
         google()
         mavenCentral()
     }

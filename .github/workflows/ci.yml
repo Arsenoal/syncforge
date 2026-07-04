@@ -35,6 +35,30 @@ jobs:
       - name: Release sign-off (unit tests + consumer smoke)
         run: ./gradlew verifyReleaseSignOff --no-daemon
 
+  consumer-smoke-central:
+    name: Consumer smoke (Maven Central)
+    # Resolves the pinned version in consumer-smoke/ from repo1.maven.org — not mavenLocal.
+    if: ${{ github.event_name == 'push' && (github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Compile consumer app from Maven Central only
+        run: ./gradlew verifyConsumerSmokeMavenCentral --no-daemon
+
   android-e2e:
     name: Android E2E (emulator + mock-server)
     if: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}
