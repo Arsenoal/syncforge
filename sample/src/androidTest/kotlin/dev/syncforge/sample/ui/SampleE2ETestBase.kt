@@ -86,6 +86,13 @@ abstract class SampleE2ETestBase {
         }
     }
 
+    protected fun navigateToTags() {
+        composeTestRule.onNodeWithTag("nav_tags").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag("add_tag_button").fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
     protected fun addTask(title: String) {
         navigateToTasks()
         composeTestRule.onNodeWithTag("new_task_input").performClick()
@@ -96,8 +103,15 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    protected fun addNote(title: String, body: String = "") {
+    protected fun addNote(title: String, body: String = "", tagLabel: String? = null) {
         navigateToNotes()
+        if (tagLabel != null) {
+            composeTestRule.onNodeWithTag("note_tag_dropdown").performClick()
+            composeTestRule.waitUntil(timeoutMillis = 10_000) {
+                composeTestRule.onAllNodesWithText(tagLabel).fetchSemanticsNodes().isNotEmpty()
+            }
+            tapText(tagLabel)
+        }
         composeTestRule.onNodeWithTag("new_note_title_input").performClick()
         composeTestRule.onNodeWithTag("new_note_title_input").performTextInput(title)
         if (body.isNotBlank()) {
@@ -108,6 +122,44 @@ abstract class SampleE2ETestBase {
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithText(title).fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    protected fun addTag(label: String) {
+        navigateToTags()
+        composeTestRule.onNodeWithTag("new_tag_input").performClick()
+        composeTestRule.onNodeWithTag("new_tag_input").performTextInput(label)
+        composeTestRule.onNodeWithTag("add_tag_button").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    protected fun syncAndWaitForIdle() {
+        tapText("Sync")
+        waitForSyncToFinish()
+    }
+
+    protected fun tapServerEdit() {
+        tapText("Server edit")
+    }
+
+    protected fun tapServerDelete() {
+        tapText("Server delete")
+    }
+
+    protected fun clearLocalDatabase() {
+        composeTestRule.onNodeWithTag("demo_clear_local_db").performClick()
+        composeTestRule.waitForIdle()
+    }
+
+    protected fun resolveConflictKeepLocal() {
+        tapText("Resolve")
+        tapText("Keep mine")
+    }
+
+    protected fun resolveConflictAcceptRemote() {
+        tapText("Resolve")
+        tapText("Use server")
     }
 
     protected fun tapText(text: String) {

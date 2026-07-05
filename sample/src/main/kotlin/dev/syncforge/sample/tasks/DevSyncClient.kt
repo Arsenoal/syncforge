@@ -1,11 +1,9 @@
 package dev.syncforge.sample.tasks
 
 import dev.syncforge.sample.BuildConfig
-import dev.syncforge.sample.tasks.TaskEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.HttpURLConnection
 import java.net.URL
@@ -13,6 +11,32 @@ import java.net.URL
 object DevSyncClient {
 
     private val json = Json { ignoreUnknownKeys = true }
+
+    suspend fun simulateServerDelete(task: TaskEntity): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val body = json.encodeToString(
+                    SimulateDeleteRequest(
+                        entityType = TaskEntity.ENTITY_TYPE,
+                        entityId = task.id,
+                    ),
+                )
+                val connection = (URL("${BuildConfig.SYNC_BASE_URL}/dev/simulate-delete").openConnection()
+                    as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    doOutput = true
+                    setRequestProperty("Content-Type", "application/json")
+                    connectTimeout = 5_000
+                    readTimeout = 5_000
+                }
+                connection.outputStream.use { it.write(body.toByteArray()) }
+                val code = connection.responseCode
+                if (code !in 200..299) {
+                    val errorBody = connection.errorStream?.bufferedReader()?.readText()
+                    error("Server returned $code: $errorBody")
+                }
+            }
+        }
 
     suspend fun simulateServerEdit(task: TaskEntity, newTitle: String): Result<Unit> =
         withContext(Dispatchers.IO) {
@@ -53,5 +77,11 @@ object DevSyncClient {
         val entityType: String,
         val entityId: String,
         val payloadJson: String,
+    )
+
+    @Serializable
+    private data class SimulateDeleteRequest(
+        val entityType: String,
+        val entityId: String,
     )
 }

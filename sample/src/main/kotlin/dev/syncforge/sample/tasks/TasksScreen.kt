@@ -31,7 +31,6 @@ import dev.syncforge.compose.SyncConflictChip
 import dev.syncforge.compose.SyncConflictResolutionSheet
 import dev.syncforge.compose.SyncDebugLauncher
 import dev.syncforge.model.SyncState
-import dev.syncforge.sample.tasks.TaskEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +79,7 @@ private fun TasksScreenBody(
     val conflicts by viewModel.conflicts.collectAsState()
     val activeConflict by viewModel.activeConflict.collectAsState()
     val remotePreview by viewModel.remotePreview.collectAsState()
+    val remoteIsDeleted by viewModel.remoteIsDeleted.collectAsState()
     val devMessage by viewModel.devMessage.collectAsState()
     var newTaskTitle by rememberSaveable { mutableStateOf("") }
 
@@ -140,6 +140,7 @@ private fun TasksScreenBody(
                         onToggle = { viewModel.toggleTask(task) },
                         onDelete = { viewModel.deleteTask(task) },
                         onSimulateServerEdit = { viewModel.simulateServerEdit(task) },
+                        onSimulateServerDelete = { viewModel.simulateServerDelete(task) },
                         onResolveConflict = {
                             conflicts.firstOrNull { it.entityId == task.id }
                                 ?.let(viewModel::showConflictSheet)
@@ -155,7 +156,15 @@ private fun TasksScreenBody(
             TaskPreview(task = activeConflict?.let { viewModel.localTaskFor(it) }, fallback = "—")
         },
         remoteContent = {
-            TaskPreview(task = remotePreview, fallback = "—")
+            if (remoteIsDeleted) {
+                Text(
+                    text = "Deleted on server (tombstone)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            } else {
+                TaskPreview(task = remotePreview, fallback = "—")
+            }
         },
         onKeepLocal = viewModel::resolveKeepLocal,
         onAcceptRemote = viewModel::resolveAcceptRemote,
@@ -185,6 +194,7 @@ private fun TaskRow(
     onToggle: () -> Unit,
     onDelete: () -> Unit,
     onSimulateServerEdit: () -> Unit,
+    onSimulateServerDelete: () -> Unit,
     onResolveConflict: () -> Unit,
 ) {
     Row(
@@ -229,6 +239,10 @@ private fun TaskRow(
                     onClick = onSimulateServerEdit,
                     modifier = Modifier.testTag("server_edit_${task.id}"),
                 ) { Text("Server edit") }
+                TextButton(
+                    onClick = onSimulateServerDelete,
+                    modifier = Modifier.testTag("server_delete_${task.id}"),
+                ) { Text("Server delete") }
             }
             TextButton(
                 onClick = onDelete,

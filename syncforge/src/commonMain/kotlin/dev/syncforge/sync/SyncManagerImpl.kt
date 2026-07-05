@@ -125,6 +125,7 @@ internal class SyncManagerImpl(
         eventLog = eventLog,
         status = status,
         pullCursor = _pullCursor,
+        onResetPullCursor = { resetPullCursorToOrigin() },
         scope = scope,
     )
     override val debug: SyncDebug = syncDebugImpl
@@ -225,6 +226,13 @@ internal class SyncManagerImpl(
         if (ready.isNotEmpty()) {
             push()
         }
+    }
+
+    private suspend fun resetPullCursorToOrigin() {
+        lastSyncCursor = 0L
+        cursorStore.set(0L)
+        _pullCursor.value = 0L
+        refreshStatus()
     }
 
     private fun advanceCursorFromResult(result: SyncResult) {

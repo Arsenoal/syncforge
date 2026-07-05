@@ -112,6 +112,42 @@ within one entity, use `merge { }` with field-level helpers.
 
 ---
 
+## Hierarchical data (trees and relationships)
+
+SyncForge syncs **flat entity rows**. Foreign keys, trees, and graphs are an **app concern**.
+
+| You model | SyncForge syncs | You must handle |
+|-----------|-----------------|-----------------|
+| `Note.tagId → Tag.id` | `notes` and `tags` independently | Orphan notes if tag deleted remotely |
+| Folder / child rows | Each row by `entityType` + `id` | Parent delete while child edited offline |
+| Aggregates / counters | Not recommended as synced fields | Recompute server-side or use merge |
+
+**Practical patterns:**
+
+- **Soft-delete parents** (`isDeleted` on parent row) so children can still sync until cleanup.
+- **Reject invalid pushes** on the server when FK targets are tombstoned.
+- **Background reconcile job** after sync for orphan detection.
+- **Different strategies per type** — e.g. `alwaysRemote()` for folders, `deferToUser()` for documents.
+
+Details: [Conflict Resolution → hierarchical data](CONFLICT_RESOLUTION.md#hierarchical-data-trees-parentchild).
+
+---
+
+## How SyncForge compares (FAQ)
+
+| | SyncForge | [PowerSync](https://www.powersync.com/) | [Store](https://github.com/MobileNativeFoundation/Store) |
+|---|-----------|----------------------------------------|----------------------------------------------------------|
+| **Layer** | Offline sync engine (outbox + push/pull) | Hosted/partial sync + live queries | Cache + repository fetch/store |
+| **Backend** | You implement REST push/pull | Often Postgres + their service | Your API |
+| **Room** | Stays your source of truth | Varies by integration | Works with any local store |
+| **JS/Web SDK** | Not in 1.0 scope | Yes | N/A |
+| **Best when** | KMP/Android, own API, want outbox + conflict UI | Minimal backend + partial sync | Network/cache orchestration |
+
+SyncForge and Store can complement each other: Store for fetch/cache, SyncForge for durable
+bidirectional sync. See the `:sample` app for end-to-end Room + outbox + conflicts.
+
+---
+
 ## Performance
 
 ### Tune batch and page sizes

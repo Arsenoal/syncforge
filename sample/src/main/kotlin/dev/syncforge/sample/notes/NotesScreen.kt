@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,13 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.syncforge.model.SyncState
-import dev.syncforge.sample.notes.NoteEntity
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(viewModel: NotesViewModel) {
     val notes by viewModel.notes.collectAsState()
+    val tags by viewModel.tags.collectAsState()
     var title by rememberSaveable { mutableStateOf("") }
     var body by rememberSaveable { mutableStateOf("") }
+    var selectedTagId by rememberSaveable { mutableStateOf<String?>(null) }
+    var tagMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val tagLabels = tags.associate { it.id to it.label }
 
     Column(
         modifier = Modifier
@@ -38,6 +48,11 @@ fun NotesScreen(viewModel: NotesViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        Text(
+            text = "Notes use last-write-wins. Optional tagId links to the Tags tab (separate sync).",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
@@ -55,9 +70,48 @@ fun NotesScreen(viewModel: NotesViewModel) {
                 .testTag("new_note_body_input"),
             label = { Text("Body (optional)") },
         )
+        ExposedDropdownMenuBox(
+            expanded = tagMenuExpanded,
+            onExpandedChange = { tagMenuExpanded = it },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            val selectedLabel = selectedTagId?.let { tagLabels[it] } ?: "No tag"
+            OutlinedTextField(
+                value = selectedLabel,
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+                    .testTag("note_tag_dropdown"),
+                label = { Text("Tag (optional)") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tagMenuExpanded) },
+            )
+            ExposedDropdownMenu(
+                expanded = tagMenuExpanded,
+                onDismissRequest = { tagMenuExpanded = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text("No tag") },
+                    onClick = {
+                        selectedTagId = null
+                        tagMenuExpanded = false
+                    },
+                )
+                tags.forEach { tag ->
+                    DropdownMenuItem(
+                        text = { Text(tag.label) },
+                        onClick = {
+                            selectedTagId = tag.id
+                            tagMenuExpanded = false
+                        },
+                    )
+                }
+            }
+        }
         Button(
             onClick = {
-                viewModel.addNote(title, body)
+                viewModel.addNote(title, body, selectedTagId)
                 title = ""
                 body = ""
             },
@@ -73,6 +127,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
             items(notes, key = { it.id }) { note ->
                 NoteRow(
                     note = note,
+                    tagLabel = note.tagId?.let { tagLabels[it] },
                     onDelete = { viewModel.deleteNote(note) },
                 )
             }
@@ -83,6 +138,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
 @Composable
 private fun NoteRow(
     note: NoteEntity,
+    tagLabel: String?,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -94,6 +150,13 @@ private fun NoteRow(
             Text(text = note.title, style = MaterialTheme.typography.bodyLarge)
             if (note.body.isNotBlank()) {
                 Text(text = note.body, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (tagLabel != null) {
+                Text(
+                    text = "Tag: $tagLabel",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
             Text(
                 text = syncStateLabel(note.syncState),

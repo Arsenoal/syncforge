@@ -13,12 +13,13 @@ class NoteRepository(
 
     fun observeNotes(): Flow<List<NoteEntity>> = noteDao.observeAll()
 
-    suspend fun addNote(title: String, body: String = "") {
+    suspend fun addNote(title: String, body: String = "", tagId: String? = null) {
         val now = System.currentTimeMillis()
         val note = NoteEntity(
             id = UUID.randomUUID().toString(),
             title = title.trim(),
             body = body.trim(),
+            tagId = tagId,
             localVersion = 1,
             updatedAtMillis = now,
             syncState = SyncState.PENDING,

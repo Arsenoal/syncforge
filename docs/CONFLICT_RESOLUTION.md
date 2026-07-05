@@ -189,17 +189,63 @@ See [Best Practices → Choosing a strategy](BEST_PRACTICES.md#choosing-a-confli
 
 ---
 
+## Delete vs update conflicts
+
+Deletes are **tombstones** on the wire (`isDeleted: true` in pull deltas; `ChangeType.DELETE`
+on push). See [REST API → tombstones](REST_API.md#push-semantics).
+
+### Local pending update + remote delete
+
+Typical scenario: you edit a row offline while another device (or admin) deletes it on the server.
+
+| Local state | Remote delta | With `lastWriteWins()` | With `deferToUser()` |
+|-------------|--------------|------------------------|----------------------|
+| `PENDING` update | Tombstone | Newer `updatedAtMillis` wins; tombstone usually deletes locally | **Conflict** — user picks keep local (re-push) or accept remote (delete locally) |
+| `SYNCED` | Tombstone | Row deleted locally (no conflict) | Row deleted locally |
+
+The sample app reproduces the `deferToUser()` case: sync a task → edit locally → **Server delete**
+(mock-server `POST /dev/simulate-delete`) → **Sync** → resolve in the conflict sheet.
+
+### Accepting a server delete in the UI
+
+When the remote side is a tombstone, `ConflictRecord.remoteJson` is `null`. Show **“Deleted on
+server”** in the remote column; `AcceptRemote` removes the local row.
+
+---
+
+## Hierarchical data (trees, parent/child)
+
+SyncForge resolves conflicts **per `(entityType, id)`**. It does **not** automatically cascade
+deletes or merges across related rows.
+
+**Example:** a parent folder is deleted on the server while you edited a child note offline.
+
+- SyncForge may surface a conflict on the **child** only (if it still exists server-side).
+- SyncForge will **not** orphan-reparent, cascade-delete children, or walk a graph for you.
+
+**App/backend responsibilities:**
+
+1. Model relationships explicitly (e.g. `note.tagId` → `tags` row).
+2. Define policy for orphans (reject child push, soft-delete parent, background cleanup job).
+3. Optionally use `alwaysRemote()` on parent entities and `deferToUser()` on children.
+
+The `:sample` app links notes to tags by ID to show multi-entity sync without implying built-in
+tree semantics. See [Best Practices → Hierarchical data](BEST_PRACTICES.md#hierarchical-data-trees-and-relationships).
+
+---
+
 ## Debugging conflicts
 
 1. Enable `SyncDebugLauncher` (debug builds only)
 2. Open **Conflicts** tab — inspect `localJson` / `remoteJson` snapshots
 3. Check **History** tab for `ConflictDetected` events
-4. Use mock server `POST /dev/simulate-edit` to reproduce locally
+4. Use mock server dev routes to reproduce locally
 
 ```bash
 ./gradlew :mock-server:run
 ./gradlew :sample:installDebug
-# Add task → Sync → Server edit → edit locally → Sync → conflict chip
+# Edit conflict:  Add task → Sync → Server edit → edit locally → Sync
+# Delete conflict: Add task → Sync → edit locally → Server delete → Sync
 ```
 
 ---

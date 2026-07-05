@@ -23,7 +23,9 @@ internal class SyncEngine(
 
     suspend fun runFullSync(lastSyncCursor: Long): SyncResult {
         val pushResult = runPush()
-        if (pushResult is SyncResult.Failure) return pushResult
+        if (pushResult is SyncResult.Failure && !isConflictOnlyFailure(pushResult)) {
+            return pushResult
+        }
 
         val pullResult = runPull(lastSyncCursor)
         return combine(pushResult, pullResult)
@@ -47,7 +49,9 @@ internal class SyncEngine(
             val errors = mutableListOf<SyncError>()
             response.rejected.forEach { rejection ->
                 val entry = batch.first { it.id == rejection.outboxId }
-                registry.requireHandler(entry.entityType).rollbackEntry(entry)
+                if (rejection.error.code != SyncError.Code.CONFLICT) {
+                    registry.requireHandler(entry.entityType).rollbackEntry(entry)
+                }
                 val retryable = SyncErrorPolicy.isRetryable(rejection.error.code)
                 outbox.markFailed(
                     id = rejection.outboxId,
@@ -62,6 +66,10 @@ internal class SyncEngine(
                 errors.isEmpty() -> SyncResult.Success(pushed = response.acknowledgedIds.size)
                 response.acknowledgedIds.isNotEmpty() -> SyncResult.Partial(
                     success = SyncResult.Success(pushed = response.acknowledgedIds.size),
+                    errors = errors,
+                )
+                errors.all { it.code == SyncError.Code.CONFLICT } -> SyncResult.Partial(
+                    success = SyncResult.Success(),
                     errors = errors,
                 )
                 else -> SyncResult.Failure(errors.first())
@@ -151,24 +159,52 @@ internal class SyncEngine(
         }
     }
 
-    private fun combine(push: SyncResult, pull: SyncResult): SyncResult =
-        when {
-            push is SyncResult.Failure -> push
-            pull is SyncResult.Failure -> pull
-            push is SyncResult.Partial -> push
-            pull is SyncResult.Partial -> pull
-            push is SyncResult.Success && pull is SyncResult.Success ->
-                SyncResult.Success(
-                    pushed = push.pushed,
-                    pulled = pull.pulled,
-                    conflictsResolved = push.conflictsResolved + pull.conflictsResolved,
-                    deleted = push.deleted + pull.deleted,
-                    syncCursorMillis = pull.syncCursorMillis,
-                )
-            else -> SyncResult.Failure(
+    private fun combine(push: SyncResult, pull: SyncResult): SyncResult {
+        if (pull is SyncResult.Failure) return pull
+        if (push is SyncResult.Failure) {
+            return if (isConflictOnlyFailure(push) && pull is SyncResult.Success) {
+                pull
+            } else {
+                push
+            }
+        }
+
+        val pullSuccess = pull as? SyncResult.Success
+            ?: return SyncResult.Failure(
                 SyncError(SyncError.Code.UNKNOWN, "Unexpected sync result combination"),
             )
+
+        return when (push) {
+            is SyncResult.Success ->
+                SyncResult.Success(
+                    pushed = push.pushed,
+                    pulled = pullSuccess.pulled,
+                    conflictsResolved = push.conflictsResolved + pullSuccess.conflictsResolved,
+                    deleted = push.deleted + pullSuccess.deleted,
+                    syncCursorMillis = pullSuccess.syncCursorMillis,
+                )
+
+            is SyncResult.Partial ->
+                SyncResult.Partial(
+                    success = SyncResult.Success(
+                        pushed = push.success.pushed,
+                        pulled = pullSuccess.pulled,
+                        conflictsResolved = push.success.conflictsResolved + pullSuccess.conflictsResolved,
+                        deleted = push.success.deleted + pullSuccess.deleted,
+                        syncCursorMillis = pullSuccess.syncCursorMillis,
+                    ),
+                    errors = push.errors,
+                )
+
+            is SyncResult.Failure ->
+                SyncResult.Failure(
+                    SyncError(SyncError.Code.UNKNOWN, "Unexpected sync result combination"),
+                )
         }
+    }
+
+    private fun isConflictOnlyFailure(result: SyncResult.Failure): Boolean =
+        result.error.code == SyncError.Code.CONFLICT
 }
 
 /** Platform clock — actual impl in androidMain / jvmMain. */

@@ -68,4 +68,43 @@ class InMemorySyncStoreTest {
         assertEquals(2, response.deltas.size)
         assertEquals(setOf("tasks", "notes"), response.deltas.map { it.entityType }.toSet())
     }
+
+    @Test
+    fun push_rejectsUpdateOnTombstonedEntity() {
+        val store = InMemorySyncStore()
+        store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 1,
+                    entityType = "tasks",
+                    entityId = "task-1",
+                    changeType = ChangeType.CREATE,
+                    payloadJson = """{"id":"task-1","title":"Task"}""",
+                    localVersion = 1,
+                    createdAtMillis = 1,
+                ),
+            ),
+            nowMillis = 100L,
+        )
+        assertTrue(store.forceDelete("tasks", "task-1", nowMillis = 200L))
+
+        val response = store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 2,
+                    entityType = "tasks",
+                    entityId = "task-1",
+                    changeType = ChangeType.UPDATE,
+                    payloadJson = """{"id":"task-1","title":"Task","completed":true}""",
+                    localVersion = 2,
+                    createdAtMillis = 300L,
+                ),
+            ),
+            nowMillis = 300L,
+        )
+
+        assertTrue(response.acknowledgedIds.isEmpty())
+        assertEquals(1, response.rejected.size)
+        assertEquals("CONFLICT", response.rejected.single().code)
+    }
 }

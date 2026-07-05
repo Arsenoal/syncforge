@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import androidx.core.content.edit
 
 class SampleApplication : Application(), Configuration.Provider {
 
@@ -65,7 +64,7 @@ class SampleApplication : Application(), Configuration.Provider {
 
     suspend fun countTasks(): Int = database.taskDao().observeAll().first().size
 
-    /** Demo: wipe Room + SyncForge cursor/outbox to simulate fresh install with server data intact. */
+    /** Demo: wipe Room + SyncForge cursor/outbox to simulate fresh installation with server data intact. */
     @OptIn(ExperimentalSyncForgeApi::class)
     suspend fun resetForDemoPresentation() {
         DemoActivityLog.log(
@@ -76,8 +75,8 @@ class SampleApplication : Application(), Configuration.Provider {
             database.clearAllTables()
             syncManager.debug.clearOutbox()
             syncManager.debug.clearEventLog()
+            syncManager.debug.resetPullCursor()
         }
-        getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit { clear() }
         DemoActivityLog.log(
             "Local DB empty — tap Sync to PULL tasks from mock-server into Room",
             highlight = true,
@@ -91,7 +90,7 @@ class SampleApplication : Application(), Configuration.Provider {
             database.clearAllTables()
             syncManager.debug.clearOutbox()
             syncManager.debug.clearEventLog()
+            syncManager.debug.resetPullCursor()
         }
-        getSharedPreferences("syncforge_sync_cursor", MODE_PRIVATE).edit { clear() }
     }
 }

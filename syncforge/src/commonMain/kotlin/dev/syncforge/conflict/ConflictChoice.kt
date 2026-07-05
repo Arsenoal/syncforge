@@ -19,10 +19,9 @@ internal fun ConflictChoice.toResolution(
     ConflictChoice.KeepLocal ->
         ConflictResolution.KeepLocal(deserialize(localJson))
 
-    ConflictChoice.AcceptRemote -> {
-        val remote = remoteJson
-            ?: return ConflictResolution.KeepLocal(deserialize(localJson))
-        ConflictResolution.AcceptRemote(deserialize(remote))
+    ConflictChoice.AcceptRemote -> when {
+        remoteJson == null -> ConflictResolution.DeleteLocal
+        else -> ConflictResolution.AcceptRemote(deserialize(remoteJson))
     }
 
     is ConflictChoice.Custom<*> ->

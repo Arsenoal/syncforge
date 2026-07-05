@@ -62,6 +62,9 @@ class TasksViewModel(
     private val _remotePreview = MutableStateFlow<TaskEntity?>(null)
     val remotePreview: StateFlow<TaskEntity?> = _remotePreview.asStateFlow()
 
+    private val _remoteIsDeleted = MutableStateFlow(false)
+    val remoteIsDeleted: StateFlow<Boolean> = _remoteIsDeleted.asStateFlow()
+
     private val _devMessage = MutableStateFlow<String?>(null)
     val devMessage: StateFlow<String?> = _devMessage.asStateFlow()
 
@@ -87,12 +90,14 @@ class TasksViewModel(
             _activeConflict.value = conflict
             val record = syncManager.findOpenConflict(conflict.entityType, conflict.entityId)
             _remotePreview.value = record?.remoteJson?.let { json.decodeFromString<TaskEntity>(it) }
+            _remoteIsDeleted.value = record != null && record.remoteJson == null
         }
     }
 
     fun dismissConflictSheet() {
         _activeConflict.value = null
         _remotePreview.value = null
+        _remoteIsDeleted.value = false
     }
 
     fun resolveKeepLocal() {
@@ -136,6 +141,21 @@ class TasksViewModel(
                 _devMessage.value = "Server updated — edit locally, then Sync to trigger conflict"
             }.onFailure { error ->
                 _devMessage.value = error.message ?: "Simulate edit failed"
+            }
+        }
+    }
+
+    fun simulateServerDelete(task: TaskEntity) {
+        viewModelScope.launch {
+            DevSyncClient.simulateServerDelete(task = task).onSuccess {
+                DemoActivityLog.log(
+                    "Mock-server POST /dev/simulate-delete — tombstone on server",
+                    highlight = true,
+                )
+                _devMessage.value =
+                    "Server deleted this task — if you have a pending local edit, Sync to trigger delete conflict"
+            }.onFailure { error ->
+                _devMessage.value = error.message ?: "Simulate delete failed"
             }
         }
     }

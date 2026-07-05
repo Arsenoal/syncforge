@@ -20,6 +20,7 @@ docs/images/*-raw.mp4
 scripts/*.py
 *.sh
 !.github/scripts/*.sh
+!scripts/record-demo-gif.sh
 *.log
 
 # Android

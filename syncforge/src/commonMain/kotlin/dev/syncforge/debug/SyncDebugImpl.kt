@@ -20,6 +20,7 @@ internal class SyncDebugImpl(
     private val eventLog: SyncEventLog,
     private val status: StateFlow<SyncStatus>,
     private val pullCursor: StateFlow<Long>,
+    private val onResetPullCursor: suspend () -> Unit,
     scope: CoroutineScope,
 ) : SyncDebug {
 
@@ -93,6 +94,10 @@ internal class SyncDebugImpl(
 
     override suspend fun clearEventLog() {
         eventLog.clear()
+    }
+
+    override suspend fun resetPullCursor() {
+        onResetPullCursor()
     }
 
     suspend fun recordSyncResult(type: SyncEventType, result: SyncResult) {

@@ -53,5 +53,29 @@ fun Application.mockSyncModule() {
                 )
             }
         }
+
+        /**
+         * Dev-only: tombstones an entity on the server (delete conflict demos).
+         * The entity must already exist on the server (push first).
+         */
+        post("/dev/simulate-delete") {
+            val request = call.receive<SimulateDeleteRequest>()
+            val deleted = store.forceDelete(
+                entityType = request.entityType,
+                entityId = request.entityId,
+                nowMillis = System.currentTimeMillis(),
+            )
+            if (deleted) {
+                call.respond(SimulateDeleteResponse(deleted = true))
+            } else {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    SimulateDeleteResponse(
+                        deleted = false,
+                        message = "Entity not found — sync the task to the server first",
+                    ),
+                )
+            }
+        }
     }
 }

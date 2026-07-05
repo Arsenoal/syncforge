@@ -11,24 +11,24 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 
 ## Start here
 
-| I want to… | Read this |
-|------------|-----------|
-| **Get a working app in ~10 minutes** | [Getting Started](GETTING_STARTED.md) |
-| **Copy-paste solutions for common tasks** | [Recipes](RECIPES.md) |
-| **Understand and configure conflict handling** | [Conflict Resolution](CONFLICT_RESOLUTION.md) |
-| **Design entities and choose strategies** | [Best Practices](BEST_PRACTICES.md) |
-| **Set up SyncForge on Android** | [Android Setup](ANDROID_SETUP.md) |
-| **Set up SyncForge on iOS** | [iOS Setup](IOS_SETUP.md) |
-| **Set up SyncForge on desktop (JVM)** | [Desktop Setup](DESKTOP_SETUP.md) |
-| **Understand the KMP migration plan** | [KMP Migration](KMP_MIGRATION.md) |
-| **Look up every public type** | [Module Reference](MODULES.md) |
-| **Implement the backend HTTP contract** | [REST API](REST_API.md) |
-| **Add login/register (built-in auth)** | [Auth API](AUTH_API.md) |
-| **See what's planned next** | [Roadmap](ROADMAP.md) |
-| **Track 1.0 release blockers (P0)** | [SyncForge-1.0-P0.docx](SyncForge-1.0-P0.docx) |
-| **Launch playbook (1.0 soak, GitHub growth)** | [SyncForge-GitHub-Launch-Playbook.docx](SyncForge-GitHub-Launch-Playbook.docx) |
-| **Record README demo GIF** | [docs/images/README.md](images/README.md) |
-| **Track release changes** | [Changelog](../CHANGELOG.md) |
+| I want to…                                     | Read this                                                                      |
+|------------------------------------------------|--------------------------------------------------------------------------------|
+| **Get a working app in ~10 minutes**           | [Getting Started](GETTING_STARTED.md)                                          |
+| **Copy-paste solutions for common tasks**      | [Recipes](RECIPES.md)                                                          |
+| **Understand and configure conflict handling** | [Conflict Resolution](CONFLICT_RESOLUTION.md)                                  |
+| **Design entities and choose strategies**      | [Best Practices](BEST_PRACTICES.md)                                            |
+| **Set up SyncForge on Android**                | [Android Setup](ANDROID_SETUP.md)                                              |
+| **Set up SyncForge on iOS**                    | [iOS Setup](IOS_SETUP.md)                                                      |
+| **Set up SyncForge on desktop (JVM)**          | [Desktop Setup](DESKTOP_SETUP.md)                                              |
+| **Understand the KMP migration plan**          | [KMP Migration](KMP_MIGRATION.md)                                              |
+| **Look up every public type**                  | [Module Reference](MODULES.md)                                                 |
+| **Implement the backend HTTP contract**        | [REST API](REST_API.md)                                                        |
+| **Add login/register (built-in auth)**         | [Auth API](AUTH_API.md)                                                        |
+| **See what's planned next**                    | [Roadmap](ROADMAP.md)                                                          |
+| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](SyncForge-1.0-P0.docx)                                 |
+| **Launch playbook (1.0 soak, GitHub growth)**  | [SyncForge-GitHub-Launch-Playbook.docx](SyncForge-GitHub-Launch-Playbook.docx) |
+| **Record README demo GIF**                     | [docs/images/README.md](images/README.md)                                      |
+| **Track release changes**                      | [Changelog](../CHANGELOG.md)                                                   |
 
 ---
 
@@ -91,15 +91,26 @@ The `:sample` module is the canonical reference implementation:
 
 Key files:
 
-| File | What it demonstrates |
-|------|----------------------|
-| `sample/.../tasks/TaskEntity.kt` | `@SyncForgeEntity` + `SyncedEntity` |
-| `sample/.../notes/NoteEntity.kt` | Second entity type + KSP handler |
-| `sample/.../SampleApplication.kt` | Single `SyncManager`, multi-entity `conflicts { }` |
-| `sample/.../navigation/SampleApp.kt` | Compose Navigation across Tasks / Notes / Tags |
-| `sample/.../tasks/TaskRepository.kt` | `enqueueChange` + `sync()` |
-| `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution |
-| `sample/.../tasks/TasksScreen.kt` | `SyncDebugLauncher`, conflict sheet |
+| File                                 | What it demonstrates                               |
+|--------------------------------------|----------------------------------------------------|
+| `sample/.../tasks/TaskEntity.kt`     | `@SyncForgeEntity` + `SyncedEntity`                |
+| `sample/.../notes/NoteEntity.kt`     | Second entity type + KSP handler                   |
+| `sample/.../SampleApplication.kt`    | Single `SyncManager`, multi-entity `conflicts { }` |
+| `sample/.../navigation/SampleApp.kt` | Compose Navigation across Tasks / Notes / Tags     |
+| `sample/.../tasks/TaskRepository.kt` | `enqueueChange` + `sync()`                         |
+| `sample/.../tasks/TasksViewModel.kt` | Status, conflicts, resolution                      |
+| `sample/.../tasks/TasksScreen.kt`    | Conflict sheet, server edit/delete dev actions     |
+| `sample/.../notes/NotesScreen.kt`    | Second entity + optional `tagId` FK to tags        |
+| `sample/.../navigation/SampleApp.kt` | Bottom nav, SF debug overlay, demo log panel       |
+
+### Demo scenarios (manual)
+
+| Tab            | What it proves                                                                                        |
+|----------------|-------------------------------------------------------------------------------------------------------|
+| **Tasks**      | `deferToUser()` conflicts; mock-server **Server edit** / **Server delete**; local delete + tombstones |
+| **Notes**      | `lastWriteWins()`; optional relationship to tags (app-level FK)                                       |
+| **Tags**       | Third entity type in the same `SyncForgeHandlers.registry`                                            |
+| **Demo panel** | Clear local Room + pull restore; live outbox/sync narration (debug builds)                            |
 
 The sample satisfies the multi-entity proof in the 1.0 P0 checklist; run `./gradlew androidE2e` (Android) or `./gradlew iosE2e` (macOS/Xcode) locally, or see CI `android-e2e` / `ios-e2e` jobs.
 

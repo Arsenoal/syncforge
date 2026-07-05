@@ -94,6 +94,12 @@ fun DemoActivityLogPanel(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
+            Text(
+                text = "Try: offline add → Sync → Clear local DB → Sync · " +
+                    "Server edit/delete conflicts on Tasks · Notes+Tags multi-entity",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             OutlinedTextField(
                 value = highlight,
                 onValueChange = {},

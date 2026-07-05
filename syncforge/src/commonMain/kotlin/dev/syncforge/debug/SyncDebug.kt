@@ -31,4 +31,7 @@ interface SyncDebug {
 
     /** Clears the in-memory event log. */
     suspend fun clearEventLog()
+
+    /** Resets the pull cursor to 0 (persisted store + in-memory engine state). */
+    suspend fun resetPullCursor()
 }

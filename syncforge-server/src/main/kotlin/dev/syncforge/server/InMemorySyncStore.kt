@@ -44,6 +44,19 @@ class InMemorySyncStore : SyncStore {
             }
 
             val key = recordKey(entry.entityType, entry.entityId)
+            val existing = records[key]
+            if (
+                existing?.isDeleted == true &&
+                (entry.changeType == ChangeType.CREATE || entry.changeType == ChangeType.UPDATE)
+            ) {
+                rejected += PushRejectionDto(
+                    outboxId = entry.id,
+                    code = "CONFLICT",
+                    message = "Entity was deleted on the server",
+                )
+                return@forEach
+            }
+
             val nextVersion = versionCounter.getAndIncrement()
             val record = when (entry.changeType) {
                 ChangeType.DELETE -> Record(
@@ -127,6 +140,26 @@ class InMemorySyncStore : SyncStore {
             serverVersion = nextVersion,
             updatedAtMillis = nowMillis,
             isDeleted = false,
+        )
+        return true
+    }
+
+    /** Dev/testing helper — tombstones an entity (delete-on-server demo). */
+    fun forceDelete(
+        entityType: String,
+        entityId: String,
+        nowMillis: Long,
+    ): Boolean {
+        val key = recordKey(entityType, entityId)
+        val existing = records[key] ?: return false
+        if (existing.isDeleted) return true
+
+        val nextVersion = versionCounter.getAndIncrement()
+        records[key] = existing.copy(
+            payloadJson = null,
+            serverVersion = nextVersion,
+            updatedAtMillis = nowMillis,
+            isDeleted = true,
         )
         return true
     }

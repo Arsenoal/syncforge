@@ -44,6 +44,18 @@ kotlin {
     }
 }
 
+configurations.configureEach {
+    resolutionStrategy {
+        force("androidx.concurrent:concurrent-futures:1.2.0")
+        force("androidx.concurrent:concurrent-futures-ktx:1.2.0")
+        // API 35+ emulators require androidx.test 1.7+ / espresso 3.7+ / monitor 1.8+
+        force("androidx.test:core:${libs.versions.androidx.test.core.get()}")
+        force("androidx.test:runner:${libs.versions.androidx.test.runner.get()}")
+        force("androidx.test:monitor:${libs.versions.androidx.test.monitor.get()}")
+        force("androidx.test.espresso:espresso-core:${libs.versions.androidx.test.espresso.get()}")
+    }
+}
+
 dependencies {
     implementation(project(":syncforge"))
 
@@ -62,6 +74,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.monitor)
+    androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

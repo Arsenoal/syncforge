@@ -30,11 +30,12 @@ Record the **Tasks** tab in one continuous take. The sample app shows an **Under
 
 | Time | Action | Show on screen |
 |------|--------|----------------|
-| **0–15s** | Enable **airplane mode** → add task *"Buy milk"* | Highlight field: *Room UPDATE + outbox enqueue*; task appears; *Offline* |
-| **15–30s** | Disable airplane mode → tap **Sync** | *Push to server* / *Pull from server* log lines; row *Synced* |
-| **30–45s** | Tap **Clear local DB** → tap **Sync** | Empty list → *PULL remote data from mock-server* → tasks reappear in Room |
-| **45–55s** | **Server edit** → local edit → **Sync** | Conflict chip → **Resolve** |
-| **55–60s** | (Optional) Tap **SF** debug button | Outbox / events / conflicts panel |
+| **0–10s** | Auto-demo adds *"Buy milk"* → **Sync** | Demo panel + row *Synced* |
+| **10–22s** | **Server edit** + local toggle → **Sync** → resolve | Conflict chip visible, then cleared |
+| **22–35s** | **Clear local DB** → **Sync** | Empty list → pull restore from mock-server |
+| **35–43s** | Auto-demo complete | Final *Synced* row + log summary |
+
+Manual recording can still use airplane mode for the offline beat — see older notes below.
 
 Use the in-app **Server edit** button (calls `POST /dev/simulate-edit`) — no curl needed.
 
@@ -42,23 +43,27 @@ Use the in-app **Server edit** button (calls `POST /dev/simulate-edit`) — no c
 
 Use `auto_demo` so the sequence runs in code. **Do not** use `adb shell input tap` — it can open the launcher, calendar, or keyboard chrome.
 
+**One command** (builds, starts mock-server, records, encodes MP4 + GIF):
+
+```bash
+./scripts/record-demo-gif.sh
+```
+
+Manual equivalent:
+
 ```bash
 curl -s -X POST http://127.0.0.1:8080/dev/reset
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 0
-# Prevent Google Calendar from opening mid-recording on the emulator
 adb shell pm disable-user --user 0 com.google.android.calendar
 adb shell pm clear dev.syncforge.sample
 
-# Launch auto-demo first so the app is in frame, then record (~24s)
 adb shell am start -n dev.syncforge.sample/.MainActivity --ez auto_demo true
 sleep 2
-adb shell screenrecord --size 720x1520 --time-limit 30 /sdcard/syncforge-demo.mp4 &
-sleep 26
+adb shell screenrecord --size 720x1520 --time-limit 40 /sdcard/syncforge-demo.mp4 &
+sleep 36
 pkill -f "adb shell screenrecord" || true
 adb pull /sdcard/syncforge-demo.mp4 docs/images/syncforge-demo-raw.mp4
-
-# Re-enable Calendar when done (optional)
 adb shell pm enable com.google.android.calendar
 ```
 

@@ -69,6 +69,17 @@ syncManager = SyncForge.android(this) {
 Full walkthrough (entity, DAO, Compose): **[Getting Started](docs/GETTING_STARTED.md)** ·
 **[Android setup](docs/ANDROID_SETUP.md)**
 
+## Documentation
+
+| Topic | Guide |
+|-------|-------|
+| Backend contract (push/pull, tombstones) | [REST API](docs/REST_API.md) |
+| Built-in auth (login, refresh) | [Auth API](docs/AUTH_API.md) |
+| Conflicts, deletes, strategies | [Conflict Resolution](docs/CONFLICT_RESOLUTION.md) |
+| Entity design, scale, comparisons | [Best Practices](docs/BEST_PRACTICES.md) |
+| Why Room + separate outbox DB | [Getting Started → architecture](docs/GETTING_STARTED.md#how-syncforge-fits-in-your-app) |
+| Full index & learning paths | [docs/README.md](docs/README.md) |
+
 ### Kotlin Multiplatform + iOS
 
 Add SyncForge to the **shared** Gradle module that compiles for iOS. Use the Android Gradle
@@ -134,11 +145,11 @@ components validated, then click **Publish** for `0.9.0-rc.4`.
 ## See it in action
 
 <p align="center">
-  <img src="docs/images/syncforge-demo.gif" alt="SyncForge demo: add task, sync, clear local DB, pull from server" width="360" style="max-width: 360px; border-radius: 16px; border: 1px solid #e0e0e0;" />
+  <img src="docs/images/syncforge-demo.gif" alt="SyncForge demo: add task, sync, conflict resolution, clear local DB, pull from server" width="360" style="max-width: 360px; border-radius: 16px; border: 1px solid #e0e0e0;" />
 </p>
 
 <p align="center">
-  <sub>Offline write → sync → <strong>clear local DB</strong> (empty Room) → pull from server · <a href="docs/images/README.md">re-record</a></sub>
+  <sub>Add task → sync → <strong>conflict</strong> → clear local DB → pull from server · <a href="docs/images/README.md">re-record</a></sub>
 </p>
 
 The `:sample` app is a multi-tab Tasks / Notes / Tags demo. Run it against the mock server in two terminals:
@@ -199,9 +210,12 @@ sequenceDiagram
 | **1. Offline-first** | Add a task with airplane mode on | Task appears in Room immediately; status shows pending / offline |
 | **2. Sync** | Turn network on → tap **Sync** | Push + pull run; row shows **Synced**; outbox drains |
 | **3. Empty local DB** | Tap **Clear local DB** in the demo panel → **Sync** | Room wiped; tasks disappear; pull restores data from mock-server |
-| **4. Conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+| **4. Edit conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+| **5. Delete conflict** | Sync a task → edit locally (stay offline or don't sync) → tap **Server delete** → **Sync** | Conflict: keep local row vs accept server tombstone |
+| **6. Multi-entity** | Open **Notes** / **Tags** tabs | Three entity types, per-type conflict strategies (`deferToUser` vs LWW) |
+| **7. Relationships** | Add a tag → create a note with that tag | Notes reference tags by ID (app-level FK; sync is per entity) |
 
-**Debug console (debug builds):** tap the **SF** button on the Tasks tab to inspect the outbox, sync health, events, and open conflicts.
+**Debug console (debug builds):** tap the **SF** overlay to inspect the outbox, sync health, events, and open conflicts.
 
 **iOS:** same flows in SwiftUI — `open ios-sample/SyncForgeTasks.xcodeproj` (see [iOS setup](docs/IOS_SETUP.md)).
 
@@ -222,6 +236,207 @@ Auth: **[Auth API](docs/AUTH_API.md)** · runnable backend: `./gradlew :backend-
 
 Low-level `SyncForge.create()` / `createWithRetry()` and `SyncForge.builder { }` remain
 available for custom wiring and tests. See [Module reference](docs/MODULES.md).
+
+---
+
+## Starter guides
+
+Copy-paste paths for Android and iOS. Full walkthrough: [Getting Started](docs/GETTING_STARTED.md).
+
+### Android developers
+
+**Prerequisites:** Kotlin 2.1+, minSdk 24, Room + Compose (or your UI layer), a backend
+implementing [REST API](docs/REST_API.md) push/pull (or `:mock-server` locally).
+
+**1. Dependencies** — see [Add to your project → Android](#android) above.
+
+**2. Entity + DAO** (KSP generates handlers on build):
+
+```kotlin
+@SyncForgeEntity(entityType = "tasks")
+@Entity(tableName = "tasks")
+@Serializable
+data class TaskEntity(
+    @PrimaryKey override val id: String,
+    val title: String,
+    val completed: Boolean = false,
+    override val localVersion: Long = 0,
+    override val updatedAtMillis: Long = System.currentTimeMillis(),
+    override val syncState: SyncState = SyncState.SYNCED,
+) : SyncedEntity
+
+@SyncForgeDao(entityClass = "com.example.app.TaskEntity")
+@Dao
+interface TaskDao {
+    @Query("SELECT * FROM tasks ORDER BY updatedAtMillis DESC")
+    fun observeAll(): Flow<List<TaskEntity>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(task: TaskEntity)
+    @Update suspend fun update(task: TaskEntity)
+    @Query("DELETE FROM tasks WHERE id = :id") suspend fun deleteById(id: String)
+}
+```
+
+**3. Wire in `Application`:**
+
+```kotlin
+class MyApp : Application(), Configuration.Provider {
+    lateinit var syncManager: SyncManager
+    override val workManagerConfiguration: Configuration
+        get() = SyncForgeAndroid.workManagerConfiguration { syncManager }
+
+    override fun onCreate() {
+        super.onCreate()
+        val taskDao = AppDatabase.create(this).taskDao()
+        syncManager = SyncForge.android(this) {
+            baseUrl("https://api.example.com")  // emulator + mock: http://10.0.2.2:8080
+            registry(SyncForgeHandlers.registry(taskDao))
+            conflicts { entity("tasks") { deferToUser() } }
+            schedulePeriodicSyncOnStart()
+        }
+    }
+}
+```
+
+**4. Repository** — mutations go through `enqueueChange()`, UI observes Room `Flow`:
+
+```kotlin
+suspend fun addTask(title: String) {
+    val task = TaskEntity(
+        id = UUID.randomUUID().toString(),
+        title = title.trim(),
+        localVersion = 1,
+        updatedAtMillis = System.currentTimeMillis(),
+        syncState = SyncState.PENDING,
+    )
+    syncManager.enqueueChange(Change.create("tasks", task))
+}
+
+suspend fun sync() = syncManager.sync()
+```
+
+**5. Compose** — status label + sync button:
+
+```kotlin
+val syncUi = syncManager.status.map { it.toUiModel() }
+    .collectAsState(initial = syncManager.status.value.toUiModel())
+
+TextButton(onClick = { scope.launch { syncManager.sync() } }) {
+    Text(if (syncUi.value.isSyncing) "Syncing…" else "Sync")
+}
+Text(syncUi.value.label)  // e.g. "3 changes pending", "Offline · 2 queued"
+```
+
+Optional: `SyncConflictChip` + `SyncConflictResolutionSheet` for `deferToUser()` conflicts.
+
+**Run the reference app:**
+
+```bash
+./gradlew :mock-server:run
+./gradlew :sample:installDebug
+```
+
+| Sample source | Demonstrates |
+|---------------|--------------|
+| [`sample/.../SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt) | `SyncForge.android { }`, multi-entity registry, conflict strategies |
+| [`sample/.../TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt) | `enqueueChange` + `sync()` |
+| [`sample/.../TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt) | Conflict sheet, server edit/delete demos |
+| [`sample/.../navigation/SampleApp.kt`](sample/src/main/kotlin/dev/syncforge/sample/navigation/SampleApp.kt) | Bottom nav, SF debug overlay, demo log |
+
+More: [Android setup](docs/ANDROID_SETUP.md) · [Recipes](docs/RECIPES.md)
+
+---
+
+### iOS developers
+
+**Prerequisites:** Kotlin Multiplatform shared module, Xcode 15+, iOS 14+, macOS host to build
+frameworks. KSP runs on `androidTarget` in the same Gradle project (or a JVM target) to generate
+handlers from `@SyncForgeEntity` / `@SyncForgeDao`.
+
+**1. Shared module** — see [Add to your project → Kotlin Multiplatform + iOS](#kotlin-multiplatform--ios) above.
+
+**2. Wire in Kotlin** (`iosMain` or shared controller):
+
+```kotlin
+import dev.syncforge.SyncForge
+import dev.syncforge.ios
+
+val syncManager = SyncForge.ios {
+    baseUrl("https://api.example.com")  // simulator + mock: http://localhost:8080
+    registry(handlers)                   // EntityRegistry from KSP / manual handlers
+    backgroundSyncTaskIdentifier("com.myapp.sync.refresh")
+    schedulePeriodicSyncOnStart()
+}
+```
+
+**3. Queue changes + sync** (same API as Android):
+
+```kotlin
+syncManager.enqueueChange(Change.create("tasks", task))
+syncManager.sync()
+```
+
+**4. Expose to Swift** — wrap `SyncManager` in a controller (see `:sample-ios-shared`):
+
+```kotlin
+// IosSampleController.kt (pattern)
+fun addTask(title: String, onComplete: (Boolean, String?) -> Unit) {
+    scope.launch {
+        runCatching {
+            syncManager.enqueueChange(Change.create("tasks", newTask(title)))
+        }.onSuccess { onComplete(true, null) }
+            .onFailure { onComplete(false, it.message) }
+    }
+}
+```
+
+```swift
+// SwiftUI — import SyncForgeSample
+let bridge = SampleKotlinBridge(baseUrl: "http://localhost:8080", e2eMode: false)
+bridge.setTasksListener { tasks in self.tasks = tasks }
+bridge.addTask(title: "Buy milk") { success, error in /* ... */ }
+bridge.sync { success, status in /* ... */ }
+```
+
+**5. Background sync** — `Info.plist` + register at launch:
+
+```xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array><string>com.myapp.sync.refresh</string></array>
+```
+
+```swift
+IosBackgroundSyncKt.registerIosBackgroundSyncTasks(taskIdentifier: "com.myapp.sync.refresh")
+```
+
+For local HTTP (mock server), add `NSAllowsLocalNetworking` to Info.plist.
+
+**Run the reference app:**
+
+```bash
+./gradlew :mock-server:run
+open ios-sample/SyncForgeTasks.xcodeproj   # ⌘R on Simulator
+```
+
+| Sample source | Demonstrates |
+|---------------|--------------|
+| [`sample-ios-shared/.../IosSampleController.kt`](sample-ios-shared/src/iosMain/kotlin/dev/syncforge/sample/ios/IosSampleController.kt) | `SyncForge.ios { }`, listeners, enqueue + sync |
+| [`ios-sample/.../SampleKotlinBridge.swift`](ios-sample/SyncForgeTasks/SampleKotlinBridge.swift) | Swift ↔ Kotlin bridge |
+| [`ios-sample/.../ContentView.swift`](ios-sample/SyncForgeTasks/ContentView.swift) | SwiftUI tabs (Tasks / Notes / Tags) |
+| [`ios-sample/.../AppDelegate.swift`](ios-sample/SyncForgeTasks/AppDelegate.swift) | BGTaskScheduler registration |
+
+More: [iOS setup](docs/IOS_SETUP.md) · [ios-sample/README.md](ios-sample/README.md) ·
+[sample-ios-shared/README.md](sample-ios-shared/README.md)
+
+> **Note:** iOS ships as a KMP framework today (link in Xcode). Standalone SPM / XCFramework
+> packaging is planned post-1.0.
+
+---
+
+### Backend (both platforms)
+
+Implement `POST /sync/push` and `GET /sync/pull` per [REST API](docs/REST_API.md). Runnable
+starters: `./gradlew :mock-server:run` (dev) · `./gradlew :backend-starter:run` (Ktor template).
 
 ---
 

@@ -14,3 +14,15 @@ data class SimulateEditResponse(
     val updated: Boolean,
     val message: String? = null,
 )
+
+@Serializable
+data class SimulateDeleteRequest(
+    val entityType: String,
+    val entityId: String,
+)
+
+@Serializable
+data class SimulateDeleteResponse(
+    val deleted: Boolean,
+    val message: String? = null,
+)

@@ -14,6 +14,7 @@ import dev.syncforge.sample.notes.NotesViewModel
 import dev.syncforge.sample.tags.TagsViewModel
 import dev.syncforge.sample.tasks.TasksViewModel
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : ComponentActivity() {
 
@@ -33,7 +34,10 @@ class MainActivity : ComponentActivity() {
             repository = app.taskRepository,
             syncManager = app.syncManager,
         )
-        val notesViewModel = NotesViewModel(repository = app.noteRepository)
+        val notesViewModel = NotesViewModel(
+            repository = app.noteRepository,
+            tagRepository = app.tagRepository,
+        )
         val tagsViewModel = TagsViewModel(repository = app.tagRepository)
 
         lifecycleScope.attachDemoPresentation(
@@ -56,7 +60,7 @@ class MainActivity : ComponentActivity() {
 
         if (autoDemo) {
             lifecycleScope.launch {
-                delay(1_000)
+                delay(1_000.milliseconds)
                 DemoRecordingRunner.run(app)
             }
         }
