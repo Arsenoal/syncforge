@@ -1,6 +1,6 @@
 # SyncForge documentation
 
-**Version:** `0.9.0-rc.4` · **Status:** release candidate (pre-1.0) · [Maven Central](https://central.sonatype.com/namespace/studio.syncforge)
+**Version:** `0.9.0-rc.5` · **Status:** release candidate (pre-1.0) · [Maven Central](https://central.sonatype.com/namespace/studio.syncforge)
 
 SyncForge is an offline-first sync library for Android with Kotlin Multiplatform targets for
 iOS, JVM desktop, and native macOS. Your app entities live in Room (Android) or your own
@@ -138,11 +138,11 @@ pluginManagement {
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("studio.syncforge.android") version "0.9.0-rc.4"
+    id("studio.syncforge.android") version "0.9.0-rc.5"
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.4"))
+    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.5"))
     implementation("studio.syncforge:syncforge")
 }
 ```
@@ -164,7 +164,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("com.google.devtools.ksp")
-    id("studio.syncforge.android") version "0.9.0-rc.4"
+    id("studio.syncforge.android") version "0.9.0-rc.5"
 }
 
 kotlin {
@@ -177,7 +177,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.4"))
+            implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.5"))
             implementation("studio.syncforge:syncforge")
         }
     }
@@ -197,7 +197,7 @@ val syncManager = SyncForge.ios {
 ### Verify Maven Central
 
 ```bash
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.4/syncforge-bom-0.9.0-rc.4.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.5/syncforge-bom-0.9.0-rc.5.pom" | head -1
 ```
 
 Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the

@@ -2,7 +2,7 @@
 agp = "8.9.0"
 kotlin = "2.1.10"
 room = "2.7.1"
-syncforge = "0.9.0-rc.4"
+syncforge = "0.9.0-rc.5"
 
 [libraries]
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

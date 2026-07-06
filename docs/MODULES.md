@@ -55,7 +55,6 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict Compose UI | **Stable** | Production UI helpers on Android. |
 | `databaseName()` | **Stable** | SQLDelight database file name on Android (default `syncforge.db` since 0.6.0). |
 | `persistence(SyncForgePersistence)`, `outboxRepository()` / `conflictStore()` extensions | **Experimental** | Custom SQLDelight wiring. |
-| `useRoomPersistence()` | **Deprecated** | Legacy Room backend. |
 | `SyncForgePersistenceFactory`, `createSyncForgePersistence`, `createDefaultSyncForgePersistence` (`:syncforge-persistence`) | **Experimental** | Annotated with `@ExperimentalSyncForgeApi`; requires opt-in for direct factory use. |
 | `SyncEngine`, `ConflictPullApplier`, `SyncManagerImpl`, `SqlDelightOutboxRepository`, platform monitors/cursor impls | **Internal** | Orchestration and storage implementations. |
 
@@ -64,7 +63,7 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 Types that were public but are now `internal` (or always were) include:
 `SyncManagerImpl`, `SqlDelightOutboxRepository`, `SqlDelightConflictStore`, `MergeStrategy`,
 `FileSyncCursorStore`, `AndroidNetworkMonitor`, `IosNetworkMonitor`, `AndroidSyncWorkScheduler`,
-legacy Room internals (`RoomOutboxRepository`, `RoomConflictStore`, `SyncForgeDatabaseFactory`, etc.),
+legacy Room migration internals (`SyncForgeDatabase`, DAOs, `SyncForgeDatabaseFactory`, `RoomToSqlDelightMigrator`),
 and DSL implementation classes (`AndroidSyncForgeDsl`, `IosSyncForgeDsl`, `DesktopSyncForgeDsl`).
 
 Use the platform DSLs or `SyncManager` instead of constructing these types directly.
@@ -169,7 +168,7 @@ class MyApplication : Application(), Configuration.Provider {
 ```
 
 SQLDelight is the default outbox backend since 0.6.0. Upgrading from pre-0.6.0 Room storage
-is automatic — see [ANDROID_SETUP.md](ANDROID_SETUP.md). Legacy Room: `useRoomPersistence()`.
+is automatic — see [ANDROID_SETUP.md](ANDROID_SETUP.md).
 
 KSP generates `SyncForgeHandlers` in your app module:
 
@@ -380,8 +379,8 @@ Database file: `syncforge.db` (separate from your app's Room database).
 
 ### Legacy Room internals (androidMain, `internal`)
 
-Pre-0.6.0 Room outbox/conflict storage. Not part of the public API — only used by
-deprecated `useRoomPersistence()` and `RoomToSqlDelightMigrator`. Database file: `syncforge_outbox.db`.
+Pre-0.6.0 Room outbox/conflict schema. Not part of the public API — only used by
+`RoomToSqlDelightMigrator` for one-time upgrade. Database file: `syncforge_outbox.db`.
 
 ---
 
@@ -499,7 +498,6 @@ conflicts {
 |------|------|
 | `ConflictStore` | Interface for open/resolved conflict records |
 | `SqlDelightConflictStore` | Multiplatform SQLDelight implementation — default on all platforms |
-| Legacy Room conflict store | `internal`; deprecated opt-in via `useRoomPersistence()` only |
 | `InMemoryConflictStore` | In-memory implementation for tests |
 | `ConflictRecord` | Full JSON snapshots for debug and resolution UI |
 | `ConflictSummary` | Lightweight summary for `SyncManager.conflicts` flow |
@@ -708,7 +706,6 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `commonTest/.../PullPaginationTest` | Multi-page pull loop |
 | `commonTest/.../SyncForgeBuilderTest` | Builder entity type derivation |
 | `androidUnitTest/.../SyncManagerImplTest` | Push cycle with in-memory outbox |
-| `androidUnitTest/.../RoomOutboxRepositoryTest` | Room outbox persistence |
 | `jvmTest/.../SqlDelightOutboxRepositoryTest` | SQLDelight outbox (JDBC in-memory) |
 | `jvmTest/.../SqlDelightConflictStoreTest` | SQLDelight conflict store (JDBC in-memory) |
 | `jvmTest/.../FileSyncCursorStoreTest` | Desktop file cursor persistence |

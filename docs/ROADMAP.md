@@ -1,6 +1,6 @@
 # SyncForge roadmap
 
-**Current version:** `0.9.0-rc.4` (Maven Central under `studio.syncforge`; 1.0 soak in progress)
+**Current version:** `0.9.0-rc.5` (pre-1.0; 1.0 soak in progress)
 
 ---
 
@@ -53,7 +53,7 @@
 - **`SyncForge.ios { }`** — SQLDelight outbox/conflicts, UserDefaults cursor, NWPathMonitor
 - **`SyncForge.desktop { }`** — JVM desktop with SQLDelight, `FileSyncCursorStore`, OkHttp transport
 - **`SyncForge.macos { }`** — native macOS (`macosArm64` / `macosX64`) with iOS-parity defaults
-- **SQLDelight on Android** — default since 0.6.0; `useRoomPersistence()` for legacy opt-in
+- **SQLDelight on Android** — default since 0.6.0; legacy `useRoomPersistence()` removed in 0.9.0-rc.5
 - **SKIE** — improved Swift interop (`Flow`, suspend) on `:syncforge` and `:sample-ios-shared`
 - **`ios-sample/`** — SwiftUI Xcode reference app (tasks + notes + tags; see [iOS sample parity](#ios-sample-parity-090-))
 
@@ -95,7 +95,7 @@
 |------|--------|-------------|
 | **iOS target** | ✅ M3 | Framework compiles; `SyncForge.ios { }` with SQLDelight, UserDefaults cursor, NWPathMonitor |
 | **SQLDelight / multiplatform storage** | ✅ M4 | Default on all platforms since 0.6.0 |
-| **Android SQLDelight default** | ✅ M4 | `SyncForge.android { }` uses SQLDelight; `useRoomPersistence()` legacy opt-in |
+| **Android SQLDelight default** | ✅ M4 | `SyncForge.android { }` uses SQLDelight only (Room opt-in removed 0.9.0-rc.5) |
 | **Darwin Ktor engine** | ✅ Done | iOS HTTP transport via `ktor-client-darwin` |
 | **iOS network monitor** | ✅ M3 | `IosNetworkMonitor` + `NetworkMonitorFactory` |
 | **iOS persisted cursor** | ✅ M3 | `UserDefaultsSyncCursorStore` |
@@ -157,14 +157,14 @@
 
 ---
 
-## 1.0.0 status (soak from `0.9.0-rc.4`)
+## 1.0.0 status (soak from `0.9.0-rc.5`)
 
 Most pre-1.0 P0 work is complete (Sample App Proof, iOS parity, auth refresh, backend starter, E2E CI, Maven Central RC). Remaining before tagging **1.0.0**:
 
 | Blocker | Status |
 |---------|--------|
 | API graduation (`@ExperimentalSyncForgeApi` removal on stable surfaces) | ✅ |
-| Remove `useRoomPersistence()` | ⬜ |
+| Remove `useRoomPersistence()` | ✅ |
 | Publish `1.0.0` to Maven Central | ⬜ |
 | 1.0 sign-off matrix + docs freeze | ⬜ |
 

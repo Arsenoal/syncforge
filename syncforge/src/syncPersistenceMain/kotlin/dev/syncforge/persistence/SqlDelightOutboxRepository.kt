@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
- * SQLDelight-backed [OutboxRepository] — multiplatform replacement for [dev.syncforge.outbox.RoomOutboxRepository].
+ * SQLDelight-backed [OutboxRepository] — default on all platforms since 0.6.0.
  */
 internal class SqlDelightOutboxRepository(
     private val database: SyncForgePersistenceDatabase,

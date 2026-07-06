@@ -61,11 +61,11 @@ pluginManagement {
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("studio.syncforge.android") version "0.9.0-rc.4"
+    id("studio.syncforge.android") version "0.9.0-rc.5"
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.4"))
+    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.5"))
     implementation("studio.syncforge:syncforge")
 }
 ```
@@ -89,7 +89,7 @@ already on the classpath — usually covered by SyncForge's Android transitive d
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("studio.syncforge:syncforge:0.9.0-rc.4")
+            implementation("studio.syncforge:syncforge:0.9.0-rc.5")
         }
     }
 }
@@ -102,7 +102,7 @@ in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS
 
 ```kotlin
 dependencies {
-    implementation("studio.syncforge:syncforge:0.9.0-rc.4")
+    implementation("studio.syncforge:syncforge:0.9.0-rc.5")
 }
 ```
 

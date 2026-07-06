@@ -10,7 +10,7 @@
 1. **Android stays the reference platform** until iOS reaches parity.
 2. **Interfaces in `commonMain`, implementations per platform** — no Room/SQLDelight types leak into shared code.
 3. **Incremental migration** — each PR compiles on Android + JVM; iOS targets added progressively.
-4. **SQLDelight is the internal persistence backend on all platforms** since 0.6.0. Legacy Room internals remain only for `useRoomPersistence()` and migration.
+4. **SQLDelight is the internal persistence backend on all platforms** since 0.6.0. Legacy Room schema remains only for `RoomToSqlDelightMigrator` (removed `useRoomPersistence()` in 0.9.0-rc.5).
 5. **Consumer app entities stay in Room** (Android) — only SyncForge's internal outbox/conflict DB moved to SQLDelight.
 
 ---
@@ -278,7 +278,7 @@ Keeping schemas/drivers in a separate module avoids pulling SQLDelight into cons
 - [x] `syncPersistenceMain` source set for SQLDelight repository implementations
 - [x] Migration guide in [ANDROID_SETUP.md](ANDROID_SETUP.md)
 - [x] Automatic Room → SQLDelight data migrator (`RoomToSqlDelightMigrator`)
-- [x] Legacy Room internals marked `internal`; `useRoomPersistence()` deprecated
+- [x] Legacy Room internals marked `internal`; `useRoomPersistence()` removed (0.9.0-rc.5)
 - [x] SQLDelight as default in `SyncForge.android` (0.6.0)
 
 ### M5 — Desktop + polish (v0.5.x) ✅

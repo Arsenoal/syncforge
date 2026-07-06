@@ -1,6 +1,6 @@
 # SyncForge roadmap: 1.0.0 → 2.0.0
 
-**Baseline:** `0.9.0-rc.4` (Maven Central `studio.syncforge`, 1.0 soak in progress)  
+**Baseline:** `0.9.0-rc.5` (pre-1.0 soak in progress)  
 **Document date:** July 2026  
 **Scope:** Everything from the first stable public release through the next major version.
 
@@ -30,7 +30,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 |---------------------------|-------------------------|----------------------------------------|----------------------------------------------|
 | **Core sync loop**        | Stable                  | Hardening only                         | Optional second mode (op-log / CRDT doc)     |
 | **Conflict resolution**   | LWW, merge, deferToUser | CRDT helpers + KSP codegen             | `crdt { }` first-class; tombstone-aware sets |
-| **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Remove `useRoomPersistence()`                |
+| **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Room opt-in removed in 0.9.0-rc.5            |
 | **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
 | **Backend contract**      | REST v1 frozen          | Adapters (Supabase, Spring)            | REST v2 only if op-log needs it              |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
@@ -59,7 +59,7 @@ Windows are indicative for a small team or part-time maintenance.
 
 Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees on the Android-primary API. Experimental markers remain only where platform maturity warrants it (iOS/desktop auth, debug surfaces).
 
-### Already complete (from 0.6 → 0.9.0-rc.4)
+### Already complete (from 0.6 → 0.9.0-rc.5)
 
 | Area                 | Delivered                                                                                        |
 |----------------------|--------------------------------------------------------------------------------------------------|
@@ -71,7 +71,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | **Ecosystem**        | `:syncforge-server`, `:backend-starter`, `:mock-server`, `consumer-smoke`                        |
 | **Distribution**     | Maven Central BOM, `studio.syncforge.android` Gradle plugin, Apache 2.0                          |
 | **CI**               | `androidE2e`, `iosE2e`, `verifyReleaseSignOff`, `verifyConsumerSmoke`                            |
-| **API cleanup**      | `ConflictResolver` family removed; `useSqlDelightPersistence()` removed                          |
+| **API cleanup**      | `ConflictResolver` family removed; `useSqlDelightPersistence()` and `useRoomPersistence()` removed |
 | **Docs**             | GETTING_STARTED, MODULES stability table, AUTH_API, MAVEN_PUBLISH, REST versioning policy        |
 
 ### Remaining P0 (1.0 blockers)
@@ -79,7 +79,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | ID        | Job                                                                                                                                                                                                                                                           | Area    |
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | 1.0-P0-01 | **API graduation** — remove `@ExperimentalSyncForgeApi` from `SyncForge.android`, core `SyncManager` (`status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`), `ConflictPolicy` / `ConflictStrategies`, Compose status + conflict UI | API     |
-| 1.0-P0-02 | **Remove `useRoomPersistence()`** — legacy Room opt-in deleted (migration path documented in upgrade guide)                                                                                                                                                   | Android |
+| 1.0-P0-02 | **Remove `useRoomPersistence()`** — legacy Room opt-in deleted (migration path documented in upgrade guide)                                                                                                                                                   | Android ✅ |
 | 1.0-P0-03 | **Publish `1.0.0` to Maven Central** — all artifacts: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin                                                                                                                  | Dist    |
 | 1.0-P0-04 | **1.0 sign-off matrix** — run full acceptance checklist (Section 8); tag `v1.0.0`                                                                                                                                                                             | QA      |
 | 1.0-P0-05 | **macOS tag publish** — iOS/macOS frameworks from CI without manual steps                                                                                                                                                                                     | CI      |

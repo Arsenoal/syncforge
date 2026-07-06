@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-rc.5] - 2026-07-06
+
 ### Changed
 
 - **API stability (1.0)** — stable surfaces no longer require `@OptIn(ExperimentalSyncForgeApi::class)`:
@@ -18,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`StableApiSurfaceTest`** / **`StableAndroidApiSurfaceTest`** — reflection guards for stable vs experimental API boundaries.
+
+### Removed
+
+- **`useRoomPersistence()`** — legacy Room opt-in for SyncForge outbox/conflicts removed for 1.0.
+  SQLDelight is the only backend; automatic `RoomToSqlDelightMigrator` on upgrade is unchanged.
+  **Upgrade:** remove `useRoomPersistence()` from `SyncForge.android { }` — no replacement needed.
 
 ## [0.9.0-rc.4] - 2026-07-03
 

@@ -8,15 +8,12 @@ import dev.syncforge.auth.createTokenStore
 import dev.syncforge.auth.initTokenStoreContext
 import androidx.work.Configuration
 import dev.syncforge.conflict.ConflictPolicyBuilder
-import dev.syncforge.conflict.RoomConflictStore
 import dev.syncforge.entity.EntityRegistry
-import dev.syncforge.outbox.RoomOutboxRepository
 import dev.syncforge.entity.EntitySyncHandler
 import dev.syncforge.network.KtorSyncTransport
 import dev.syncforge.network.NetworkMonitorFactory
 import dev.syncforge.network.SyncAuthProvider
 import dev.syncforge.network.SyncTransport
-import dev.syncforge.outbox.SyncForgeDatabaseFactory
 import dev.syncforge.persistence.RoomToSqlDelightMigrator
 import dev.syncforge.persistence.SyncForgePersistence
 import dev.syncforge.persistence.SyncForgePersistenceFactory
@@ -56,7 +53,6 @@ class AndroidSyncForgeDsl internal constructor(
     private var builtInAuth: BuiltInAuthDsl.() -> Unit = {}
     private var useBuiltInAuth: Boolean = false
     private var persistence: SyncForgePersistence? = null
-    private var useRoom: Boolean = false
     private var sqlDelightDatabaseName: String = "syncforge.db"
     internal var migrateFromRoom: Boolean = true
     internal var deleteRoomDatabaseAfterMigration: Boolean = true
@@ -113,20 +109,6 @@ class AndroidSyncForgeDsl internal constructor(
     @ExperimentalSyncForgeApi
     fun persistence(persistence: SyncForgePersistence) {
         this.persistence = persistence
-        useRoom = false
-    }
-
-    /**
-     * Opt back into Room for outbox + conflict storage (legacy pre-0.6.0 behaviour).
-     */
-    @Deprecated(
-        message = "Room persistence is deprecated — SQLDelight is the default since 0.6.0.",
-        level = DeprecationLevel.WARNING,
-    )
-    @ExperimentalSyncForgeApi
-    fun useRoomPersistence() {
-        useRoom = true
-        persistence = null
     }
 
     fun schedulePeriodicSyncOnStart(enabled: Boolean = true) {
@@ -162,26 +144,18 @@ class AndroidSyncForgeDsl internal constructor(
     internal fun build(): SyncManager {
         builder.enableRetry = true
 
-        if (useRoom) {
-            val database = SyncForgeDatabaseFactory.create(context)
-            builder.outbox = builder.outbox
-                ?: RoomOutboxRepository(database.outboxDao(), maxRetries = builder.maxRetries)
-            builder.conflictStore = builder.conflictStore
-                ?: RoomConflictStore(database.conflictDao())
-        } else {
-            val stores = persistence ?: SyncForgePersistenceFactory.create(context, sqlDelightDatabaseName)
-            if (migrateFromRoom) {
-                RoomToSqlDelightMigrator.migrateIfNeeded(
-                    context = context,
-                    persistence = stores,
-                    deleteRoomDatabaseAfterMigration = deleteRoomDatabaseAfterMigration,
-                )
-            }
-            builder.outbox = builder.outbox
-                ?: stores.outboxRepository(maxRetries = builder.maxRetries)
-            builder.conflictStore = builder.conflictStore
-                ?: stores.conflictStore()
+        val stores = persistence ?: SyncForgePersistenceFactory.create(context, sqlDelightDatabaseName)
+        if (migrateFromRoom) {
+            RoomToSqlDelightMigrator.migrateIfNeeded(
+                context = context,
+                persistence = stores,
+                deleteRoomDatabaseAfterMigration = deleteRoomDatabaseAfterMigration,
+            )
         }
+        builder.outbox = builder.outbox
+            ?: stores.outboxRepository(maxRetries = builder.maxRetries)
+        builder.conflictStore = builder.conflictStore
+            ?: stores.conflictStore()
 
         val resolvedBaseUrl = requireNotNull(baseUrl) { "baseUrl is required — e.g. baseUrl(\"https://api.example.com\")" }
 

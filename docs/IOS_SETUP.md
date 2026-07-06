@@ -235,7 +235,7 @@ SwiftUI wrapper: `ios-sample/SyncForgeTasks/SampleViewModel.swift`.
 | Setup DSL | `SyncForge.android(context)` | `SyncForge.ios` |
 | Sample entities | tasks, notes, tags (`:sample`) | tasks, notes, tags (`ios-sample/` + `:sample-ios-shared`) |
 | Outbox + conflicts | SQLDelight (`syncforge.db`) | SQLDelight |
-| Legacy opt-in | `useRoomPersistence()` (deprecated) | — |
+| Legacy Room opt-in | Removed in 0.9.0-rc.5 | — |
 | Cursor | SharedPreferences | UserDefaults |
 | Network | ConnectivityManager | NWPathMonitor |
 | Background sync | WorkManager | BGAppRefreshTask (`IosBackgroundSyncWorkScheduler`) |

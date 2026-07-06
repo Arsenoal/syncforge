@@ -18,17 +18,6 @@ syncManager = SyncForge.android(this) {
 
 ---
 
-## Legacy Room opt-in
-
-Room is **deprecated** since 0.6.0. Only use if you cannot migrate yet:
-
-```kotlin
-SyncForge.android(this) {
-    useRoomPersistence()   // ← legacy Room backend
-    // ...
-}
-```
-
 ### Custom database name
 
 SQLDelight is the default since 0.6.0. Override the file name when needed:
@@ -57,17 +46,13 @@ SyncForge.android(this) {
 
 ---
 
-## Room vs SQLDelight
+## Legacy Room storage (pre-0.6.0)
 
-| | Room (legacy opt-in) | SQLDelight (default since 0.6.0) |
-|--|----------------------|----------------------------------|
-| Database file | `syncforge_outbox.db` | `syncforge.db` |
-| Module | `:syncforge` androidMain (Room) | `:syncforge-persistence` + `:syncforge` `syncPersistenceMain` |
-| KMP shared with iOS | No | Yes |
-| API | `OutboxRepository` / `ConflictStore` | Same interfaces |
-| Migration | — | Automatic Room → SQLDelight on upgrade |
+SyncForge's internal outbox/conflict backend is **SQLDelight only** since 0.9.0-rc.5.
+The legacy `useRoomPersistence()` opt-in was removed for 1.0.
 
-Both implementations satisfy the same contracts — your entity handlers and `SyncManager` API are unchanged.
+If your app still has `syncforge_outbox.db` from a pre-0.6.0 release, the automatic
+`RoomToSqlDelightMigrator` copies pending rows into `syncforge.db` on first launch — see below.
 
 ---
 
@@ -106,10 +91,6 @@ If upgrading from a pre-0.6.0 app that still used Room:
 
 1. Ship a release that drains the outbox (`SyncStatus` up to date).
 2. Upgrade to 0.6.0+ — automatic migrator handles pending rows if any remain.
-
-### Coexistence during development
-
-Both database files can exist simultaneously — useful for A/B testing persistence backends.
 
 ---
 
@@ -152,7 +133,6 @@ Full walkthrough with sequence diagram: [AUTH_API.md → Android auth flow](AUTH
 | `auth { }` | Built-in register/login/refresh — see [AUTH_API.md](AUTH_API.md) |
 | `authToken { }` / `auth(provider)` | Manual bearer or custom `SyncAuthProvider` |
 | `databaseName(name)` | SQLDelight database file name (default `syncforge.db`) |
-| `useRoomPersistence()` | Deprecated legacy Room backend |
 | `persistence(SyncForgePersistence)` | Inject a custom persistence instance |
 | `customize { }` | Override `outbox` / `conflictStore` manually |
 

@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
- * SQLDelight-backed [ConflictStore] — multiplatform replacement for [dev.syncforge.conflict.RoomConflictStore].
+ * SQLDelight-backed [ConflictStore] — default on all platforms since 0.6.0.
  */
 internal class SqlDelightConflictStore(
     private val database: SyncForgePersistenceDatabase,
