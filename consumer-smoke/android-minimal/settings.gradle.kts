@@ -15,7 +15,7 @@ pluginManagement {
         eachPlugin {
             if (requested.id.id == "studio.syncforge.android") {
                 val version = providers.gradleProperty("syncforge.version")
-                    .orElse("0.9.0-rc.5")
+                    .orElse("0.9.0-rc.4")
                     .get()
                 useModule("studio.syncforge.android:studio.syncforge.android.gradle.plugin:$version")
             }

@@ -50,12 +50,17 @@ tasks.register("verifyReleaseSignOff") {
     )
 }
 
-fun syncforgeLibraryVersion(): String {
+fun readSyncforgeVersion(propertiesFile: java.io.File): String {
     val props = java.util.Properties()
-    rootProject.file("gradle.properties").inputStream().use { props.load(it) }
+    propertiesFile.inputStream().use { props.load(it) }
     return props.getProperty("syncforge.version")
-        ?: error("syncforge.version missing in gradle.properties")
+        ?: error("syncforge.version missing in ${propertiesFile.path}")
 }
+
+fun syncforgeLibraryVersion(): String = readSyncforgeVersion(rootProject.file("gradle.properties"))
+
+fun consumerSmokeMavenCentralVersion(): String =
+    readSyncforgeVersion(rootProject.file("consumer-smoke/android-minimal/gradle.properties"))
 
 tasks.register<Exec>("verifyConsumerSmoke") {
     group = "verification"
@@ -71,10 +76,21 @@ tasks.register<Exec>("verifyConsumerSmoke") {
     )
 }
 
+tasks.register<Exec>("verifyConsumerSmokeMavenCentralArtifacts") {
+    group = "verification"
+    description =
+        "Fails unless required SyncForge POMs resolve on repo1.maven.org for the consumer-smoke Maven Central pin."
+    commandLine(
+        rootProject.file(".github/scripts/verify-maven-central-artifacts.sh").absolutePath,
+        consumerSmokeMavenCentralVersion(),
+    )
+}
+
 tasks.register<Exec>("verifyConsumerSmokeMavenCentral") {
     group = "verification"
     description =
         "Compiles consumer-smoke/android-minimal using only Maven Central (no mavenLocal / includeBuild)."
+    dependsOn("verifyConsumerSmokeMavenCentralArtifacts")
     workingDir = rootProject.file("consumer-smoke/android-minimal")
     commandLine(
         rootProject.file("gradlew").absolutePath,
@@ -131,10 +147,9 @@ tasks.register<Exec>("verifyMavenCentralArtifacts") {
     group = "verification"
     description =
         "Fails unless required SyncForge POMs resolve on repo1.maven.org for syncforge.version."
-    val version = syncforgeLibraryVersion()
     commandLine(
         rootProject.file(".github/scripts/verify-maven-central-artifacts.sh").absolutePath,
-        version,
+        syncforgeLibraryVersion(),
     )
 }
 

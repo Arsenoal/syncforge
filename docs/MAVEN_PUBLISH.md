@@ -174,7 +174,8 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
 | Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
-| `syncforge-bom` / `syncforge-ksp` / `syncforge-android` missing | Re-run **Publish Release** → workflow_dispatch → tag → **publish_mode: supplemental** (uploads only Android release + BOM + KSP) |
+| `syncforge-bom` / `syncforge-ksp` / `syncforge-android` missing | Re-run **Publish Release** → workflow_dispatch → tag → **publish_mode: supplemental** (probes Maven Central and uploads only missing artifacts) |
+| Supplemental deployment **FAILED** with BOM/KSP validation error but Android validated | Central rejects re-upload of an existing version. **Drop** the failed deployment in the Portal, push the latest `main` (dynamic supplemental plan), then re-run supplemental — it will upload **only** `syncforge-android` |
 | Publish workflow green but BOM 404 on Central | Wait for sync (`verify-maven-central-artifacts.sh`) or check Sonatype **Component Coordinates** for `syncforge-bom` before clicking **Publish** |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |

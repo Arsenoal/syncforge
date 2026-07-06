@@ -11,7 +11,7 @@ on:
         required: true
         default: "v0.9.0-rc.5"
       publish_mode:
-        description: "full = all artifacts; supplemental = missing Android/BOM/KSP only"
+        description: "full = all artifacts; supplemental = only artifacts missing on Maven Central"
         required: true
         default: "supplemental"
         type: choice
@@ -56,7 +56,17 @@ jobs:
             echo "syncforge.version=${VERSION}" >> gradle.properties
           fi
 
+      - name: Plan supplemental publish
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_mode == 'supplemental'
+        id: supplemental_plan
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          bash .github/scripts/plan-supplemental-maven-publish.sh "$VERSION" "${RUNNER_TEMP}"
+
       - name: Drop open staging repositories
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full' || steps.supplemental_plan.outputs.has_work == 'true'
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -88,10 +98,25 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full'
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
-      - name: Compile BOM and KSP (required Central artifacts)
+      - name: Compile supplemental publish targets
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_mode == 'supplemental' && steps.supplemental_plan.outputs.has_work == 'true'
+        run: |
+          set -euo pipefail
+          COMPILE_FILE="${{ steps.supplemental_plan.outputs.compile_tasks_file }}"
+          mapfile -t ROOT_TASKS < <(grep -v '^syncforge-gradle-plugin:' "$COMPILE_FILE" || true)
+          if ((${#ROOT_TASKS[@]} > 0)); then
+            ./gradlew "${ROOT_TASKS[@]}" --no-daemon
+          fi
+          if grep -q '^syncforge-gradle-plugin:compileKotlin$' "$COMPILE_FILE"; then
+            (cd syncforge-gradle-plugin && ../gradlew compileKotlin --no-daemon)
+          fi
+
+      - name: Compile BOM and KSP (full publish)
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full'
         run: ./gradlew :syncforge-bom:generatePomFileForMavenPublication :syncforge-ksp:compileKotlin --no-daemon
 
       - name: Prepare GPG signing key
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full' || steps.supplemental_plan.outputs.has_work == 'true'
         env:
           SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           SIGNING_IN_MEMORY_KEY_B64: ${{ secrets.SIGNING_IN_MEMORY_KEY_B64 }}
@@ -148,6 +173,7 @@ jobs:
           fi
 
       - name: Publish to Maven Central
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full' || steps.supplemental_plan.outputs.has_work == 'true'
         env:
           ORG_GRADLE_PROJECT_mavenCentralPublishing: "true"
           ORG_GRADLE_PROJECT_signAllPublications: "true"
@@ -171,12 +197,57 @@ jobs:
             SIGNING_ARGS+=("-Psigning.password=${SIGNING_PASSWORD}")
           fi
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.publish_mode }}" == "supplemental" ]]; then
-            echo "Supplemental publish: syncforge-android + syncforge-bom + syncforge-ksp"
-            ./gradlew verifyPublishSigning \
-              :syncforge:publishAndroidReleasePublicationToMavenCentralRepository \
-              :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
-              :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
+            TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+            VERSION="${TAG#v}"
+            PUBLISH_FILE="${{ steps.supplemental_plan.outputs.publish_tasks_file }}"
+            mapfile -t PUBLISH_TASKS <"$PUBLISH_FILE"
+            if ((${#PUBLISH_TASKS[@]} == 0)); then
+              echo "::error::Supplemental plan produced no publish tasks"
+              exit 1
+            fi
+            # Guard against re-uploading coordinates already on Central (duplicate-version rejection).
+            source .github/scripts/maven-central-artifacts-common.sh
+            FILTERED_TASKS=()
+            for task in "${PUBLISH_TASKS[@]}"; do
+              case "$task" in
+                *:syncforge:publishAndroidReleasePublicationToMavenCentralRepository)
+                  artifact="syncforge-android" ;;
+                *:syncforge-bom:publishMavenPublicationToMavenCentralRepository)
+                  artifact="syncforge-bom" ;;
+                *:syncforge-ksp:publishMavenPublicationToMavenCentralRepository)
+                  artifact="syncforge-ksp" ;;
+                *:syncforge:publishKotlinMultiplatformPublicationToMavenCentralRepository)
+                  artifact="syncforge" ;;
+                *:syncforge:publishJvmPublicationToMavenCentralRepository)
+                  artifact="syncforge-jvm" ;;
+                *:syncforge-annotations:publishKotlinMultiplatformPublicationToMavenCentralRepository)
+                  artifact="syncforge-annotations" ;;
+                *:syncforge-persistence:publishKotlinMultiplatformPublicationToMavenCentralRepository)
+                  artifact="syncforge-persistence" ;;
+                *:syncforge-android-deps:publishReleasePublicationToMavenCentralRepository)
+                  artifact="syncforge-android-deps" ;;
+                *)
+                  FILTERED_TASKS+=("$task")
+                  continue
+                  ;;
+              esac
+              if maven_central_artifact_present "$artifact" "$VERSION"; then
+                echo "SKIP ${artifact}:${VERSION} — already on Maven Central"
+              else
+                FILTERED_TASKS+=("$task")
+              fi
+            done
+            if ((${#FILTERED_TASKS[@]} == 0)); then
+              echo "All planned artifacts are already on Maven Central — nothing to upload."
+              exit 0
+            fi
+            echo "Supplemental publish (${{ steps.supplemental_plan.outputs.missing_artifacts }}): ${FILTERED_TASKS[*]}"
+            ./gradlew verifyPublishSigning "${FILTERED_TASKS[@]}" \
               --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+            if [[ "$(cat "${{ steps.supplemental_plan.outputs.plugin_publish_file }}")" == "true" ]]; then
+              (cd syncforge-gradle-plugin && ../gradlew verifyPublishSigning publishAllPublicationsToMavenCentralRepository \
+                --no-daemon --no-parallel "${SIGNING_ARGS[@]}")
+            fi
           else
             ./gradlew verifyPublishSigning publishAllToMavenCentral \
               --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
@@ -186,7 +257,12 @@ jobs:
               --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
           fi
 
+      - name: Supplemental publish skipped (already on Central)
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_mode == 'supplemental' && steps.supplemental_plan.outputs.has_work != 'true'
+        run: echo "All required artifacts are already on Maven Central — nothing to upload."
+
       - name: Transfer staging upload to Central Portal
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full' || steps.supplemental_plan.outputs.has_work == 'true'
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

@@ -2,46 +2,34 @@
 # Verify required SyncForge artifacts are on repo1.maven.org after Central sync.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=maven-central-artifacts-common.sh
+source "${SCRIPT_DIR}/maven-central-artifacts-common.sh"
+
 VERSION="${1:?Usage: verify-maven-central-artifacts.sh <version>}"
-BASE="https://repo1.maven.org/maven2/studio/syncforge"
 RETRIES="${MAVEN_CENTRAL_VERIFY_RETRIES:-12}"
 SLEEP_SEC="${MAVEN_CENTRAL_VERIFY_SLEEP_SEC:-30}"
 
-REQUIRED=(
-  syncforge-bom
-  syncforge-ksp
-  syncforge
-  syncforge-android
-  syncforge-jvm
-  syncforge-annotations
-  syncforge-persistence
-  syncforge-android-deps
-  syncforge-gradle-plugin
-)
-
 check_pom() {
   local artifact="$1"
-  local url="${BASE}/${artifact}/${VERSION}/${artifact}-${VERSION}.pom"
-  local status
-  status="$(curl -sf -o /dev/null -w '%{http_code}' "$url" || true)"
-  if [[ "$status" == "200" ]]; then
+  if maven_central_artifact_present "$artifact" "$VERSION"; then
     echo "OK  ${artifact}:${VERSION}"
     return 0
   fi
-  echo "MISS ${artifact}:${VERSION} (HTTP ${status:-000})"
+  echo "MISS ${artifact}:${VERSION} (HTTP $(maven_central_pom_status "$artifact" "$VERSION"))"
   return 1
 }
 
 missing=()
 for attempt in $(seq 1 "$RETRIES"); do
   missing=()
-  for artifact in "${REQUIRED[@]}"; do
+  for artifact in "${SYNCFORGE_REQUIRED_ARTIFACTS[@]}"; do
     if ! check_pom "$artifact"; then
       missing+=("$artifact")
     fi
   done
   if ((${#missing[@]} == 0)); then
-    echo "All ${#REQUIRED[@]} required artifacts are on Maven Central."
+    echo "All ${#SYNCFORGE_REQUIRED_ARTIFACTS[@]} required artifacts are on Maven Central."
     exit 0
   fi
   if ((attempt < RETRIES)); then
