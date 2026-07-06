@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to publish (e.g. v0.9.0-rc.4)"
+        description: "Git tag to publish (e.g. v0.9.0-rc.5)"
         required: true
-        default: "v0.9.0-rc.4"
+        default: "v0.9.0-rc.5"
 
 permissions:
   contents: read
