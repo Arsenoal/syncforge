@@ -87,6 +87,7 @@ tasks.register<Exec>("verifyConsumerSmokeMavenCentral") {
 /** Required Maven Central coordinates for a complete consumer-facing release. */
 val mavenCentralRequiredArtifacts = listOf(
     "syncforge",
+    "syncforge-android",
     "syncforge-jvm",
     "syncforge-annotations",
     "syncforge-persistence",

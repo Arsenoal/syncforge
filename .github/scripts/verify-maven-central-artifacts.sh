@@ -11,6 +11,7 @@ REQUIRED=(
   syncforge-bom
   syncforge-ksp
   syncforge
+  syncforge-android
   syncforge-jvm
   syncforge-annotations
   syncforge-persistence

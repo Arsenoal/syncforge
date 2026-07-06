@@ -11,7 +11,7 @@ on:
         required: true
         default: "v0.9.0-rc.5"
       publish_mode:
-        description: "full = all artifacts; supplemental = BOM + KSP only (for partial releases)"
+        description: "full = all artifacts; supplemental = missing Android/BOM/KSP only"
         required: true
         default: "supplemental"
         type: choice
@@ -171,8 +171,9 @@ jobs:
             SIGNING_ARGS+=("-Psigning.password=${SIGNING_PASSWORD}")
           fi
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.publish_mode }}" == "supplemental" ]]; then
-            echo "Supplemental publish: syncforge-bom + syncforge-ksp only"
+            echo "Supplemental publish: syncforge-android + syncforge-bom + syncforge-ksp"
             ./gradlew verifyPublishSigning \
+              :syncforge:publishAndroidReleasePublicationToMavenCentralRepository \
               :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
               :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
               --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
