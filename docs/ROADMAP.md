@@ -148,4 +148,24 @@
 | `0.3.x` | Production-oriented hardening |
 | `0.4.x` | Developer experience, conflicts, observability |
 | `0.5.x` | KMP platform expansion |
-| `1.0.0` | Stable public API + Maven Central |
+| `0.6.x` – `0.9.x` | SQLDelight default, KMP samples, Maven Central RC |
+| `1.0.0` | Stable public API + semver guarantees |
+| `1.1.x` – `1.5.x` | DI, CRDT strategies, platform parity, ecosystem, observability |
+| `2.0.0` | Optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
+
+**Detailed plan from 1.0.0 through 2.0.0:** [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md)
+
+---
+
+## 1.0.0 status (soak from `0.9.0-rc.4`)
+
+Most pre-1.0 P0 work is complete (Sample App Proof, iOS parity, auth refresh, backend starter, E2E CI, Maven Central RC). Remaining before tagging **1.0.0**:
+
+| Blocker | Status |
+|---------|--------|
+| API graduation (`@ExperimentalSyncForgeApi` removal on stable surfaces) | ✅ |
+| Remove `useRoomPersistence()` | ⬜ |
+| Publish `1.0.0` to Maven Central | ⬜ |
+| 1.0 sign-off matrix + docs freeze | ⬜ |
+
+See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for the full checklist and post-1.0 milestones.

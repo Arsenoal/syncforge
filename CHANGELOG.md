@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **API stability (1.0)** — stable surfaces no longer require `@OptIn(ExperimentalSyncForgeApi::class)`:
+  `SyncForge.android`, `SyncForgeAndroid.workManagerConfiguration`, core `SyncManager` (sync/outbox/conflicts),
+  `ConflictPolicy` / `conflicts { }`, `SyncStatusUiModel` and production Compose helpers.
+  Auth, debug, KMP platform DSLs, `SyncForgeBuilder`, and custom persistence remain experimental.
+- **`@ExperimentalSyncForgeApi`** — message updated for post-1.0 semver (experimental APIs may change in minor releases).
+
+### Added
+
+- **`StableApiSurfaceTest`** / **`StableAndroidApiSurfaceTest`** — reflection guards for stable vs experimental API boundaries.
+
 ## [0.9.0-rc.4] - 2026-07-03
 
 ### Fixed

@@ -14,24 +14,25 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 
 ## Start here
 
-| I want to…                                     | Read this                                                                           |
-|------------------------------------------------|-------------------------------------------------------------------------------------|
-| **Get a working app in ~10 minutes**           | [Getting Started](docs/GETTING_STARTED.md)                                          |
-| **Copy-paste solutions for common tasks**      | [Recipes](docs/RECIPES.md)                                                          |
-| **Understand and configure conflict handling** | [Conflict Resolution](docs/CONFLICT_RESOLUTION.md)                                  |
-| **Design entities and choose strategies**      | [Best Practices](docs/BEST_PRACTICES.md)                                            |
-| **Set up SyncForge on Android**                | [Android Setup](docs/ANDROID_SETUP.md)                                              |
-| **Set up SyncForge on iOS**                    | [iOS Setup](docs/IOS_SETUP.md)                                                      |
-| **Set up SyncForge on desktop (JVM)**          | [Desktop Setup](docs/DESKTOP_SETUP.md)                                              |
-| **Understand the KMP migration plan**          | [KMP Migration](docs/KMP_MIGRATION.md)                                              |
-| **Look up every public type**                  | [Module Reference](docs/MODULES.md)                                                 |
-| **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                        |
-| **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                        |
-| **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                          |
-| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](docs/SyncForge-1.0-P0.docx)                                 |
-| **Launch playbook (1.0 soak, GitHub growth)**  | [SyncForge-GitHub-Launch-Playbook.docx](docs/SyncForge-GitHub-Launch-Playbook.docx) |
-| **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                      |
-| **Track release changes**                      | [Changelog](CHANGELOG.md)                                                           |
+| I want to…                                     | Read this                                                                                      |
+|------------------------------------------------|------------------------------------------------------------------------------------------------|
+| **Get a working app in ~10 minutes**           | [Getting Started](docs/GETTING_STARTED.md)                                                     |
+| **Copy-paste solutions for common tasks**      | [Recipes](docs/RECIPES.md)                                                                     |
+| **Understand and configure conflict handling** | [Conflict Resolution](docs/CONFLICT_RESOLUTION.md)                                             |
+| **Design entities and choose strategies**      | [Best Practices](docs/BEST_PRACTICES.md)                                                       |
+| **Set up SyncForge on Android**                | [Android Setup](docs/ANDROID_SETUP.md)                                                         |
+| **Set up SyncForge on iOS**                    | [iOS Setup](docs/IOS_SETUP.md)                                                                 |
+| **Set up SyncForge on desktop (JVM)**          | [Desktop Setup](docs/DESKTOP_SETUP.md)                                                         |
+| **Understand the KMP migration plan**          | [KMP Migration](docs/KMP_MIGRATION.md)                                                         |
+| **Look up every public type**                  | [Module Reference](docs/MODULES.md)                                                            |
+| **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                                   |
+| **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                                   |
+| **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                                     |
+| **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md) · [Word](docs/SyncForge-Roadmap-1.0-to-2.0.docx) |
+| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](docs/SyncForge-1.0-P0.docx)                                            |
+| **Launch playbook (1.0 soak, GitHub growth)**  | [SyncForge-GitHub-Launch-Playbook.docx](docs/SyncForge-GitHub-Launch-Playbook.docx)            |
+| **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                                 |
+| **Track release changes**                      | [Changelog](CHANGELOG.md)                                                                      |
 
 ---
 

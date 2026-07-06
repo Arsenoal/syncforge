@@ -1,12 +1,14 @@
 package dev.syncforge.api
 
 /**
- * Marks API that is public for early adopters but may change before SyncForge 1.0.
+ * Marks API that is public but not covered by SyncForge's semver-stable contract.
  *
- * Stable surfaces (no annotation required): [dev.syncforge.SyncForge.android],
- * core [dev.syncforge.sync.SyncManager] (excluding debug observability),
+ * **Stable (no annotation):** [dev.syncforge.SyncForge.android], [dev.syncforge.SyncForgeAndroid],
+ * core [dev.syncforge.sync.SyncManager] (sync lifecycle, outbox, conflicts — not auth/debug),
  * [dev.syncforge.conflict.ConflictPolicy] / [dev.syncforge.conflict.ConflictStrategies],
- * [dev.syncforge.compose.SyncStatusUiModel], and conflict/status Compose UI helpers.
+ * [dev.syncforge.compose.SyncStatusUiModel], and production conflict/status Compose helpers.
+ *
+ * Experimental APIs may change in minor releases until explicitly graduated.
  *
  * Call sites must opt in explicitly:
  * ```
@@ -23,7 +25,7 @@ package dev.syncforge.api
  * ```
  */
 @RequiresOptIn(
-    message = "This SyncForge API is experimental and may change before 1.0.",
+    message = "This SyncForge API is experimental and may change in a future release.",
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(

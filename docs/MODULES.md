@@ -6,10 +6,11 @@ future work, see [ROADMAP.md](ROADMAP.md). For the HTTP contract, see [REST_API.
 
 ---
 
-## API stability (pre-1.0)
+## API stability
 
-SyncForge uses three stability levels. At **1.0**, everything currently marked **Experimental**
-is expected to graduate to **Stable** (or be removed) under semver.
+SyncForge uses three stability levels. **1.0** graduates the Android-primary sync contract to
+**Stable**; KMP platform DSLs, auth, debug, and low-level builders remain **Experimental**
+until a later release.
 
 | Level | Marker | Meaning |
 |-------|--------|---------|

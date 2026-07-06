@@ -27,12 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.compose.SyncConflictChip
 import dev.syncforge.compose.SyncConflictResolutionSheet
 import dev.syncforge.compose.SyncDebugLauncher
 import dev.syncforge.model.SyncState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSyncForgeApi::class)
 @Composable
 fun TasksScreen(
     viewModel: TasksViewModel,

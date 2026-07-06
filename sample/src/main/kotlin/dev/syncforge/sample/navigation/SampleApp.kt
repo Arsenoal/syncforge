@@ -27,6 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.compose.SyncConflictChip
 import dev.syncforge.compose.SyncDebugLauncher
 import dev.syncforge.compose.SyncStatusUiModel
@@ -43,7 +44,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSyncForgeApi::class)
 @Composable
 fun SampleApp(
     tasksViewModel: TasksViewModel,

@@ -1,12 +1,14 @@
 package dev.syncforge.api
 
+import dev.syncforge.SyncForge
+import dev.syncforge.SyncForgeBuilder
 import dev.syncforge.compose.SyncStatusUiModel
 import dev.syncforge.compose.toUiModel
 import dev.syncforge.conflict.ConflictChoice
-import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictStrategies
 import dev.syncforge.conflict.conflictPolicy
+import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.Change
 import dev.syncforge.model.SyncStatus
 import dev.syncforge.sync.SyncManager
@@ -15,10 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Documents APIs that graduated to stable (no [ExperimentalSyncForgeApi]).
+ * Guards APIs that graduated to stable at 1.0 (no [ExperimentalSyncForgeApi]).
  * Consumers can use these without module-wide opt-in.
  */
 class StableApiSurfaceTest {
@@ -52,6 +56,38 @@ class StableApiSurfaceTest {
             override fun cancel() = Unit
         }
         scheduler.schedulePeriodic(15.minutes)
+    }
+
+    @Test
+    fun syncManagerStableMembersHaveNoExperimentalAnnotation() {
+        val stable = setOf(
+            "getStatus",
+            "getConflicts",
+            "sync",
+            "push",
+            "pull",
+            "enqueueChange",
+            "schedulePeriodicSync",
+            "cancelScheduledSync",
+            "resolveConflict",
+            "findOpenConflict",
+        )
+        for (method in SyncManager::class.java.methods) {
+            if (method.name in stable) {
+                assertNull(
+                    method.getAnnotation(ExperimentalSyncForgeApi::class.java),
+                    "Expected stable SyncManager member: ${method.name}",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun lowLevelSyncForgeFactoryMethodsExist() {
+        val factoryMethods = SyncForge::class.java.methods.filter {
+            it.name in setOf("create", "createWithRetry") && !it.name.contains("$")
+        }
+        assertTrue(factoryMethods.size >= 2)
     }
 
     /** Compile-time check: core [SyncManager] members are stable (debug/conflictHistory excluded). */

@@ -40,7 +40,7 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
-        freeCompilerArgs.add("-opt-in=dev.syncforge.api.ExperimentalSyncForgeApi")
+        // Experimental APIs (debug, etc.) opt in at call site — see @OptIn on demo/E2E helpers.
     }
 }
 

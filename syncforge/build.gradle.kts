@@ -104,6 +104,7 @@ kotlin {
             implementation(libs.androidx.test.core)
             implementation(libs.robolectric)
             implementation(libs.ktor.client.mock)
+            implementation(kotlin("reflect"))
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
@@ -112,6 +113,7 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(kotlin("reflect"))
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
             implementation(libs.sqldelight.sqlite.driver)
