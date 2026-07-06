@@ -14,24 +14,24 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 
 ## Start here
 
-| I want to…                                     | Read this                                                                      |
-|------------------------------------------------|--------------------------------------------------------------------------------|
-| **Get a working app in ~10 minutes**           | [Getting Started](docs/GETTING_STARTED.md)                                     |
-| **Copy-paste solutions for common tasks**      | [Recipes](docs/RECIPES.md)                                                     |
-| **Understand and configure conflict handling** | [Conflict Resolution](docs/CONFLICT_RESOLUTION.md)                             |
-| **Design entities and choose strategies**      | [Best Practices](docs/BEST_PRACTICES.md)                                       |
-| **Set up SyncForge on Android**                | [Android Setup](docs/ANDROID_SETUP.md)                                         |
-| **Set up SyncForge on iOS**                    | [iOS Setup](docs/IOS_SETUP.md)                                                 |
-| **Set up SyncForge on desktop (JVM)**          | [Desktop Setup](docs/DESKTOP_SETUP.md)                                         |
-| **Understand the KMP migration plan**          | [KMP Migration](docs/KMP_MIGRATION.md)                                         |
-| **Look up every public type**                  | [Module Reference](docs/MODULES.md)                                              |
-| **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                   |
-| **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                   |
-| **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                     |
-| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](docs/SyncForge-1.0-P0.docx)                            |
+| I want to…                                     | Read this                                                                           |
+|------------------------------------------------|-------------------------------------------------------------------------------------|
+| **Get a working app in ~10 minutes**           | [Getting Started](docs/GETTING_STARTED.md)                                          |
+| **Copy-paste solutions for common tasks**      | [Recipes](docs/RECIPES.md)                                                          |
+| **Understand and configure conflict handling** | [Conflict Resolution](docs/CONFLICT_RESOLUTION.md)                                  |
+| **Design entities and choose strategies**      | [Best Practices](docs/BEST_PRACTICES.md)                                            |
+| **Set up SyncForge on Android**                | [Android Setup](docs/ANDROID_SETUP.md)                                              |
+| **Set up SyncForge on iOS**                    | [iOS Setup](docs/IOS_SETUP.md)                                                      |
+| **Set up SyncForge on desktop (JVM)**          | [Desktop Setup](docs/DESKTOP_SETUP.md)                                              |
+| **Understand the KMP migration plan**          | [KMP Migration](docs/KMP_MIGRATION.md)                                              |
+| **Look up every public type**                  | [Module Reference](docs/MODULES.md)                                                 |
+| **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                        |
+| **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                        |
+| **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                          |
+| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](docs/SyncForge-1.0-P0.docx)                                 |
 | **Launch playbook (1.0 soak, GitHub growth)**  | [SyncForge-GitHub-Launch-Playbook.docx](docs/SyncForge-GitHub-Launch-Playbook.docx) |
-| **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                 |
-| **Track release changes**                      | [Changelog](CHANGELOG.md)                                                        |
+| **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                      |
+| **Track release changes**                      | [Changelog](CHANGELOG.md)                                                           |
 
 ---
 
@@ -96,15 +96,15 @@ sequenceDiagram
 
 ### What the demo shows
 
-| Scenario | What to do | What you see |
-|----------|------------|--------------|
-| **1. Offline-first** | Add a task with airplane mode on | Task appears in Room immediately; status shows pending / offline |
-| **2. Sync** | Turn network on → tap **Sync** | Push + pull run; row shows **Synced**; outbox drains |
-| **3. Empty local DB** | Tap **Clear local DB** in the demo panel → **Sync** | Room wiped; tasks disappear; pull restores data from mock-server |
-| **4. Edit conflict** | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
-| **5. Delete conflict** | Sync a task → edit locally → tap **Server delete** → **Sync** | Conflict: keep local row vs accept server tombstone |
-| **6. Multi-entity** | Open **Notes** / **Tags** tabs | Three entity types, per-type conflict strategies (`deferToUser` vs LWW) |
-| **7. Relationships** | Add a tag → create a note with that tag | Notes reference tags by ID (app-level FK; sync is per entity) |
+| Scenario               | What to do                                                        | What you see                                                               |
+|------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------|
+| **1. Offline-first**   | Add a task with airplane mode on                                  | Task appears in Room immediately; status shows pending / offline           |
+| **2. Sync**            | Turn network on → tap **Sync**                                    | Push + pull run; row shows **Synced**; outbox drains                       |
+| **3. Empty local DB**  | Tap **Clear local DB** in the demo panel → **Sync**               | Room wiped; tasks disappear; pull restores data from mock-server           |
+| **4. Edit conflict**   | Sync a task → tap **Server edit** → edit locally → **Sync** again | **Conflict** chip appears; tap **Resolve** to pick local or server version |
+| **5. Delete conflict** | Sync a task → edit locally → tap **Server delete** → **Sync**     | Conflict: keep local row vs accept server tombstone                        |
+| **6. Multi-entity**    | Open **Notes** / **Tags** tabs                                    | Three entity types, per-type conflict strategies (`deferToUser` vs LWW)    |
+| **7. Relationships**   | Add a tag → create a note with that tag                           | Notes reference tags by ID (app-level FK; sync is per entity)              |
 
 **Debug console (debug builds):** tap the **SF** overlay to inspect the outbox, sync health, events, and open conflicts.
 
@@ -253,20 +253,20 @@ docs/
 
 ## Sample app
 
-| File | What it demonstrates |
-|------|----------------------|
-| [`sample/.../SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt) | `SyncForge.android { }`, multi-entity `conflicts { }` |
-| [`sample/.../TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt) | `enqueueChange` + `sync()` |
-| [`sample/.../TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt) | Conflict sheet, server edit/delete demos |
-| [`sample/.../NotesScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/notes/NotesScreen.kt) | Second entity + optional `tagId` FK |
-| [`sample/.../navigation/SampleApp.kt`](sample/src/main/kotlin/dev/syncforge/sample/navigation/SampleApp.kt) | Bottom nav, SF debug overlay, demo log |
+| File                                                                                                        | What it demonstrates                                  |
+|-------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| [`sample/.../SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt)       | `SyncForge.android { }`, multi-entity `conflicts { }` |
+| [`sample/.../TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt)       | `enqueueChange` + `sync()`                            |
+| [`sample/.../TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt)             | Conflict sheet, server edit/delete demos              |
+| [`sample/.../NotesScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/notes/NotesScreen.kt)             | Second entity + optional `tagId` FK                   |
+| [`sample/.../navigation/SampleApp.kt`](sample/src/main/kotlin/dev/syncforge/sample/navigation/SampleApp.kt) | Bottom nav, SF debug overlay, demo log                |
 
-| Tab | What it proves |
-|-----|----------------|
-| **Tasks** | `deferToUser()` conflicts; **Server edit** / **Server delete**; local delete + tombstones |
-| **Notes** | `lastWriteWins()`; optional relationship to tags |
-| **Tags** | Third entity type in the same `SyncForgeHandlers.registry` |
-| **Demo panel** | Clear local Room + pull restore; live outbox/sync narration (debug builds) |
+| Tab            | What it proves                                                                            |
+|----------------|-------------------------------------------------------------------------------------------|
+| **Tasks**      | `deferToUser()` conflicts; **Server edit** / **Server delete**; local delete + tombstones |
+| **Notes**      | `lastWriteWins()`; optional relationship to tags                                          |
+| **Tags**       | Third entity type in the same `SyncForgeHandlers.registry`                                |
+| **Demo panel** | Clear local Room + pull restore; live outbox/sync narration (debug builds)                |
 
 ---
 
