@@ -21,21 +21,17 @@ plugin_publish_file="${OUTPUT_DIR}/supplemental-plugin-publish.txt"
 : >"$compile_file"
 echo "false" >"$plugin_publish_file"
 
-declare -A seen_publish=()
-declare -A seen_compile=()
-
+# macOS runners ship Bash 3.2 (no associative arrays) — dedupe via grep instead.
 add_publish_task() {
   local task="$1"
-  if [[ -z "${seen_publish[$task]:-}" ]]; then
-    seen_publish[$task]=1
+  if ! grep -Fqx "$task" "$publish_file"; then
     echo "$task" >>"$publish_file"
   fi
 }
 
 add_compile_task() {
   local task="$1"
-  if [[ -z "${seen_compile[$task]:-}" ]]; then
-    seen_compile[$task]=1
+  if ! grep -Fqx "$task" "$compile_file"; then
     echo "$task" >>"$compile_file"
   fi
 }
