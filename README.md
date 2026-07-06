@@ -1,6 +1,6 @@
 # SyncForge documentation
 
-**Version:** `0.9.0-rc.5` · **Status:** release candidate (pre-1.0) · [Maven Central](https://central.sonatype.com/namespace/studio.syncforge)
+**Version:** `0.9.0-rc.5` · **Status:** release candidate on [Maven Central](https://central.sonatype.com/namespace/studio.syncforge) (pre-1.0 soak)
 
 SyncForge is an offline-first sync library for Android with Kotlin Multiplatform targets for
 iOS, JVM desktop, and native macOS. Your app entities live in Room (Android) or your own

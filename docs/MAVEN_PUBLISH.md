@@ -134,7 +134,7 @@ After the release is live on Central, update:
 - `consumer-smoke/android-minimal/gradle.properties` (`syncforge.version`)
 - `consumer-smoke/android-minimal/gradle/libs.versions.toml` (`syncforge`)
 
-Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until then, pins stay on the previous published RC (e.g. `0.9.0-rc.4` while `0.9.0-rc.5` is staging).
+Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until then, pins stay on the previous published RC (e.g. keep `0.9.0-rc.4` until `0.9.0-rc.5` syncs to `repo1.maven.org`).
 
 ### Resolve from Maven Central
 

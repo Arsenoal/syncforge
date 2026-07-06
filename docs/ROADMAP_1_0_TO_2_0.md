@@ -1,6 +1,6 @@
 # SyncForge roadmap: 1.0.0 → 2.0.0
 
-**Baseline:** `0.9.0-rc.5` (pre-1.0 soak in progress)  
+**Baseline:** `0.9.0-rc.5` (published on Maven Central; 1.0 soak in progress)  
 **Document date:** July 2026  
 **Scope:** Everything from the first stable public release through the next major version.
 

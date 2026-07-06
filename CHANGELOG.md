@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0-rc.5] - 2026-07-06
 
+### Added
+
+- **Maven Central** — full `0.9.0-rc.5` artifact set published under `studio.syncforge` (39 components validated)
+
 ### Changed
 
 - **API stability (1.0)** — stable surfaces no longer require `@OptIn(ExperimentalSyncForgeApi::class)`:

@@ -131,7 +131,7 @@
 
 | Item | Description |
 |------|-------------|
-| **Maven Central** | ✅ `0.9.0-rc.5` (publishing) — `studio.syncforge` BOM, KMP targets, Gradle plugin |
+| **Maven Central** | ✅ `0.9.0-rc.5` — `studio.syncforge` BOM, KMP targets, Gradle plugin |
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |
