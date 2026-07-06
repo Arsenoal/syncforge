@@ -50,6 +50,13 @@ tasks.register("verifyReleaseSignOff") {
     )
 }
 
+fun syncforgeLibraryVersion(): String {
+    val props = java.util.Properties()
+    rootProject.file("gradle.properties").inputStream().use { props.load(it) }
+    return props.getProperty("syncforge.version")
+        ?: error("syncforge.version missing in gradle.properties")
+}
+
 tasks.register<Exec>("verifyConsumerSmoke") {
     group = "verification"
     description =
@@ -59,6 +66,7 @@ tasks.register<Exec>("verifyConsumerSmoke") {
     commandLine(
         rootProject.file("gradlew").absolutePath,
         ":app:compileDebugKotlin",
+        "-Psyncforge.version=${syncforgeLibraryVersion()}",
         "--no-daemon",
     )
 }

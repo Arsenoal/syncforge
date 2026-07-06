@@ -127,6 +127,15 @@ Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
 ## 7. Post-publish verification
 
+### Bump consumer-smoke Maven Central pins
+
+After the release is live on Central, update:
+
+- `consumer-smoke/android-minimal/gradle.properties` (`syncforge.version`)
+- `consumer-smoke/android-minimal/gradle/libs.versions.toml` (`syncforge`)
+
+Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until then, pins stay on the previous published RC (e.g. `0.9.0-rc.4` while `0.9.0-rc.5` is staging).
+
 ### Resolve from Maven Central
 
 ```bash
@@ -163,7 +172,8 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 |-------|-----|
 | `syncforge-android-deps` missing on Central | Ensure `:syncforge-android-deps:publish` is in `publishAllToMavenCentral` (see [build.gradle.kts](../build.gradle.kts)) |
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
-| Consumer smoke fails after publish | Pin the same version in `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) |
+| Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
+| Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing secret empty in CI | Use `SIGNING_IN_MEMORY_KEY_B64` on `github.com/Arsenoal/syncforge` → Settings → Secrets; name must be exact |

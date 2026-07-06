@@ -11,7 +11,14 @@ Verifies the documented consumer setup:
 - `implementation("studio.syncforge:syncforge")`
 - KSP handler codegen via the plugin (no manual `ksp("syncforge-ksp")`)
 
-Version pins: `android-minimal/gradle/libs.versions.toml` and `gradle.properties` (`syncforge.version`).
+### Version pins (two contexts)
+
+| Task | Version source | When to bump |
+|------|----------------|--------------|
+| `verifyConsumerSmokeMavenCentral` / CI | `android-minimal/gradle.properties` + `libs.versions.toml` | **After** the release is live on [Maven Central](https://repo1.maven.org/maven2/studio/syncforge/) |
+| `verifyConsumerSmoke` (mavenLocal) | Root `gradle.properties` via `-Psyncforge.version=…` | Automatic — tracks the library version under development |
+
+Do **not** bump the consumer-smoke Maven Central pins when tagging; wait until Central sync completes, then update pins so CI validates coordinates consumers actually resolve.
 
 ### Run locally (mavenLocal — matches `verifyReleaseSignOff`)
 
@@ -21,9 +28,11 @@ From the repo root:
 ./gradlew publishAllToMavenLocal verifyConsumerSmoke
 ```
 
+Uses the repo's `syncforge.version` (e.g. `0.9.0-rc.5`) from `mavenLocal()` after publish.
+
 ### Run locally (Maven Central only)
 
-Uses the pinned version in `libs.versions.toml` — no `publishAllToMavenLocal`:
+Uses the pinned **published** version in `gradle.properties` / `libs.versions.toml` — no `publishAllToMavenLocal`:
 
 ```bash
 ./gradlew verifyConsumerSmokeMavenCentral
@@ -39,7 +48,6 @@ Equivalent manual command:
 ### CI
 
 On every push to `main`, the **Consumer smoke (Maven Central)** job runs `verifyConsumerSmokeMavenCentral`.
-It fails if the pinned version is not yet on [Maven Central](https://repo1.maven.org/maven2/studio/syncforge/).
+It fails if the pinned version is not yet on Maven Central.
 
-After tagging a new release, bump the consumer-smoke version pins **before** or with the release commit so CI
-validates the coordinates consumers will use.
+After a release appears on Central, bump `consumer-smoke/android-minimal/gradle.properties` and `gradle/libs.versions.toml`, then push.
