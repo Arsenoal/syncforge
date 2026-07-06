@@ -84,17 +84,31 @@ tasks.register<Exec>("verifyConsumerSmokeMavenCentral") {
     )
 }
 
+/** Required Maven Central coordinates for a complete consumer-facing release. */
+val mavenCentralRequiredArtifacts = listOf(
+    "syncforge",
+    "syncforge-jvm",
+    "syncforge-annotations",
+    "syncforge-persistence",
+    "syncforge-android-deps",
+    "syncforge-bom",
+    "syncforge-ksp",
+    "syncforge-gradle-plugin",
+)
+
 tasks.register("publishAllToMavenCentral") {
     group = "publishing"
-    description = "Publishes all SyncForge library modules to Maven Central (set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."
+    description =
+        "Publishes all SyncForge library modules to Maven Central (set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."
     dependsOn(
-        ":syncforge:publish",
-        ":syncforge-annotations:publish",
-        ":syncforge-ksp:publish",
-        ":syncforge-persistence:publish",
-        ":syncforge-android-deps:publish",
-        ":syncforge-bom:publish",
-        gradle.includedBuild("syncforge-gradle-plugin").task(":publish"),
+        ":syncforge:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-annotations:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-ksp:publishMavenPublicationToMavenCentralRepository",
+        ":syncforge-persistence:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-android-deps:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-bom:publishMavenPublicationToMavenCentralRepository",
+        gradle.includedBuild("syncforge-gradle-plugin")
+            .task(":publishAllPublicationsToMavenCentralRepository"),
     )
     onlyIf {
         providers.gradleProperty("mavenCentralPublishing").orNull == "true"
@@ -104,21 +118,23 @@ tasks.register("publishAllToMavenCentral") {
 tasks.register("verifyPublishSigning") {
     group = "verification"
     description = "Fails if signAllPublications=true but no Sign tasks were created (unsigned Central publish)."
-    dependsOn(
-        ":syncforge:publish",
-        ":syncforge-annotations:publish",
-        ":syncforge-ksp:publish",
-        ":syncforge-persistence:publish",
-        ":syncforge-android-deps:publish",
-        ":syncforge-bom:publish",
-        gradle.includedBuild("syncforge-gradle-plugin").task(":publish"),
-    )
     onlyIf {
         providers.gradleProperty("signAllPublications").orNull == "true"
     }
     doLast {
         verifySigningConfigured()
     }
+}
+
+tasks.register<Exec>("verifyMavenCentralArtifacts") {
+    group = "verification"
+    description =
+        "Fails unless required SyncForge POMs resolve on repo1.maven.org for syncforge.version."
+    val version = syncforgeLibraryVersion()
+    commandLine(
+        rootProject.file(".github/scripts/verify-maven-central-artifacts.sh").absolutePath,
+        version,
+    )
 }
 
 fun verifySigningConfigured() {

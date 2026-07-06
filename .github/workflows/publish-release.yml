@@ -78,6 +78,9 @@ jobs:
       - name: Test JVM
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
+      - name: Compile BOM and KSP (required Central artifacts)
+        run: ./gradlew :syncforge-bom:generatePomFileForMavenPublication :syncforge-ksp:compileKotlin --no-daemon
+
       - name: Prepare GPG signing key
         env:
           SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
@@ -159,6 +162,11 @@ jobs:
           fi
           ./gradlew verifyPublishSigning publishAllToMavenCentral \
             --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+          # Belt-and-suspenders: BOM + KSP were missing from rc.5 staging — publish explicitly.
+          ./gradlew \
+            :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
+            :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
+            --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
 
       - name: Transfer staging upload to Central Portal
         env:
@@ -168,3 +176,12 @@ jobs:
           DROP_INVALID_ON_FAILURE: "true"
           STRICT: "true"
         run: bash .github/scripts/finalize-maven-central-staging.sh studio.syncforge
+
+      - name: Verify required artifacts on Maven Central
+        env:
+          MAVEN_CENTRAL_VERIFY_RETRIES: "20"
+          MAVEN_CENTRAL_VERIFY_SLEEP_SEC: "30"
+        run: |
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          bash .github/scripts/verify-maven-central-artifacts.sh "$VERSION"

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Maven Central publish** — `publishAllToMavenCentral` now targets `*MavenCentralRepository` tasks explicitly; CI re-publishes `syncforge-bom` and `syncforge-ksp` and verifies required POMs on `repo1.maven.org` (fixes incomplete `0.9.0-rc.5` staging)
+
 ## [0.9.0-rc.5] - 2026-07-06
 
 ### Added
