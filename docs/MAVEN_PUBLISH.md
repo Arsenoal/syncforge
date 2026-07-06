@@ -100,7 +100,9 @@ git push origin v0.9.0-rc.5
 3. Watch **Actions** → **Publish Release** on `macos-latest`:
    - Compiles Android, JVM, iOS Simulator, macOS targets
    - Runs `:syncforge:jvmTest` and `:syncforge-persistence:jvmTest`
-   - Runs `publishAllToMavenCentral`
+   - Publishes **all** library artifacts via `publishAllToMavenCentral`
+
+   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v0.9.0-rc.5`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
 
 4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
@@ -174,10 +176,9 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
 | Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
-| `syncforge-bom` / `syncforge-ksp` / `syncforge-android` missing | Re-run **Publish Release** → workflow_dispatch → tag → **publish_mode: supplemental** (probes Maven Central and uploads only missing artifacts) |
-| Supplemental deployment **FAILED** with BOM/KSP validation error but Android validated | Central rejects re-upload of an existing version. **Drop** the failed deployment in the Portal, push the latest `main` (dynamic supplemental plan), then re-run supplemental — it will upload **only** `syncforge-android` |
-| Publish workflow green but BOM 404 on Central | Wait for sync (`verify-maven-central-artifacts.sh`) or check Sonatype **Component Coordinates** for `syncforge-bom` before clicking **Publish** |
-| CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
+| Artifact missing after publish | Wait for Central sync (`verify-maven-central-artifacts.sh`), or check Sonatype **Component Coordinates** before clicking **Publish** |
+| Deployment **FAILED** with "already exists" | Maven Central does not allow re-uploading the same version — bump `syncforge.version`, tag a new release, and run **Publish Release** again |
+| CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes all artifacts, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing secret empty in CI | Use `SIGNING_IN_MEMORY_KEY_B64` on `github.com/Arsenoal/syncforge` → Settings → Secrets; name must be exact |
 | `Unable to read secret key from file` | CI converts armored key → binary via `gpg --dearmor`; store armored key in secrets, not binary |
