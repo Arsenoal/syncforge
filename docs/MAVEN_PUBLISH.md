@@ -174,7 +174,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
 | Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
-| `syncforge-bom` / `syncforge-ksp` missing from Sonatype deployment | Re-run **Publish Release** (workflow_dispatch) for the same tag after `main` includes explicit BOM/KSP publish steps; missing GAVs can usually be added without a new version |
+| `syncforge-bom` / `syncforge-ksp` missing from Sonatype deployment | Re-run **Publish Release** → workflow_dispatch → tag `v0.9.0-rc.5` → **publish_mode: supplemental** (BOM + KSP only; safest for partial releases) |
 | Publish workflow green but BOM 404 on Central | Wait for sync (`verify-maven-central-artifacts.sh`) or check Sonatype **Component Coordinates** for `syncforge-bom` before clicking **Publish** |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |

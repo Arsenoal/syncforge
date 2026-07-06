@@ -10,6 +10,14 @@ on:
         description: "Git tag to publish (e.g. v0.9.0-rc.5)"
         required: true
         default: "v0.9.0-rc.5"
+      publish_mode:
+        description: "full = all artifacts; supplemental = BOM + KSP only (for partial releases)"
+        required: true
+        default: "supplemental"
+        type: choice
+        options:
+          - supplemental
+          - full
 
 permissions:
   contents: read
@@ -58,6 +66,7 @@ jobs:
         run: bash .github/scripts/finalize-maven-central-staging.sh studio.syncforge
 
       - name: Compile all Kotlin targets (incl. iOS / macOS)
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full'
         run: |
           ./gradlew \
             :syncforge:compileDebugKotlinAndroid \
@@ -76,6 +85,7 @@ jobs:
             --no-daemon
 
       - name: Test JVM
+        if: github.event_name != 'workflow_dispatch' || inputs.publish_mode == 'full'
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
       - name: Compile BOM and KSP (required Central artifacts)
@@ -160,13 +170,20 @@ jobs:
             SIGNING_PASSWORD="$(grep '^signing.password=' gradle.properties | tail -1 | cut -d= -f2-)"
             SIGNING_ARGS+=("-Psigning.password=${SIGNING_PASSWORD}")
           fi
-          ./gradlew verifyPublishSigning publishAllToMavenCentral \
-            --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
-          # Belt-and-suspenders: BOM + KSP were missing from rc.5 staging — publish explicitly.
-          ./gradlew \
-            :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
-            :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
-            --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.publish_mode }}" == "supplemental" ]]; then
+            echo "Supplemental publish: syncforge-bom + syncforge-ksp only"
+            ./gradlew verifyPublishSigning \
+              :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
+              :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
+              --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+          else
+            ./gradlew verifyPublishSigning publishAllToMavenCentral \
+              --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+            ./gradlew \
+              :syncforge-bom:publishMavenPublicationToMavenCentralRepository \
+              :syncforge-ksp:publishMavenPublicationToMavenCentralRepository \
+              --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
+          fi
 
       - name: Transfer staging upload to Central Portal
         env:
