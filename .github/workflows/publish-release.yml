@@ -103,9 +103,10 @@ jobs:
         run: |
           set -euo pipefail
           COMPILE_FILE="${{ steps.supplemental_plan.outputs.compile_tasks_file }}"
-          mapfile -t ROOT_TASKS < <(grep -v '^syncforge-gradle-plugin:' "$COMPILE_FILE" || true)
-          if ((${#ROOT_TASKS[@]} > 0)); then
-            ./gradlew "${ROOT_TASKS[@]}" --no-daemon
+          ROOT_TASKS="$(grep -v '^syncforge-gradle-plugin:' "$COMPILE_FILE" | sed '/^$/d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+          if [ -n "$ROOT_TASKS" ]; then
+            # shellcheck disable=SC2086
+            ./gradlew $ROOT_TASKS --no-daemon
           fi
           if grep -q '^syncforge-gradle-plugin:compileKotlin$' "$COMPILE_FILE"; then
             (cd syncforge-gradle-plugin && ../gradlew compileKotlin --no-daemon)
@@ -200,8 +201,12 @@ jobs:
             TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
             VERSION="${TAG#v}"
             PUBLISH_FILE="${{ steps.supplemental_plan.outputs.publish_tasks_file }}"
-            mapfile -t PUBLISH_TASKS <"$PUBLISH_FILE"
-            if ((${#PUBLISH_TASKS[@]} == 0)); then
+            PUBLISH_TASKS=()
+            while IFS= read -r task || [ -n "$task" ]; do
+              [ -z "$task" ] && continue
+              PUBLISH_TASKS+=("$task")
+            done <"$PUBLISH_FILE"
+            if [ "${#PUBLISH_TASKS[@]}" -eq 0 ]; then
               echo "::error::Supplemental plan produced no publish tasks"
               exit 1
             fi
@@ -237,7 +242,7 @@ jobs:
                 FILTERED_TASKS+=("$task")
               fi
             done
-            if ((${#FILTERED_TASKS[@]} == 0)); then
+            if [ "${#FILTERED_TASKS[@]}" -eq 0 ]; then
               echo "All planned artifacts are already on Maven Central — nothing to upload."
               exit 0
             fi
