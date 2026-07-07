@@ -24,6 +24,7 @@ include(
     ":syncforge-persistence",
     ":syncforge-network-ktor",
     ":syncforge-store-room",
+    ":syncforge-store-inmemory",
     ":syncforge-android-deps",
     ":syncforge-bom",
     ":syncforge-server",

@@ -85,6 +85,7 @@ kotlin {
             implementation(libs.sqldelight.coroutines)
         }
         commonTest.dependencies {
+            implementation(project(":syncforge-store-inmemory"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)

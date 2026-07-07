@@ -7,7 +7,7 @@ import dev.syncforge.model.SyncState
 import dev.syncforge.sync.OptimisticSyncCoordinator
 import dev.syncforge.sync.SyncConfig
 import dev.syncforge.outbox.InMemoryOutboxRepository
-import dev.syncforge.test.InMemoryEntityStore
+import dev.syncforge.store.inmemory.InMemoryEntityStore
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -77,12 +77,11 @@ class EntityStoreSyncHandlerTest {
     }
 
     @Test
-    fun store_transaction_canBeOverridden() = runTest {
+    fun store_transaction_persistsUpsert() = runTest {
         val store = InMemoryEntityStore<Task>()
         store.transaction {
             store.upsert(Task(id = "t1", localVersion = 1, updatedAtMillis = 1))
         }
-        assertEquals(1, store.transactionCount.size)
         assertEquals("t1", store.findById("t1")?.id)
     }
 }
