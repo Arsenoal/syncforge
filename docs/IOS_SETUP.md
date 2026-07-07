@@ -71,6 +71,10 @@ networkMonitorAlwaysOnline()                 // skip NWPathMonitor (tests)
 
 ## Cursor persistence
 
+> **1.1 note:** Android defaults to **DataStore Preferences** for the pull cursor (with
+> SharedPreferences migration). iOS continues to use **UserDefaults** until a unified KMP
+> cursor lands in a later release. Desktop uses a file-backed store — see [DESKTOP_SETUP.md](DESKTOP_SETUP.md).
+
 ```kotlin
 // Default — standard UserDefaults
 SyncForge.ios { /* ... */ }

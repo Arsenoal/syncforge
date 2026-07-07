@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`DataStoreSyncCursorStore`** — Android default pull cursor via DataStore Preferences; migrates legacy SharedPreferences cursor on first read
+- **`androidx.datastore:datastore-preferences`** — Android-only dependency for cursor persistence
+
+### Changed
+
+- **`SyncCursorStoreFactory.create(context)`** — returns `DataStoreSyncCursorStore` instead of `SharedPreferencesSyncCursorStore` (override with `cursorStore(...)` still supported)
+
 ## [1.0.0] - 2026-07-07
 
 First **semver-stable** public release. Stable without `@OptIn(ExperimentalSyncForgeApi::class)`:

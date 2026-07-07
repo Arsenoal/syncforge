@@ -105,7 +105,7 @@
 | **JVM desktop** | ✅ M5 | `SyncForge.desktop { }` + SQLDelight + file cursor |
 | **macOS native** | ✅ M5 | `macosArm64`/`macosX64` + `SyncForge.macos { }` |
 | **SKIE / Swift API** | ✅ M5 | Plugin + Flow/suspend on framework modules |
-| **DataStore cursor** | ⬜ M5+ | Multiplatform cursor (file/UserDefaults today) |
+| **DataStore cursor** | ✅ Android 1.1 | iOS UserDefaults + desktop file until unified KMP cursor |
 
 ---
 

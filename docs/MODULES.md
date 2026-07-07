@@ -717,7 +717,7 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `jvmTest/.../FileSyncCursorStoreTest` | Desktop file cursor persistence |
 | `androidUnitTest/.../KtorSyncTransportTest` | REST transport push/pull parsing |
 | `jvmTest/.../KtorSyncTransportAuthRefreshTest` | 401 refresh + retry, 403 no-retry |
-| `androidUnitTest/.../SyncCursorStoreTest` | SharedPreferences cursor persistence |
+| `androidUnitTest/.../SyncCursorStoreTest` | DataStore cursor persistence + SharedPreferences migration |
 
 ```bash
 ./gradlew :syncforge:jvmTest :syncforge:testDebugUnitTest
@@ -787,4 +787,4 @@ See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) 
 
 **Post-1.0:**
 
-- ⬜ DataStore cursor persistence
+- ✅ DataStore cursor persistence (Android 1.1+); iOS UserDefaults + desktop file fallback documented

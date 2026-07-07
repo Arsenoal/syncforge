@@ -82,7 +82,8 @@ SyncForge.desktop {
 }
 ```
 
-DataStore Preferences multiplatform cursor is planned for a later M5 iteration.
+Android uses DataStore Preferences for the pull cursor since 1.1. iOS (`UserDefaults`) and
+desktop (`FileSyncCursorStore`) remain until a unified KMP cursor ships in a later release.
 
 ---
 

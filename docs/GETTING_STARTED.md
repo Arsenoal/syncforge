@@ -518,7 +518,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | Feature | Default |
 |---------|---------|
 | Outbox storage | SQLDelight (`syncforge.db`) |
-| Pull cursor | SharedPreferences |
+| Pull cursor | DataStore Preferences (Android); migrates legacy SharedPreferences on upgrade |
 | Transport | `KtorSyncTransport` via `syncforge-network-ktor` (override with `httpClient()` or `transport()`) |
 | Push retry | Exponential backoff, max 5 attempts |
 | Network reconnect | Auto-push when connectivity returns |

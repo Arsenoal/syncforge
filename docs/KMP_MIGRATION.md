@@ -125,12 +125,12 @@ implementations in `:syncforge` and persistence-only code in `:syncforge-persist
 
 ### Cursor store
 
-| Platform | v0.4.x (now) | v0.5.0 target |
-|----------|--------------|---------------|
-| Android | `SharedPreferences` | DataStore Preferences (multiplatform) |
-| iOS | `UserDefaultsSyncCursorStore` ✅ | DataStore optional later |
-| JVM desktop | `FileSyncCursorStore` (`~/.syncforge/`) ✅ | DataStore optional later |
-| macOS native | `UserDefaultsSyncCursorStore` (via ios) ✅ | DataStore optional later |
+| Platform | 1.1.0 (now) | Later target |
+|----------|-------------|--------------|
+| Android | `DataStoreSyncCursorStore` ✅ (migrates legacy SharedPreferences) | — |
+| iOS | `UserDefaultsSyncCursorStore` ✅ | Unified KMP DataStore optional later |
+| JVM desktop | `FileSyncCursorStore` (`~/.syncforge/`) ✅ | Unified KMP DataStore optional later |
+| macOS native | `UserDefaultsSyncCursorStore` (via ios) ✅ | Unified KMP DataStore optional later |
 | Tests | `InMemorySyncCursorStore` | unchanged |
 
 ```kotlin
@@ -289,7 +289,8 @@ Keeping schemas/drivers in a separate module avoids pulling SQLDelight into cons
 - [x] SKIE plugin on `:syncforge` and `:sample-ios-shared` frameworks
 - [x] SKIE Flow/suspend config for `dev.syncforge` and `IosSampleController`
 - [x] [DESKTOP_SETUP.md](DESKTOP_SETUP.md)
-- [ ] DataStore Preferences multiplatform cursor (deferred to M6)
+- [x] DataStore Preferences cursor on Android (1.1)
+- [ ] Unified KMP DataStore cursor for iOS/desktop (deferred)
 - [ ] Compose Multiplatform debug panel (optional)
 - [x] BGTaskScheduler iOS background sync (`IosBackgroundSyncWorkScheduler`)
 

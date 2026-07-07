@@ -14,7 +14,7 @@ syncManager = SyncForge.android(this) {
 }
 ```
 
-**Defaults:** SQLDelight outbox + conflicts (`syncforge.db`), automatic Room → SQLDelight migration on upgrade, SharedPreferences cursor, ConnectivityManager, Ktor/OkHttp (`syncforge-network-ktor`, added by the Gradle plugin), WorkManager.
+**Defaults:** SQLDelight outbox + conflicts (`syncforge.db`), automatic Room → SQLDelight migration on upgrade, DataStore Preferences pull cursor (migrates legacy SharedPreferences on first read), ConnectivityManager, Ktor/OkHttp (`syncforge-network-ktor`, added by the Gradle plugin), WorkManager.
 
 ---
 
@@ -43,6 +43,27 @@ SyncForge.android(this) {
 ```
 
 `createSyncForgePersistence(context)` is also available as a lower-level alias.
+
+### Pull cursor (DataStore Preferences)
+
+`SyncForge.android { }` defaults to `DataStoreSyncCursorStore` via `SyncCursorStoreFactory.create(context)`.
+On first read, it migrates a legacy SharedPreferences cursor (`syncforge_sync_cursor` /
+`last_sync_cursor_millis`) into DataStore when present.
+
+```kotlin
+import dev.syncforge.sync.DataStoreSyncCursorStore
+import dev.syncforge.sync.SharedPreferencesSyncCursorStore
+
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    registry(SyncForgeHandlers.registry(taskDao))
+    cursorStore(DataStoreSyncCursorStore(this))           // default
+    // cursorStore(SharedPreferencesSyncCursorStore(this)) // explicit legacy override
+}
+```
+
+**iOS** still uses `UserDefaults`; **desktop** uses `FileSyncCursorStore` — see
+[IOS_SETUP.md](IOS_SETUP.md) and [DESKTOP_SETUP.md](DESKTOP_SETUP.md). Unified KMP DataStore cursor is deferred.
 
 ---
 

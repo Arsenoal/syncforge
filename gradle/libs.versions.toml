@@ -6,6 +6,7 @@ coroutines = "1.10.2"
 serialization = "1.8.0"
 room = "2.7.1"
 workmanager = "2.10.1"
+datastore = "1.1.7"
 ktor = "3.1.1"
 compose-runtime = "1.7.8"
 compose-ui = "1.7.8"
@@ -45,6 +46,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
