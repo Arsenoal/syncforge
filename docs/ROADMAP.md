@@ -150,7 +150,7 @@
 | `0.5.x` | KMP platform expansion |
 | `0.6.x` – `0.9.x` | SQLDelight default, KMP samples, Maven Central RC |
 | `1.0.0` | Stable public API + semver guarantees |
-| `1.1.x` – `1.5.x` | DI, CRDT strategies, platform parity, ecosystem, observability |
+| `1.1.x` – `1.5.x` | EntityStore abstraction, DI, CRDT strategies, platform parity, ecosystem, observability |
 | `2.0.0` | Optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
 
 **Detailed plan from 1.0.0 through 2.0.0:** [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md)

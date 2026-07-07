@@ -10,11 +10,11 @@ For pre-1.0 history and completed phases, see [ROADMAP.md](ROADMAP.md).
 
 ## Executive summary
 
-SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: outbox → push → pull → configurable conflict strategies. Versions **1.1–1.5** deepen developer experience, conflict tooling, platform parity, ecosystem adapters, and observability — without changing the core sync loop. **2.0** is reserved for **opt-in architectural extensions** (field-level CRDT strategies, optional op-log sync mode, KMP platform graduation) that may introduce breaking API or REST contract changes.
+SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: outbox → push → pull → configurable conflict strategies. Versions **1.1–1.5** deepen developer experience, conflict tooling, **pluggable app entity stores** (Room, Realm, or any adapter), platform parity, ecosystem adapters, and observability — without changing the core sync loop. **2.0** is reserved for **opt-in architectural extensions** (field-level CRDT strategies, optional op-log sync mode, KMP platform graduation) that may introduce breaking API or REST contract changes.
 
 ```
 1.0.0  Stable ship     — API freeze, Maven Central 1.0, remove pre-1.0 deprecations
-1.1.x  Integration DX  — DI recipes/modules, auth graduation, persistence polish
+1.1.x  Integration DX  — EntityStore abstraction, DI modules, auth graduation, cursor polish
 1.2.x  Smart conflicts — CRDT primitives, crdt { } strategy, KSP field-merge
 1.3.x  Platform parity — Desktop sample, iOS SPM/XCFramework, CMP debug UI
 1.4.x  Ecosystem       — Supabase/Spring starters, multi-device E2E, version catalog
@@ -30,7 +30,8 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 |---------------------------|-------------------------|----------------------------------------|----------------------------------------------|
 | **Core sync loop**        | Stable                  | Hardening only                         | Optional second mode (op-log / CRDT doc)     |
 | **Conflict resolution**   | LWW, merge, deferToUser | CRDT helpers + KSP codegen             | `crdt { }` first-class; tombstone-aware sets |
-| **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Room opt-in removed in 0.9.0-rc.5            |
+| **App entity store**      | Room-first DX (KSP)     | **`EntityStore` abstraction** + adapters | Any store via handler; Room not required     |
+| **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Legacy Room internals removed at 1.0         |
 | **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
 | **Backend contract**      | REST v1 frozen          | Adapters (Supabase, Spring)            | REST v2 only if op-log needs it              |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
@@ -42,7 +43,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | Version   | Codename      | Target window | Headline                                               |
 |-----------|---------------|---------------|--------------------------------------------------------|
 | **1.0.0** | *Stable*      | Q3 2026       | First semver-stable release                            |
-| **1.1.0** | *Wire-up*     | Q4 2026       | DI integration, auth stable, DataStore cursor          |
+| **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore abstraction, DI, auth stable, DataStore cursor |
 | **1.2.0** | *Merge-smart* | Q1 2027       | CRDT primitives + `crdt { }` strategy (experimental)   |
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Backend starters, Supabase transport, multi-device E2E |
@@ -103,6 +104,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 ### Explicitly post-1.0 (do not block 1.0)
 
 - Desktop sample app (`:sample-desktop`)
+- **`EntityStore` abstraction** — formal contract + KSP beyond Room DAOs (see 1.1.x)
 - DataStore KMP cursor
 - CRDT / DI integration artifacts
 - Supabase / Spring starters
@@ -117,7 +119,11 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 - `SyncManager` — sync lifecycle, outbox enqueue, conflict resolution, scheduling hooks
 - `ConflictPolicy`, `conflicts { }`, `ConflictChoice`, `resolveConflict()`
 - Compose production UI — `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict chip/sheet
-- `databaseName()`, KSP-generated handlers
+- `databaseName()`, KSP-generated handlers (Room DAO path — default DX)
+
+**Store-agnostic at 1.0 (manual integration):**
+
+- `EntitySyncHandler` / `TypedEntitySyncHandler` + `SyncedEntity` — any database can integrate by implementing CRUD + JSON; Room is not required at the engine layer (Realm and others work via hand-written handlers today)
 
 **Experimental at 1.0 (may change in 1.x minors):**
 
@@ -133,7 +139,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 ### Goal
 
-Reduce boilerplate for real apps: **dependency injection**, smoother auth, unified cursor storage. Core sync semantics unchanged.
+Reduce boilerplate for real apps: **pluggable entity stores**, dependency injection, smoother auth, unified cursor storage. Core sync semantics unchanged.
 
 ### Features
 
@@ -147,23 +153,66 @@ Reduce boilerplate for real apps: **dependency injection**, smoother auth, unifi
 | 1.1-06 | **Sample: Hilt or Koin variant**                                                         | P2       | Optional `:sample-di` or documented fork                                        |
 | 1.1-07 | **`SyncForgeBuilder` graduation**                                                        | P2       | Stable low-level factory for custom transports                                  |
 | 1.1-08 | **Patch: 1.0.x bugfix lane**                                                             | P0       | Semver patches only — no new APIs                                               |
+| 1.1-09 | **`EntityStore` contract** — formal app-side abstraction in `commonMain`                 | P0       | `findById`, `upsert`, `delete`, optional `transaction { }`; maps to `EntitySyncHandler` |
+| 1.1-10 | **KSP `@SyncForgeStore`** — generate handlers from any `EntityStore` impl                | P0       | Keeps `@SyncForgeDao` (Room) as one adapter; not the only path                    |
+| 1.1-11 | **Store adapter modules** — optional artifacts, not in core BOM                          | P1       | e.g. `:syncforge-store-room` (current DAO path), `:syncforge-store-realm`, in-memory for tests |
+| 1.1-12 | **Docs + Gradle plugin** — Room optional; “sync-aware entity” not “Room entity”          | P1       | GETTING_STARTED branch for BYO store; `studio.syncforge.android` skips Room KSP when unused |
+
+### Entity store architecture (1.1)
+
+SyncForge separates **your app database** from **SyncForge’s internal outbox/conflict DB** (SQLDelight, unchanged):
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Your app entities (any store)                              │
+│  Room · Realm · SQLDelight · custom — via EntityStore       │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ EntityStore / EntitySyncHandler
+┌───────────────────────────▼─────────────────────────────────┐
+│  :syncforge (commonMain)                                    │
+│  SyncManager · outbox → push → pull · ConflictPolicy        │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ OutboxRepository · ConflictStore
+┌───────────────────────────▼─────────────────────────────────┐
+│  SyncForge internal DB (SQLDelight syncforge.db)            │
+│  user may inject SyncForgePersistence (experimental)        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Contract (target 1.1):**
+
+| Type | Role |
+|------|------|
+| `SyncedEntity` | Metadata columns every synced row exposes (`id`, `localVersion`, `updatedAtMillis`, `syncState`) |
+| `EntityStore<T>` | App-provided CRUD + optional transactions |
+| `EntitySyncHandler` | Bridge from store to sync engine (generated or hand-written) |
+| `@SyncForgeEntity` | Declares entity type + JSON shape for KSP |
+| `@SyncForgeDao` | Room adapter (1.0 default) |
+| `@SyncForgeStore` | Generic store adapter (1.1+) |
+
+**Realm / other ORMs:** implement `EntityStore` (or `TypedEntitySyncHandler` manually at 1.0); KSP generates the handler in 1.1. No Realm dependency in `:syncforge` core.
 
 ### DI architecture (1.1)
 
 ```
-:syncforge                    ← no Koin/Dagger dependency (unchanged)
+:syncforge                    ← no Koin/Dagger/Room/Realm dependency (unchanged)
 :syncforge-integration-koin   ← optional, depends on koin-core
 :syncforge-integration-hilt   ← optional, Android-only
+:syncforge-store-room         ← optional, Room DAO → EntityStore adapter
+:syncforge-store-realm        ← optional, Realm → EntityStore adapter
 ```
 
-App always supplies: `baseUrl`, `EntityRegistry`/DAOs, `conflicts { }`. Library supplies factory helpers only.
+App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflicts { }`. Library supplies factory helpers and optional adapters only.
 
 ### 1.1.0 acceptance criteria
 
+- [ ] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
+- [ ] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
+- [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
 - [ ] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`
 - [ ] DataStore cursor on Android; file/UserDefaults fallback documented for iOS until unified
-- [ ] BOM lists optional integration artifacts (not transitive)
-- [ ] No breaking changes to 1.0 stable APIs
+- [ ] BOM lists optional integration + store artifacts (not transitive)
+- [ ] No breaking changes to 1.0 stable APIs (Room KSP path remains default)
 
 ---
 
@@ -301,7 +350,7 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 
 ### 2.0 explicit non-goals
 
-- Replacing Room/SQLDelight as the app’s entity store
+- Replacing the app’s chosen entity store — SyncForge integrates via `EntityStore` / handlers; it does not own app schema
 - Full real-time WebSocket sync as the only mode
 - Automatic CRDT for whole JSON blobs without schema
 - Bundling Koin or Dagger into core `:syncforge`
@@ -311,7 +360,7 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 ```
                     ┌─────────────────────────────────────┐
                     │           App entities              │
-                    │     (Room / SQLDelight / custom)    │
+                    │  (Room / Realm / any EntityStore)   │
                     └─────────────────┬───────────────────┘
                                       │
               ┌───────────────────────┴───────────────────────┐
@@ -369,7 +418,8 @@ Backend implementers should pin to a library major version in their compatibilit
 |---------------------------------------|----------|--------------------------------------------------------------------------------|
 | 1.0 API surface too large             | Medium   | Stable = Android + common contracts; KMP stays experimental until 1.3          |
 | CRDT gives wrong merges for deletes   | High     | Keep `deferToUser()`; document tombstone patterns; never default CRDT globally |
-| DI integration artifact fragmentation | Low      | Max two optional modules; recipes first in 1.1.0                               |
+| DI integration artifact fragmentation | Low      | Max two optional DI modules; recipes first in 1.1.0                              |
+| Store adapter fragmentation (Realm…)  | Medium   | `EntityStore` in core; adapters optional; hand-written handler always works      |
 | iOS SPM publish complexity            | Medium   | Ship XCFramework from existing macOS CI job; fallback to KMP framework         |
 | REST v2 splits ecosystem              | High     | Defer to 2.0; v1 long support window; adapters implement v1 only in 1.x        |
 | Multi-device E2E flakiness            | Medium   | Nightly only initially; mock-server health gate                                |
