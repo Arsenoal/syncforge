@@ -411,7 +411,7 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 - [x] SyncHttpClient + RestSyncTransport (backward compatible KtorSyncTransport)
 - [x] httpClient { } DSL + documented injectable HttpClient sample
 - [x] EntityStore + @SyncForgeStore KSP (+ Room adapter module)
-- [ ] Non-Room path documented (in-memory store test or recipe)
+- [x] Non-Room path documented (in-memory store test or recipe)
 - [ ] Encrypted TokenStore + CharArray auth overloads
 - [ ] DataStore cursor (Android) + iOS fallback docs
 - [ ] RECIPES.md DI section (Koin + Hilt)
@@ -428,7 +428,7 @@ Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate:
 - [x] Injectable Ktor `HttpClient` documented with sample using app-owned client (interceptors, shared engine)
 - [x] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [x] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
-- [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
+- [x] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
 - [ ] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`
 - [ ] DataStore cursor on Android; file/UserDefaults fallback documented for iOS until unified
 - [ ] Encrypted `TokenStore` default on Android; iOS Keychain; migration from plain SharedPreferences documented

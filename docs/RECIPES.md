@@ -322,6 +322,87 @@ Status label already includes conflict count when using `toUiModel()`:
 
 ---
 
+## BYO entity store (`@SyncForgeStore`)
+
+Use when Room is not your persistence layer, or when you want every entity type to go through
+`EntityStore<T>` (Room included via the optional adapter).
+
+Full walkthrough: [Getting Started → Path B](GETTING_STARTED.md#path-b--bring-your-own-store-syncforgestore).
+
+### When to use
+
+| Scenario | Approach |
+|----------|----------|
+| Realm / SQLDelight / custom DB | Implement `EntityStore<T>`, `@SyncForgeStore` |
+| Room but unified store API | `RoomEntityStore` from `syncforge-store-room` |
+| JVM/common unit tests | `InMemoryEntityStore` from `syncforge-store-inmemory` |
+| Quick start with Room DAOs | Stay on `@SyncForgeDao` (Path A) — no change |
+
+### Dependencies
+
+```kotlin
+// app/build.gradle.kts — Room BYO-store bridge (Android)
+implementation("studio.syncforge:syncforge-store-room:1.1.0")
+
+// tests — non-Room stack
+testImplementation("studio.syncforge:syncforge-store-inmemory:1.1.0")
+```
+
+### Custom store
+
+```kotlin
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore(
+    private val backend: TaskBackend,
+) : EntityStore<TaskEntity> {
+    override suspend fun findById(id: String): TaskEntity? = backend.load(id)
+    override suspend fun upsert(entity: TaskEntity) { backend.save(entity) }
+    override suspend fun delete(id: String) { backend.remove(id) }
+}
+```
+
+### Room via `RoomEntityStore`
+
+```kotlin
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore(dao: TaskDao, db: AppDatabase) : RoomEntityStore<TaskEntity>(dao, db)
+
+// Application
+registry(SyncForgeHandlers.registry(TaskEntityStore(db.taskDao(), db)))
+```
+
+### In-memory test stack
+
+```kotlin
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore : InMemoryEntityStore<TaskEntity>()
+
+@Test
+fun enqueue_appliesOptimistic() = runTest {
+    val store = TaskEntityStore()
+    val handler = /* KSP-generated or test double */
+    // … see syncforge-store-inmemory tests
+}
+```
+
+### Gradle — skip Room KSP
+
+When sources have no `@SyncForgeDao` / `androidx.room`, the Android plugin skips Room compiler
+automatically. Override explicitly:
+
+```kotlin
+syncForge {
+    roomCodegen = false
+}
+```
+
+### Registry rule
+
+One binding per entity: **`@SyncForgeDao` XOR `@SyncForgeStore`**. Mixed registries are fine
+(e.g. `tasks` via Room DAO, `notes` via `@SyncForgeStore`).
+
+---
+
 ## Inject app-owned Ktor HttpClient
 
 Use when your app already runs Ktor — shared OkHttp/Darwin engine, request logging, tracing,

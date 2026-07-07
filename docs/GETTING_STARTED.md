@@ -4,13 +4,13 @@ Get a working offline-first Android app with SyncForge in **under 10 minutes**.
 
 By the end you will have:
 
-- A Room entity that syncs with a backend
+- A sync-aware entity backed by **Room** (default path) or your own store (see [BYO store](#path-b--bring-your-own-store-syncforgestore))
 - KSP-generated sync handlers (no hand-written boilerplate)
 - Optimistic local writes with automatic outbox queuing
 - A manual **Sync** button and status label
 - Background sync via WorkManager
 
-> **Prerequisites:** Android Studio, Kotlin 2.1+, minSdk 24, JVM 17. Basic familiarity with Room and Compose helps but is not required.
+> **Prerequisites:** Android Studio, Kotlin 2.1+, minSdk 24, JVM 17. Basic familiarity with Compose helps; Room knowledge is useful for the default path but **not required** if you bring your own store.
 
 ---
 
@@ -30,7 +30,7 @@ By the end you will have:
 └─────────────┘                                              Your API
 ```
 
-**You own:** Room schema, DAOs, UI, backend.  
+**You own:** entity persistence (Room, Realm, SQLDelight, in-memory, custom), UI, backend.  
 **SyncForge owns:** internal outbox + conflict DB, push/pull cycles, retry, cursor, conflict policy.
 
 ### Optional — built-in auth
@@ -46,7 +46,8 @@ for the full diagram and Compose examples.
 ### Android (published — recommended)
 
 One **plugin** + one **library** line. The plugin applies KSP, Kotlin serialization, and wires
-`syncforge-ksp` + Room compiler — you do **not** declare those manually.
+`syncforge-ksp` automatically. **Room KSP compiler** is added only when your sources use Room
+(`@SyncForgeDao` or `androidx.room`) — skip it for BYO-store apps (see [Path B](#path-b--bring-your-own-store-syncforgestore)).
 
 ```kotlin
 // settings.gradle.kts
@@ -78,10 +79,12 @@ dependencies {
 | `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
 | `studio.syncforge:syncforge-ksp` | No | Added by `studio.syncforge.android` plugin |
 | `studio.syncforge:syncforge-network-ktor` | No | Added by `studio.syncforge.android` plugin (default REST transport) |
-| Room / WorkManager / serialization | No | Transitive on Android via `syncforge` |
+| `studio.syncforge:syncforge-store-room` | Optional | Room DAO → `EntityStore` adapter for `@SyncForgeStore` |
+| `studio.syncforge:syncforge-store-inmemory` | Optional | In-memory `EntityStore` for unit tests / prototyping |
+| Room / WorkManager / serialization | No | Transitive on Android via `syncforge` when using Room |
 
-Your app still adds **your** Room database (`room-runtime` for `@Database` / `@Dao` only if not
-already on the classpath — usually covered by SyncForge's Android transitive deps).
+Your app adds **your** persistence layer. For Room, `room-runtime` is usually already on the
+classpath via SyncForge's Android transitive deps. For BYO store, add only what your adapter needs.
 
 ### iOS / shared KMP module
 
@@ -97,8 +100,9 @@ kotlin {
 }
 ```
 
-Apply KSP on the module that owns `@SyncForgeEntity` / `@SyncForgeDao` (typically `androidTarget`
-in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS_SETUP.md).
+Apply KSP on the module that owns `@SyncForgeEntity` and `@SyncForgeDao` or `@SyncForgeStore`
+(typically `androidTarget` in the same project). Link the iOS framework in Xcode — see
+[IOS_SETUP.md](IOS_SETUP.md).
 
 ### JVM / Desktop
 
@@ -132,7 +136,10 @@ See [consumer-smoke/README.md](../consumer-smoke/README.md).
 
 ## Step 1 — Define a sync-aware entity (~3 min)
 
-Your Room entity must implement `SyncedEntity` and be annotated for KSP.
+**Path A (default):** Room entity + DAO. **Path B:** any `EntityStore` — [BYO store](#path-b--bring-your-own-store-syncforgestore).
+
+Your entity must implement `SyncedEntity` and be annotated for KSP. On the Room path, add
+`@Entity` / `@Dao` as usual.
 
 ```kotlin
 @SyncForgeEntity(entityType = "tasks")
@@ -188,6 +195,116 @@ interface TaskDao {
 - `SyncForgeHandlers.registry(taskDao)` — wires all handlers into an `EntityRegistry`
 
 You never hand-write handler boilerplate.
+
+---
+
+## Path B — Bring your own store (`@SyncForgeStore`)
+
+Use this when you **don't** want Room, or when you prefer a single `EntityStore` port for all
+persistence (Room, Realm, SQLDelight, DataStore, in-memory, etc.).
+
+SyncForge syncs through **`EntityStore<T>`** — your app implements `findById`, `upsert`, `delete`,
+and optionally `transaction { }`. KSP generates an `EntityStoreSyncHandler` from `@SyncForgeStore`.
+
+### Choose an integration path
+
+| Path | You annotate | KSP generates | Optional artifact |
+|------|--------------|---------------|-------------------|
+| **A — Room DAO** (above) | `@SyncForgeDao` on DAO | Handler talks to DAO directly | — |
+| **B — Room via store** | `@SyncForgeStore` on store class | `EntityStoreSyncHandler` | `syncforge-store-room` |
+| **C — Custom store** | `@SyncForgeStore` on your `EntityStore` | `EntityStoreSyncHandler` | — |
+| **D — In-memory (tests)** | `@SyncForgeStore` on store class | `EntityStoreSyncHandler` | `syncforge-store-inmemory` |
+
+Use **one adapter per entity** — not both `@SyncForgeDao` and `@SyncForgeStore` on the same type.
+
+### 1. Entity (no Room required)
+
+```kotlin
+@SyncForgeEntity(entityType = "tasks")
+@Serializable
+data class TaskEntity(
+    override val id: String,
+    val title: String,
+    override val localVersion: Long = 0,
+    override val updatedAtMillis: Long = System.currentTimeMillis(),
+    override val syncState: SyncState = SyncState.SYNCED,
+) : SyncedEntity
+```
+
+Add `@Entity` / Room only if you persist with Room.
+
+### 2. Store + KSP
+
+**Custom `EntityStore`:**
+
+```kotlin
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore : EntityStore<TaskEntity> {
+    override suspend fun findById(id: String): TaskEntity? = /* your backend */
+    override suspend fun upsert(entity: TaskEntity) { /* insert or replace */ }
+    override suspend fun delete(id: String) { /* remove by id */ }
+}
+```
+
+**Room via adapter** (`syncforge-store-room`):
+
+```kotlin
+implementation("studio.syncforge:syncforge-store-room:1.1.0")
+
+@Dao
+interface TaskDao : SyncForgeRoomDao<TaskEntity> { /* findById, insert, update, deleteById */ }
+
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore(dao: TaskDao, db: AppDatabase) : RoomEntityStore<TaskEntity>(dao, db)
+```
+
+**In-memory (unit tests / prototyping)** (`syncforge-store-inmemory`):
+
+```kotlin
+testImplementation("studio.syncforge:syncforge-store-inmemory:1.1.0")
+
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore : InMemoryEntityStore<TaskEntity>()
+```
+
+Build once. KSP generates `TaskEntitySyncHandler` and `SyncForgeHandlers.registry(taskEntityStore)`.
+
+### 3. Wire `SyncManager`
+
+```kotlin
+val taskStore = TaskEntityStore(/* dao/db or in-memory */)
+
+syncManager = SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    registry(SyncForgeHandlers.registry(taskStore))
+}
+```
+
+Repository code is the same as Path A: call `syncManager.enqueueChange()` for synced mutations.
+Read/observe through your store (or a DAO you keep for queries only).
+
+### 4. Gradle — skip Room KSP when unused
+
+The `studio.syncforge.android` plugin **auto-detects** Room usage (`@SyncForgeDao` or
+`androidx.room` in sources). When you only use `@SyncForgeStore` without Room, Room compiler is
+**not** added to KSP.
+
+Force either way in `app/build.gradle.kts`:
+
+```kotlin
+syncForge {
+    roomCodegen = false   // BYO store — no Room KSP
+    // roomCodegen = true  // force Room compiler even if detection misses a module
+}
+```
+
+You still need `id("studio.syncforge.android")` for SyncForge KSP and Kotlin serialization.
+
+### Realm / other ORMs
+
+Implement `EntityStore<T>` against your ORM, annotate with `@SyncForgeStore`, and register the
+generated handler. No Realm dependency in `:syncforge` core. See
+[Recipes → BYO entity store](RECIPES.md#byo-entity-store-syncforgestore).
 
 ---
 
@@ -417,7 +534,9 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | `SyncForgeHandlers` not found | Build once; ensure `id("studio.syncforge.android")` is applied (adds KSP automatically) |
 | Sync fails with network error on emulator | Use `http://10.0.2.2:8080`, not `localhost` |
 | Entity not syncing | Ensure `entityType` in `@SyncForgeEntity` matches `Change.create("tasks", …)` |
-| `findById` missing | KSP-generated handler requires it on `@SyncForgeDao` |
+| `findById` missing | `@SyncForgeDao` handlers need `findById` on the DAO; `@SyncForgeStore` needs `EntityStore.findById` |
+| Room KSP runs but I use BYO store only | Set `syncForge { roomCodegen = false }` or remove `androidx.room` imports from sources |
+| `@SyncForgeStore` / `@SyncForgeDao` clash | One adapter per entity — pick DAO path or store path, not both |
 | WorkManager not running | Implement `Configuration.Provider` with `SyncForgeAndroid.workManagerConfiguration` |
 
 ---
@@ -426,6 +545,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 
 | Topic | Guide |
 |-------|-------|
+| BYO entity store (`@SyncForgeStore`) | [Recipes → BYO entity store](RECIPES.md#byo-entity-store-syncforgestore) |
 | Injectable Ktor `HttpClient` | [Recipes → Inject app-owned HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
 | Custom field merges | [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) |
 | User-driven conflict UI | [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose) |

@@ -225,6 +225,9 @@ val syncManager = SyncForge.builder {
 }
 ```
 
+For the **entity store** side, use `InMemoryEntityStore` from `syncforge-store-inmemory` with
+`@SyncForgeStore` — see [Getting Started → Path B](GETTING_STARTED.md#path-b--bring-your-own-store-syncforgestore).
+
 ### Test conflict strategies in isolation
 
 Use `ConflictPolicy` + `ConflictPullApplier` with fake handlers. See `commonTest` for examples.

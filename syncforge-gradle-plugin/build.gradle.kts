@@ -31,7 +31,7 @@ gradlePlugin {
             implementationClass = "dev.syncforge.gradle.SyncForgeAndroidPlugin"
             displayName = "SyncForge Android"
             description =
-                "Applies KSP (SyncForge + Room compiler) and Kotlin serialization for Android apps"
+                "Applies KSP (SyncForge handler codegen; Room compiler when used) and Kotlin serialization for Android apps"
         }
     }
 }
