@@ -172,3 +172,20 @@
 | 1.0 sign-off matrix | ✅ |
 
 See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for post-1.0 milestones (1.1 → 2.0).
+
+---
+
+## Next: 1.1.0 (Wire-up)
+
+**Target:** Q4 2026 · **Codename:** *Wire-up* · **Theme:** pluggable stores, injectable Ktor `HttpClient`, DI recipes, auth hardening, DataStore cursor — core sync loop unchanged.
+
+| Track | P0 issues | Headline |
+|-------|-----------|----------|
+| **Network** | 1.1-13 → 1.1-14 → 1.1-16 | `SyncHttpClient`, `RestSyncTransport`, `httpClient { }` DSL |
+| **Entity store** | 1.1-09 → 1.1-10 → 1.1-11 | `EntityStore`, `@SyncForgeStore` KSP, optional `:syncforge-store-*` |
+| **Security & auth** | 1.1-17, 1.1-18 | Encrypted `TokenStore`, `CharArray` login/register |
+| **DX** | 1.1-01, 1.1-05, 1.1-12 | DI recipes, DataStore cursor, BYO-store docs |
+
+**Suggested order:** network + entity-store foundations in parallel → docs/DI → security → optional integration artifacts → `1.1.0` tag.
+
+Full GitHub-ready breakdown (epics, dependencies, acceptance): [ROADMAP_1_0_TO_2_0.md § 1.1.0 issues](ROADMAP_1_0_TO_2_0.md#110-github-issues-breakdown) · Word export: `docs/SyncForge-1.1-Issues.docx` (`scripts/generate-1.1-docx.py`).

@@ -333,6 +333,95 @@ SyncForge.android(this) {
 
 App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflicts { }`, and optionally `httpClient`. Library supplies factory helpers and optional adapters only.
 
+### 1.1.0 GitHub issues breakdown
+
+Use milestone **`1.1.0`** on GitHub. Labels: `epic:*`, `area:network|store|security|dx|docs`, `priority:p0|p1|p2`.
+
+**Release goal:** Ship **1.1.0** with P0 network + entity-store tracks complete, security/cursor/docs P0 done, no breaking changes to 1.0 stable APIs. P1 integration artifacts (`syncforge-integration-*`, `syncforge-store-realm`) may land in **1.1.1** if needed.
+
+#### Epic A — Injectable HTTP client (P0)
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#A1](.) | `feat(network): add SyncHttpClient contract in commonMain` | 1.1-13 | — | `postPush` / `getPull` API in `commonMain`; unit tests with fake client |
+| [#A2](.) | `feat(network): RestSyncTransport delegates to SyncHttpClient` | 1.1-14 | A1 | `KtorSyncTransport` unchanged externally; delegates to `RestSyncTransport` internally |
+| [#A3](.) | `refactor(network): extract :syncforge-network-ktor adapter` | 1.1-15 | A2 | Ktor `HttpClient` wiring moved to optional module; core compiles without Ktor on JVM-only consumers if applicable |
+| [#A4](.) | `feat(dsl): httpClient { } on Android/iOS/desktop DSLs` | 1.1-16 | A2 | Sample or consumer-smoke compiles with injected app `HttpClient`; falls back to bundled client when omitted |
+| [#A5](.) | `docs(network): injectable HttpClient guide + RECIPES` | 1.1-12 (partial) | A4 | GETTING_STARTED + RECIPES show interceptors / shared engine pattern |
+
+#### Epic B — EntityStore abstraction (P0)
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#B1](.) | `feat(store): EntityStore contract in commonMain` | 1.1-09 | — | `findById`, `upsert`, `delete`, optional `transaction`; maps to existing `EntitySyncHandler` |
+| [#B2](.) | `feat(ksp): @SyncForgeStore handler generation` | 1.1-10 | B1 | KSP emits handlers from `@SyncForgeStore`; `@SyncForgeDao` path unchanged |
+| [#B3](.) | `feat(store): :syncforge-store-room adapter module` | 1.1-11 | B2 | Room DAO → `EntityStore` bridge published; not transitive in core BOM |
+| [#B4](.) | `feat(store): in-memory EntityStore for commonTest` | 1.1-11 | B1 | Test module proves non-Room path without Realm dependency |
+| [#B5](.) | `docs(store): BYO store path in GETTING_STARTED` | 1.1-12 | B2, B4 | Room optional narrative; Gradle plugin skips Room KSP when unused |
+
+#### Epic C — Auth & token security (P1 → required for 1.1.0 GA)
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#C1](.) | `feat(auth): encrypted TokenStore on Android + iOS Keychain` | 1.1-17 | — | Migration from plain prefs documented; tokens never plain-text at rest |
+| [#C2](.) | `feat(auth): login/register CharArray overloads` | 1.1-18 | — | Additive APIs; `finally { password.fill('\u0000') }`; AUTH_API + BEST_PRACTICES updated |
+| [#C3](.) | `api(auth): graduate built-in auth DSL to stable` | 1.1-04 | C1, C2 | Remove `@ExperimentalSyncForgeApi` from `auth { }`, `authState`, register/login/logout after soak |
+
+#### Epic D — DI & developer experience (P0 docs, P1 artifacts)
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#D1](.) | `docs(dx): Koin + Hilt recipes in RECIPES.md` | 1.1-01 | B1 | Copy-paste modules; no Koin/Dagger in `:syncforge` core |
+| [#D2](.) | `feat(dx): publish syncforge-integration-koin` | 1.1-02 | D1 | Optional artifact; `syncForgeModule { }` + WorkManager helper |
+| [#D3](.) | `feat(dx): publish syncforge-integration-hilt` | 1.1-03 | D1 | Optional artifact; `@Provides` templates |
+| [#D4](.) | `feat(sample): optional :sample-di variant` | 1.1-06 | D2 or D3 | Documented fork or module showing DI wiring |
+
+#### Epic E — Cursor persistence (P1)
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#E1](.) | `feat(persistence): DataStore Preferences pull cursor (Android)` | 1.1-05 | — | Replaces SharedPreferences cursor; iOS UserDefaults fallback documented |
+
+#### Epic F — 1.1.0 release gate
+
+| Issue | Title | Job | Depends on | Done when |
+|-------|-------|-----|------------|-----------|
+| [#F1](.) | `chore(dist): BOM lists optional 1.1 artifacts` | acceptance | A3, B3, D2 | BOM constraints for store/network/integration modules; not transitive |
+| [#F2](.) | `test(qa): 1.1.0 acceptance matrix` | § below | A*, B*, C*, D1, E1 | All 1.1.0 acceptance checkboxes green in CI |
+| [#F3](.) | `chore(release): tag v1.1.0 + Maven Central publish` | 1.1-08 lane | F2 | `CHANGELOG [1.1.0]`; verify workflow; semver minor bump |
+| [#F4](.) | `docs: MODULES stability table + CHANGELOG 1.1.0` | — | F2 | Docs freeze for 1.1 APIs |
+
+#### Suggested implementation order
+
+```
+Week 1–2   A1 → A2 (parallel) B1 → B2
+Week 3–4   A4, A3 (optional extract) · B3, B4 · E1
+Week 5     C1, C2 · D1 · B5, A5
+Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
+```
+
+**Parallel tracks:** Epic A and Epic B have no hard dependency on each other — split across two contributors if available.
+
+**1.0.x patch lane (1.1-08):** Bugfixes only on `1.0.x` branch while `main` targets 1.1.0; no new APIs on patch line.
+
+#### GitHub milestone checklist (copy into milestone description)
+
+```markdown
+## 1.1.0 — Wire-up
+- [ ] SyncHttpClient + RestSyncTransport (backward compatible KtorSyncTransport)
+- [ ] httpClient { } DSL + documented injectable HttpClient sample
+- [ ] EntityStore + @SyncForgeStore KSP (+ Room adapter module)
+- [ ] Non-Room path documented (in-memory store test or recipe)
+- [ ] Encrypted TokenStore + CharArray auth overloads
+- [ ] DataStore cursor (Android) + iOS fallback docs
+- [ ] RECIPES.md DI section (Koin + Hilt)
+- [ ] BOM optional artifacts listed; no 1.0 API breaks
+```
+
+Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate: `scripts/generate-1.1-docx.py`).
+
+---
+
 ### 1.1.0 acceptance criteria
 
 - [ ] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
