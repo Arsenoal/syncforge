@@ -3,14 +3,16 @@
 package dev.syncforge.auth
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
 import platform.CoreFoundation.CFDictionaryRef
 import platform.CoreFoundation.kCFBooleanTrue
 import platform.Foundation.NSData
-import platform.Foundation.NSMutableData
 import platform.Foundation.NSString
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUserDefaults
@@ -115,8 +117,8 @@ private object KeychainStorage {
         )
         val result = alloc<CFTypeRefVar>()
         val status: OSStatus = SecItemCopyMatching(query as CFDictionaryRef, result.ptr)
-        if (status != errSecSuccess) return null
-        val data = result.value as? NSData ?: return null
+        if (status != errSecSuccess) return@memScoped null
+        val data = result.pointed.value as? NSData ?: return@memScoped null
         data.toUtf8String()
     }
 
@@ -132,11 +134,9 @@ private object KeychainStorage {
 }
 
 private fun ByteArray.toNSData(): NSData {
-    if (isEmpty()) return NSMutableData()
+    if (isEmpty()) return NSData()
     return usePinned { pinned ->
-        NSMutableData().apply {
-            appendBytes(pinned.addressOf(0), size.toULong())
-        }
+        NSData.create(bytes = pinned.addressOf(0), length = size.convert())
     }
 }
 
