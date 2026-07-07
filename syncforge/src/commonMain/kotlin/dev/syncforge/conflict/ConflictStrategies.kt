@@ -42,13 +42,13 @@ object ConflictStrategies {
                 )
             ConflictStrategyKind.CRDT ->
                 throw IllegalArgumentException(
-                    "ConflictStrategyKind.CRDT requires crdt { } (not yet available)",
+                    "ConflictStrategyKind.CRDT requires crdt { } — fromKind() cannot supply per-field CRDT config",
                 )
         }
 
     /**
      * Returns the catalog kind for built-in strategy instances created by this object.
-     * Returns `null` for custom or not-yet-catalogued strategies (e.g. future `gitLike` / `crdt`).
+     * Returns `null` for custom strategies not created by this object.
      */
     fun kindOf(strategy: ConflictStrategy): ConflictStrategyKind? =
         when (strategy) {
@@ -58,6 +58,7 @@ object ConflictStrategies {
             is DeferToUserStrategy -> ConflictStrategyKind.DEFER_TO_USER
             is MergeStrategy<*> -> ConflictStrategyKind.MERGE
             is GitLikeMergeStrategy<*> -> ConflictStrategyKind.GIT_LIKE
+            is CrdtMergeStrategy<*> -> ConflictStrategyKind.CRDT
             else -> null
         }
 }

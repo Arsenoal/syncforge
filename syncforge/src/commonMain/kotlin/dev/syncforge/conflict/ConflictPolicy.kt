@@ -2,6 +2,8 @@ package dev.syncforge.conflict
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.SyncedEntity
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 
 /**
  * Maps entity types to [ConflictStrategy] instances.
@@ -90,6 +92,26 @@ class ConflictEntityBuilder {
     ) {
         strategy(GitLikeEntityBuilder<T>().apply(block).build())
     }
+
+    /**
+     * Field-level CRDT merge for [@Serializable][kotlinx.serialization.Serializable] entities.
+     * Unconfigured JSON fields fall back to last-write-wins by entity [SyncedEntity.updatedAtMillis].
+     */
+    @ExperimentalSyncForgeApi
+    fun <T : SyncedEntity> crdt(
+        entitySerializer: KSerializer<T>,
+        block: CrdtEntityBuilder<T>.() -> Unit,
+    ) {
+        strategy(CrdtEntityBuilder(entitySerializer).apply(block).build())
+    }
+}
+
+/** Reified overload for [@Serializable][kotlinx.serialization.Serializable] entities. */
+@ExperimentalSyncForgeApi
+inline fun <reified T : SyncedEntity> ConflictEntityBuilder.crdt(
+    noinline block: CrdtEntityBuilder<T>.() -> Unit,
+) {
+    crdt(serializer<T>(), block)
 }
 
 fun conflictPolicy(block: ConflictPolicyBuilder.() -> Unit): ConflictPolicy =
