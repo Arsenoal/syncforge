@@ -727,6 +727,17 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 
 ## Additional Gradle modules
 
+### `:syncforge-integration-koin` / `:syncforge-integration-hilt`
+
+Optional Android DI helpers (not transitive in `:syncforge`):
+
+| Module | API |
+|--------|-----|
+| `syncforge-integration-koin` | `syncForgeModule { }`, `syncForgeWorkManagerConfiguration()` |
+| `syncforge-integration-hilt` | `SyncForgeHilt.createSyncManager`, `SyncForgeHilt.workManagerConfiguration` |
+
+Copy-paste wiring for `:sample` (tasks, notes, tags): [RECIPES.md → DI](RECIPES.md#dependency-injection-koin--hilt).
+
 ### `:syncforge-server`
 
 JVM library: `SyncStore`, `InMemorySyncStore`, `syncRoutes()`, and Ktor plugins shared by

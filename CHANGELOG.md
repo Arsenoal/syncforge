@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:syncforge-integration-koin`** — optional `syncForgeModule { }` and `syncForgeWorkManagerConfiguration()` helpers
+- **`:syncforge-integration-hilt`** — optional `SyncForgeHilt` factory helpers for `@Provides` wiring
+- **RECIPES.md** — Koin + Hilt DI section matching `:sample` (tasks, notes, tags)
 - **`DataStoreSyncCursorStore`** — Android default pull cursor via DataStore Preferences; migrates legacy SharedPreferences cursor on first read
 - **`androidx.datastore:datastore-preferences`** — Android-only dependency for cursor persistence
 

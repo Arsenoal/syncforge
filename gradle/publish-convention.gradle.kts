@@ -19,6 +19,8 @@ val publishableModules = setOf(
     "syncforge-network-ktor",
     "syncforge-store-room",
     "syncforge-store-inmemory",
+    "syncforge-integration-koin",
+    "syncforge-integration-hilt",
     "syncforge-android-deps",
     "syncforge-bom",
 )

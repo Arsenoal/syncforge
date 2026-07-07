@@ -22,6 +22,8 @@ dependencies {
         api("${project.group}:syncforge-network-ktor:$libraryVersion")
         api("${project.group}:syncforge-store-room:$libraryVersion")
         api("${project.group}:syncforge-store-inmemory:$libraryVersion")
+        api("${project.group}:syncforge-integration-koin:$libraryVersion")
+        api("${project.group}:syncforge-integration-hilt:$libraryVersion")
     }
 }
 

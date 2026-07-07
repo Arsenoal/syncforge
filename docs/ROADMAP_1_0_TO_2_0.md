@@ -414,7 +414,7 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 - [x] Non-Room path documented (in-memory store test or recipe)
 - [ ] Encrypted TokenStore + CharArray auth overloads
 - [x] DataStore cursor (Android) + iOS fallback docs
-- [ ] RECIPES.md DI section (Koin + Hilt)
+- [x] RECIPES.md DI section (Koin + Hilt)
 - [ ] BOM optional artifacts listed; no 1.0 API breaks
 ```
 
@@ -429,7 +429,7 @@ Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate:
 - [x] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [x] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
 - [x] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
-- [ ] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`
+- [x] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`
 - [x] DataStore cursor on Android; file/UserDefaults fallback documented for iOS until unified
 - [ ] Encrypted `TokenStore` default on Android; iOS Keychain; migration from plain SharedPreferences documented
 - [ ] `login`/`register` `CharArray` overloads published; AUTH_API documents wipe semantics and IdP preference

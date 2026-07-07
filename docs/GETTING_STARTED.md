@@ -81,6 +81,8 @@ dependencies {
 | `studio.syncforge:syncforge-network-ktor` | No | Added by `studio.syncforge.android` plugin (default REST transport) |
 | `studio.syncforge:syncforge-store-room` | Optional | Room DAO → `EntityStore` adapter for `@SyncForgeStore` |
 | `studio.syncforge:syncforge-store-inmemory` | Optional | In-memory `EntityStore` for unit tests / prototyping |
+| `studio.syncforge:syncforge-integration-koin` | Optional | Koin `syncForgeModule` + WorkManager helper |
+| `studio.syncforge:syncforge-integration-hilt` | Optional | Hilt `SyncForgeHilt` factory helpers |
 | Room / WorkManager / serialization | No | Transitive on Android via `syncforge` when using Room |
 
 Your app adds **your** persistence layer. For Room, `room-runtime` is usually already on the
@@ -546,6 +548,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | Topic | Guide |
 |-------|-------|
 | BYO entity store (`@SyncForgeStore`) | [Recipes → BYO entity store](RECIPES.md#byo-entity-store-syncforgestore) |
+| Koin / Hilt wiring | [Recipes → Dependency injection](RECIPES.md#dependency-injection-koin--hilt) |
 | Injectable Ktor `HttpClient` | [Recipes → Inject app-owned HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
 | Custom field merges | [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) |
 | User-driven conflict UI | [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose) |

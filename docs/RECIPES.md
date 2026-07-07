@@ -403,6 +403,249 @@ One binding per entity: **`@SyncForgeDao` XOR `@SyncForgeStore`**. Mixed registr
 
 ---
 
+## Dependency injection (Koin + Hilt)
+
+`:syncforge` has **no** Koin or Dagger dependency. Wire `SyncManager`, repositories, and WorkManager
+in your app module — same shape as [`:sample`](../sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt).
+
+Optional helpers:
+
+| Artifact | Role |
+|----------|------|
+| `syncforge-integration-koin` | `syncForgeModule { }`, `syncForgeWorkManagerConfiguration()` |
+| `syncforge-integration-hilt` | `SyncForgeHilt.createSyncManager`, `SyncForgeHilt.workManagerConfiguration` |
+
+```kotlin
+// Published coordinates (optional)
+implementation("studio.syncforge:syncforge-integration-koin:1.1.0")
+implementation("studio.syncforge:syncforge-integration-hilt:1.1.0")
+```
+
+### What to inject (matches `:sample`)
+
+| Binding | Scope | Notes |
+|---------|-------|-------|
+| `SampleDatabase` / your `@Database` | Singleton | Room DB |
+| `TaskDao`, `NoteDao`, … | Singleton | From database |
+| `SyncManager` | Singleton | `SyncForge.android { registry(SyncForgeHandlers.registry(...)) }` |
+| `TaskRepository`, … | Singleton or factory | Takes DAO + `SyncManager` |
+| WorkManager | `Configuration.Provider` | `SyncForgeAndroid.workManagerConfiguration { syncManager }` |
+
+### Manual wiring (no DI framework)
+
+Same as Getting Started — [`SampleApplication`](../sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt):
+
+```kotlin
+class SampleApplication : Application(), Configuration.Provider {
+
+    override val workManagerConfiguration: Configuration
+        get() = SyncForgeAndroid.workManagerConfiguration { syncManager }
+
+    override fun onCreate() {
+        super.onCreate()
+        val db = SampleDatabase.create(this)
+        syncManager = SyncForge.android(this) {
+            baseUrl(BuildConfig.SYNC_BASE_URL)
+            registry(SyncForgeHandlers.registry(db.noteDao(), db.tagDao(), db.taskDao()))
+            conflicts {
+                entity("tasks") { deferToUser() }
+                entity("notes") { lastWriteWins() }
+                entity("tags") { lastWriteWins() }
+            }
+            schedulePeriodicSyncOnStart()
+        }
+        taskRepository = TaskRepository(db.taskDao(), syncManager)
+        // ...
+    }
+}
+```
+
+### Koin
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("studio.syncforge:syncforge-integration-koin:1.1.0")
+    implementation("io.insert-koin:koin-android:4.0.1")
+}
+```
+
+```kotlin
+import dev.syncforge.integration.koin.syncForgeModule
+import dev.syncforge.integration.koin.syncForgeWorkManagerConfiguration
+import dev.syncforge.sample.notes.SyncForgeHandlers
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.GlobalContext
+import org.koin.dsl.module
+
+val databaseModule = module {
+    single { SampleDatabase.create(androidContext()) }
+    single { get<SampleDatabase>().taskDao() }
+    single { get<SampleDatabase>().noteDao() }
+    single { get<SampleDatabase>().tagDao() }
+}
+
+val syncForgeKoinModule = module {
+    single<SyncManager> {
+        SyncForge.android(androidContext()) {
+            baseUrl(BuildConfig.SYNC_BASE_URL)
+            registry(
+                SyncForgeHandlers.registry(
+                    get(), // NoteDao
+                    get(), // TagDao
+                    get(), // TaskDao
+                ),
+            )
+            conflicts {
+                entity("tasks") { deferToUser() }
+                entity("notes") { lastWriteWins() }
+                entity("tags") { lastWriteWins() }
+            }
+            schedulePeriodicSyncOnStart()
+        }
+    }
+}
+
+val repositoryModule = module {
+    single { TaskRepository(get(), get()) }
+    single { NoteRepository(get(), get()) }
+    single { TagRepository(get(), get()) }
+}
+
+class MyApplication : Application(), Configuration.Provider {
+
+    override val workManagerConfiguration: Configuration
+        get() = syncForgeWorkManagerConfiguration {
+            GlobalContext.get().get<SyncManager>()
+        }
+
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@MyApplication)
+            modules(databaseModule, syncForgeKoinModule, repositoryModule)
+        }
+    }
+}
+```
+
+**Shortcut** when `SyncForge.android { }` does not need other Koin `get()` calls inside the block:
+
+```kotlin
+val syncModule = syncForgeModule {
+    baseUrl(BuildConfig.SYNC_BASE_URL)
+    registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao)) // capture DAOs from outer scope
+}
+```
+
+Inject `SyncManager` into ViewModels: `class TasksViewModel(private val syncManager: SyncManager, …)`.
+
+### Hilt
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
+}
+dependencies {
+    implementation("studio.syncforge:syncforge-integration-hilt:1.1.0")
+    implementation("com.google.dagger:hilt-android:2.56.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.56.1")
+}
+```
+
+```kotlin
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import dev.syncforge.integration.hilt.SyncForgeHilt
+import dev.syncforge.sample.notes.SyncForgeHandlers
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): SampleDatabase =
+        SampleDatabase.create(context)
+
+    @Provides fun provideTaskDao(db: SampleDatabase): TaskDao = db.taskDao()
+    @Provides fun provideNoteDao(db: SampleDatabase): NoteDao = db.noteDao()
+    @Provides fun provideTagDao(db: SampleDatabase): TagDao = db.tagDao()
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object SyncForgeModule {
+
+    @Provides
+    @Singleton
+    fun provideSyncManager(
+        @ApplicationContext context: Context,
+        noteDao: NoteDao,
+        tagDao: TagDao,
+        taskDao: TaskDao,
+    ): SyncManager = SyncForgeHilt.createSyncManager(context) {
+        baseUrl(BuildConfig.SYNC_BASE_URL)
+        registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
+        conflicts {
+            entity("tasks") { deferToUser() }
+            entity("notes") { lastWriteWins() }
+            entity("tags") { lastWriteWins() }
+        }
+        schedulePeriodicSyncOnStart()
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+
+    @Provides @Singleton
+    fun provideTaskRepository(dao: TaskDao, syncManager: SyncManager): TaskRepository =
+        TaskRepository(dao, syncManager)
+
+    @Provides @Singleton
+    fun provideNoteRepository(dao: NoteDao, syncManager: SyncManager): NoteRepository =
+        NoteRepository(dao, syncManager)
+
+    @Provides @Singleton
+    fun provideTagRepository(dao: TagDao, syncManager: SyncManager): TagRepository =
+        TagRepository(dao, syncManager)
+}
+```
+
+```kotlin
+@HiltAndroidApp
+class MyApplication : Application(), Configuration.Provider {
+
+    @Inject lateinit var syncManager: SyncManager
+
+    override val workManagerConfiguration: Configuration
+        get() = SyncForgeHilt.workManagerConfiguration { syncManager }
+}
+```
+
+Use `@AndroidEntryPoint` on Activities and `@HiltViewModel` + constructor injection for ViewModels.
+
+### WorkManager rule
+
+Background sync requires `SyncWorkerFactory` so `SyncWorker` receives your app’s `SyncManager`.
+All patterns above delegate to `SyncForgeAndroid.workManagerConfiguration` — do **not** use the default
+WorkManager initializer without a custom `WorkerFactory`.
+
+### Optional `:sample-di` fork (D4)
+
+`:sample` uses manual `Application` wiring for clarity. To try Koin/Hilt end-to-end, copy the modules
+above into a sibling `sample-koin` or `sample-hilt` app module — same entities/DAOs as `:sample`.
+
+---
+
 ## Inject app-owned Ktor HttpClient
 
 Use when your app already runs Ktor — shared OkHttp/Darwin engine, request logging, tracing,
