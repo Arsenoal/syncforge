@@ -7,9 +7,8 @@ import dev.syncforge.network.api.PushRequest
  * Ktor-backed REST executor for SyncForge push/pull wire calls.
  *
  * Maps [PushRequest] and [PullQueryParams] to the default REST routes ([SyncHttpRoutes])
- * and returns domain [PushResult] / [PullResult]. Implementations attach auth (e.g.
- * [SyncAuthProvider]) and HTTP engines; [SyncTransport] adapters such as `RestSyncTransport`
- * (1.1) delegate here instead of calling Ktor directly.
+ * and returns domain [PushResult] / [PullResult]. [KtorSyncHttpClient] is the default Ktor
+ * implementation; [RestSyncTransport] delegates here for the REST [SyncTransport] path.
  *
  * Non-REST backends (GraphQL, BaaS adapters) implement [SyncTransport] directly and do not
  * use this interface.
