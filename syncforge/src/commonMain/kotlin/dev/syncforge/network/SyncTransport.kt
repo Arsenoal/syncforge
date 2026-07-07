@@ -5,7 +5,8 @@ import dev.syncforge.model.SyncError
 import dev.syncforge.model.SyncResult
 
 /**
- * Pluggable network boundary — default `KtorSyncTransport`, or implement for GraphQL / custom wire formats.
+ * Pluggable network boundary — default `KtorSyncTransport` (REST), or implement for GraphQL / custom wire formats.
+ * REST push/pull HTTP execution is factored behind [SyncHttpClient] (1.1); [SyncTransport] stays the engine boundary.
  *
  * SyncForge never dictates API shape beyond these delta-sync primitives.
  */
