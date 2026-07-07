@@ -426,7 +426,7 @@ Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate:
 
 - [x] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
 - [x] Injectable Ktor `HttpClient` documented with sample using app-owned client (interceptors, shared engine)
-- [ ] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
+- [x] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [ ] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
 - [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
 - [ ] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`

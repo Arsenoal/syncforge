@@ -5,9 +5,11 @@ import dev.syncforge.model.OutboxEntry
 import dev.syncforge.network.RemoteDelta
 
 /**
- * Per-entity-type bridge between SyncForge and your Room DAOs.
+ * Per-entity-type bridge between SyncForge and your app entity storage.
  *
- * Register one handler per synced entity type via [EntityRegistry].
+ * Register one handler per synced entity type via [EntityRegistry]. Room DAOs (KSP
+ * `@SyncForgeDao`) and generic [EntityStore] implementations ([EntityStoreSyncHandler]) both
+ * satisfy this contract.
  */
 interface EntitySyncHandler {
     val entityType: String
