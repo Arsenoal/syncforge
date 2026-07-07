@@ -193,10 +193,10 @@ bash .github/scripts/verify-maven-central-artifacts.sh 1.0.0
 | Step | Action |
 |------|--------|
 | Release prep | ✅ Repo bumped to `1.1.0`; `CHANGELOG [1.1.0]`; BOM optional artifacts verified |
-| Pre-tag | `./gradlew verifySignOffMatrix` |
-| Tag | `git tag v1.1.0 && git push origin v1.1.0` |
-| Publish | Actions → Publish Release (tag `v1.1.0`); portal Publish all VALIDATED deployments |
-| Post-publish | Bump `consumer-smoke/android-minimal` pins to `1.1.0`; Actions → Verify Maven Central Release |
+| Pre-tag | ✅ `./gradlew verifySignOffMatrix` |
+| Tag | ✅ `v1.1.0` pushed |
+| Publish | ✅ Publish Release + portal Publish (both VALIDATED deployments) |
+| Post-publish | ✅ Consumer-smoke pins at `1.1.0`; artifacts + consumer smoke verified locally |
 
 ```bash
 ./gradlew verifySignOffMatrix

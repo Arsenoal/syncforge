@@ -930,13 +930,13 @@ Run automated checks locally:
 | 2 | No breaking changes to 1.0 stable APIs | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest` | ✅ in `verifyReleaseSignOff` |
 | 3 | Built-in auth stable | Auth API guards + `AUTH_API.md` | ✅ |
 | 4 | BOM lists optional 1.1 artifacts | `:syncforge-bom:verifyBomConstraints` | ✅ in `verifyReleaseSignOff` |
-| 5 | Optional modules publish to Maven Central | `publishAllToMavenCentral` artifact list | ✅ configured |
-| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e` | ⬜ post-tag |
-| 7 | Maven Central all artifacts at `1.1.0` | `verifyConsumerSmokeMavenCentralArtifacts` | ⬜ after portal Publish |
+| 5 | Optional modules publish to Maven Central | `publishAllToMavenCentral` + portal Publish (both deployments) | ✅ |
+| 6 | CI green | Publish Release workflow + `verifyReleaseSignOff` | ✅ |
+| 7 | Maven Central all artifacts at `1.1.0` | `verify-maven-central-artifacts.sh 1.1.0` + `verifyConsumerSmokeMavenCentral` | ✅ |
 | 8 | Docs freeze | `CHANGELOG [1.1.0]`, `MODULES`, `GETTING_STARTED` | ✅ |
 | 9 | Encrypted tokens + cursor migration | `TokenStoreTest`, `SyncCursorStoreTest` | ✅ in `verifyReleaseSignOff` |
 
-**1.1.0 verdict:** Ready to tag `v1.1.0`. Rows 6–7 complete after publish workflow + Central sync.
+**1.1.0 verdict:** GA. Tag `v1.1.0` on Maven Central; 14 required POMs + consumer smoke verified locally.
 
 ### 2.0.0 sign-off checklist
 

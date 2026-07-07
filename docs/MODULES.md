@@ -789,7 +789,7 @@ See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) 
 - ✅ Encrypted `TokenStore` (Android/iOS), `CharArray` auth overloads, built-in auth stable
 - ✅ `DataStoreSyncCursorStore` (Android); iOS UserDefaults + desktop file fallback documented
 - ✅ `:syncforge-integration-koin` / `:syncforge-integration-hilt` (optional BOM entries)
-- ✅ Maven Central — BOM constraints for all optional 1.1 artifacts
+- ✅ Maven Central — `1.1.0` published (14 artifacts + consumer smoke verified)
 - ✅ Tag `v1.1.0` — see [ROADMAP_1_0_TO_2_0.md § 1.1.0 sign-off](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist)
 
 **Next (1.2.x):** per-entity conflict strategies and git-like merge — see [ROADMAP.md](ROADMAP.md).

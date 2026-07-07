@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`syncforge-bom`** — constraints for `syncforge-network-ktor`, `syncforge-store-room`, `syncforge-store-inmemory`, `syncforge-integration-koin`, `syncforge-integration-hilt`
 - **Maven Central artifact verification** — optional 1.1 modules included in `verifyMavenCentralArtifacts`
 
+### Distribution
+
+- **Maven Central `1.1.0`** — full artifact set published under `studio.syncforge` (core + optional store/integration/network modules; KMP native targets)
+
 ## [1.0.0] - 2026-07-07
 
 First **semver-stable** public release. Stable without `@OptIn(ExperimentalSyncForgeApi::class)`:

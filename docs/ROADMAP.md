@@ -177,7 +177,7 @@ See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-rel
 
 ## 1.1.0 status (Wire-up)
 
-**Shipped:** July 2026 · **Codename:** *Wire-up*
+**GA (July 2026).** · **Codename:** *Wire-up*
 
 | Track | Status |
 |-------|--------|
@@ -186,6 +186,7 @@ See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-rel
 | **Security & auth** — encrypted `TokenStore`, `CharArray` login/register, stable auth API | ✅ |
 | **DX** — DI recipes (Koin/Hilt), DataStore cursor, BYO-store docs | ✅ |
 | **Release gate** — BOM optional artifacts, acceptance matrix, tag `v1.1.0` | ✅ |
+| **Maven Central** | ✅ `1.1.0` — 14 artifacts + consumer smoke verified |
 
 Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-github-issues-breakdown) · sign-off: [§ 1.1.0 acceptance](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist).
 
