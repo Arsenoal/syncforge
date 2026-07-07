@@ -1,7 +1,19 @@
 package dev.syncforge.network
 
+import io.ktor.client.HttpClient
+
 /**
  * Default REST transport when [studio.syncforge:syncforge-network-ktor] is on the classpath.
- * Implemented in platform source sets via compile-only dependency on the Ktor adapter module.
+ * Pass a non-null [httpClient] to reuse an app-owned Ktor client; otherwise the bundled platform
+ * client is used when the adapter module is linked.
  */
-internal expect fun createDefaultKtorSyncTransport(baseUrl: String, auth: SyncAuthProvider?): SyncTransport
+internal expect fun createKtorSyncTransport(
+    baseUrl: String,
+    auth: SyncAuthProvider?,
+    httpClient: HttpClient?,
+): SyncTransport
+
+internal fun createDefaultKtorSyncTransport(
+    baseUrl: String,
+    auth: SyncAuthProvider?,
+): SyncTransport = createKtorSyncTransport(baseUrl, auth, httpClient = null)

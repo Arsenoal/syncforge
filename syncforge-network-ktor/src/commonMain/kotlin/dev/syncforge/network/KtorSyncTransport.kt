@@ -32,6 +32,29 @@ class KtorSyncTransport private constructor(
         ),
     )
 
+    /**
+     * REST transport backed by an app-owned [HttpClient] (shared engine, logging, interceptors).
+     *
+     * SyncForge uses the client only for `/sync/push` and `/sync/pull`; auth refresh still applies
+     * when [auth] is a [RefreshingSyncAuthProvider].
+     */
+    constructor(
+        baseUrl: String,
+        auth: SyncAuthProvider?,
+        httpClient: HttpClient,
+    ) : this(
+        RestSyncTransport(
+            baseUrl = baseUrl,
+            httpClient = KtorSyncHttpClient(httpClient),
+            refreshingAuth = auth as? RefreshingSyncAuthProvider,
+        ),
+    )
+
+    constructor(
+        baseUrl: String,
+        httpClient: HttpClient,
+    ) : this(baseUrl, auth = null, httpClient = httpClient)
+
     constructor(
         baseUrl: String,
         authTokenProvider: () -> String?,
@@ -48,6 +71,15 @@ class KtorSyncTransport private constructor(
     ): PullResult = delegate.pull(sinceTimestampMillis, entityTypes, pageSize, pageCursor)
 
     companion object {
+        init {
+            registerSyncForgeKtorTransportFactory { baseUrl, auth, httpClient ->
+                when (httpClient) {
+                    null -> KtorSyncTransport(baseUrl, auth)
+                    else -> KtorSyncTransport(baseUrl, auth, httpClient)
+                }
+            }
+        }
+
         fun createForTest(
             baseUrl: String,
             httpClient: HttpClient,

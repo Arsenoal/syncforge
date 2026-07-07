@@ -104,6 +104,8 @@ kotlin {
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.core)
             implementation(libs.robolectric)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.kotlinx.coroutines.test)
             implementation(kotlin("reflect"))
         }
         jvmMain.dependencies {

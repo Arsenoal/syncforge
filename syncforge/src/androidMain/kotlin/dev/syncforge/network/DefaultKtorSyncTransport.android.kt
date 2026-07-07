@@ -1,4 +1,11 @@
 package dev.syncforge.network
 
-internal actual fun createDefaultKtorSyncTransport(baseUrl: String, auth: SyncAuthProvider?): SyncTransport =
-    KtorSyncTransportReflection.create(baseUrl, auth)
+import io.ktor.client.HttpClient
+
+internal actual fun createKtorSyncTransport(
+    baseUrl: String,
+    auth: SyncAuthProvider?,
+    httpClient: HttpClient?,
+): SyncTransport =
+    SyncForgeNetworkKtorRuntime.createKtorSyncTransport(baseUrl, auth, httpClient)
+        ?: KtorSyncTransportReflection.create(baseUrl, auth, httpClient)

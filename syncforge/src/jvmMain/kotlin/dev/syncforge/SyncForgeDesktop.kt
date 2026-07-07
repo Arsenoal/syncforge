@@ -8,7 +8,7 @@ import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.EntitySyncHandler
 import dev.syncforge.network.AlwaysOnlineNetworkMonitor
-import dev.syncforge.network.createDefaultKtorSyncTransport
+import dev.syncforge.network.createKtorSyncTransport
 import dev.syncforge.network.NetworkMonitor
 import dev.syncforge.network.NetworkMonitorFactory
 import dev.syncforge.network.SyncAuthProvider
@@ -24,6 +24,7 @@ import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import io.ktor.client.HttpClient
 import kotlin.time.Duration
 
 /**
@@ -41,6 +42,7 @@ class DesktopSyncForgeDsl internal constructor() {
     private var builtInAuth: BuiltInAuthDsl.() -> Unit = {}
     private var useBuiltInAuth: Boolean = false
     private var persistence: SyncForgePersistence? = null
+    private var httpClient: HttpClient? = null
 
     fun baseUrl(url: String) {
         baseUrl = url
@@ -73,6 +75,14 @@ class DesktopSyncForgeDsl internal constructor() {
 
     fun transport(transport: SyncTransport) {
         builder.transport = transport
+    }
+
+    /**
+     * Reuse an app-owned Ktor [HttpClient] for `/sync/push` and `/sync/pull`.
+     * When omitted, the default platform client from `syncforge-network-ktor` is used.
+     */
+    fun httpClient(client: HttpClient) {
+        this.httpClient = client
     }
 
     @ExperimentalSyncForgeApi
@@ -137,7 +147,7 @@ class DesktopSyncForgeDsl internal constructor() {
         }
 
         builder.transport = builder.transport
-            ?: createDefaultKtorSyncTransport(resolvedBaseUrl, auth)
+            ?: createKtorSyncTransport(resolvedBaseUrl, auth, httpClient)
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create()
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create()
         builder.workScheduler = builder.workScheduler ?: NoOpSyncWorkScheduler
