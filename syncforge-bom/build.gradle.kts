@@ -20,6 +20,7 @@ dependencies {
         api("${project.group}:syncforge-persistence:$libraryVersion")
         api("${project.group}:syncforge-android-deps:$libraryVersion")
         api("${project.group}:syncforge-network-ktor:$libraryVersion")
+        api("${project.group}:syncforge-store-room:$libraryVersion")
     }
 }
 

@@ -24,6 +24,7 @@ tasks.register("publishAllToMavenLocal") {
         ":syncforge-ksp:publishToMavenLocal",
         ":syncforge-persistence:publishToMavenLocal",
         ":syncforge-network-ktor:publishToMavenLocal",
+        ":syncforge-store-room:publishToMavenLocal",
         ":syncforge-android-deps:publishToMavenLocal",
         ":syncforge-bom:publishToMavenLocal",
         gradle.includedBuild("syncforge-gradle-plugin").task(":publishToMavenLocal"),
@@ -39,6 +40,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge:testDebugUnitTest",
         ":syncforge-network-ktor:jvmTest",
         ":syncforge-network-ktor:testDebugUnitTest",
+        ":syncforge-store-room:testDebugUnitTest",
         ":syncforge-server:test",
         ":syncforge-persistence:compileDebugKotlinAndroid",
         ":syncforge-persistence:compileKotlinJvm",
@@ -135,6 +137,7 @@ tasks.register("publishAllToMavenCentral") {
         ":syncforge-ksp:publishMavenPublicationToMavenCentralRepository",
         ":syncforge-persistence:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-network-ktor:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-store-room:publishReleasePublicationToMavenCentralRepository",
         ":syncforge-android-deps:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-bom:publishMavenPublicationToMavenCentralRepository",
         gradle.includedBuild("syncforge-gradle-plugin")

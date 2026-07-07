@@ -410,7 +410,7 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 ## 1.1.0 — Wire-up
 - [x] SyncHttpClient + RestSyncTransport (backward compatible KtorSyncTransport)
 - [x] httpClient { } DSL + documented injectable HttpClient sample
-- [ ] EntityStore + @SyncForgeStore KSP (+ Room adapter module)
+- [x] EntityStore + @SyncForgeStore KSP (+ Room adapter module)
 - [ ] Non-Room path documented (in-memory store test or recipe)
 - [ ] Encrypted TokenStore + CharArray auth overloads
 - [ ] DataStore cursor (Android) + iOS fallback docs
