@@ -68,7 +68,7 @@ class KtorSyncTransport private constructor(
     }
 }
 
-internal fun buildSyncForgeHttpClient(
+fun buildSyncForgeHttpClient(
     engine: io.ktor.client.engine.HttpClientEngine,
     auth: SyncAuthProvider?,
     json: Json,

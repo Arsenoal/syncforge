@@ -6,6 +6,7 @@ import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.ios
 import dev.syncforge.model.Change
 import dev.syncforge.model.SyncResult
+import dev.syncforge.network.KtorSyncTransport
 import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ class IosSampleController(
 
     val syncManager: SyncManager = SyncForge.ios {
         baseUrl(baseUrl)
+        transport(KtorSyncTransport(baseUrl))
         registry(EntityRegistry.of(taskHandler, noteHandler, tagHandler))
         backgroundSyncTaskIdentifier(IOS_SAMPLE_BACKGROUND_SYNC_TASK_ID)
         // Simulator XCUITest: NWPathMonitor may report offline before the first path update.

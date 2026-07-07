@@ -14,6 +14,7 @@ SYNCFORGE_REQUIRED_ARTIFACTS=(
   syncforge-annotations
   syncforge-persistence
   syncforge-android-deps
+  syncforge-network-ktor
   syncforge-gradle-plugin
 )
 

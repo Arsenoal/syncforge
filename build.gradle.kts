@@ -23,6 +23,7 @@ tasks.register("publishAllToMavenLocal") {
         ":syncforge-annotations:publishToMavenLocal",
         ":syncforge-ksp:publishToMavenLocal",
         ":syncforge-persistence:publishToMavenLocal",
+        ":syncforge-network-ktor:publishToMavenLocal",
         ":syncforge-android-deps:publishToMavenLocal",
         ":syncforge-bom:publishToMavenLocal",
         gradle.includedBuild("syncforge-gradle-plugin").task(":publishToMavenLocal"),
@@ -36,6 +37,8 @@ tasks.register("verifyReleaseSignOff") {
     dependsOn(
         ":syncforge:jvmTest",
         ":syncforge:testDebugUnitTest",
+        ":syncforge-network-ktor:jvmTest",
+        ":syncforge-network-ktor:testDebugUnitTest",
         ":syncforge-server:test",
         ":syncforge-persistence:compileDebugKotlinAndroid",
         ":syncforge-persistence:compileKotlinJvm",
@@ -116,6 +119,7 @@ val mavenCentralRequiredArtifacts = listOf(
     "syncforge-annotations",
     "syncforge-persistence",
     "syncforge-android-deps",
+    "syncforge-network-ktor",
     "syncforge-bom",
     "syncforge-ksp",
     "syncforge-gradle-plugin",
@@ -130,6 +134,7 @@ tasks.register("publishAllToMavenCentral") {
         ":syncforge-annotations:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-ksp:publishMavenPublicationToMavenCentralRepository",
         ":syncforge-persistence:publishAllPublicationsToMavenCentralRepository",
+        ":syncforge-network-ktor:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-android-deps:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-bom:publishMavenPublicationToMavenCentralRepository",
         gradle.includedBuild("syncforge-gradle-plugin")

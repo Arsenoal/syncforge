@@ -58,6 +58,7 @@ configurations.configureEach {
 
 dependencies {
     implementation(project(":syncforge"))
+    implementation(project(":syncforge-network-ktor"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.runtime)

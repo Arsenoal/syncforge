@@ -99,11 +99,11 @@ kotlin {
             implementation("androidx.compose.foundation:foundation-layout:${libs.versions.compose.ui.get()}")
         }
         androidUnitTest.dependencies {
+            implementation(project(":syncforge-network-ktor"))
             implementation(libs.junit)
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.core)
             implementation(libs.robolectric)
-            implementation(libs.ktor.client.mock)
             implementation(kotlin("reflect"))
         }
         jvmMain.dependencies {

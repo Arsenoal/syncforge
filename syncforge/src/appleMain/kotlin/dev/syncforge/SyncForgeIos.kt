@@ -8,7 +8,7 @@ import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.EntitySyncHandler
 import dev.syncforge.network.AlwaysOnlineNetworkMonitor
-import dev.syncforge.network.KtorSyncTransport
+import dev.syncforge.network.createDefaultKtorSyncTransport
 import dev.syncforge.network.NetworkMonitor
 import dev.syncforge.network.NetworkMonitorFactory
 import dev.syncforge.network.SyncAuthProvider
@@ -162,7 +162,7 @@ class IosSyncForgeDsl internal constructor() {
         }
 
         builder.transport = builder.transport
-            ?: KtorSyncTransport(resolvedBaseUrl, auth)
+            ?: createDefaultKtorSyncTransport(resolvedBaseUrl, auth)
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create()
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create()
         builder.workScheduler = builder.workScheduler

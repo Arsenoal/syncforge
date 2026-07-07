@@ -16,6 +16,7 @@ val publishableModules = setOf(
     "syncforge-annotations",
     "syncforge-ksp",
     "syncforge-persistence",
+    "syncforge-network-ktor",
     "syncforge-android-deps",
     "syncforge-bom",
 )

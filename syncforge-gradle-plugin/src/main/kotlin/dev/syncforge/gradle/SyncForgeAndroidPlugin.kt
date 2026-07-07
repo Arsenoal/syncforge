@@ -32,7 +32,10 @@ class SyncForgeAndroidPlugin : Plugin<Project> {
         val kspProcessor = project.rootProject.findProject(":syncforge-ksp")
             ?: "$syncforgeGroup:syncforge-ksp:$syncforgeVersion"
 
+        val networkKtor = "$syncforgeGroup:syncforge-network-ktor:$syncforgeVersion"
+
         project.dependencies.apply {
+            add("implementation", networkKtor)
             add("ksp", kspProcessor)
             add("ksp", roomCompiler)
         }

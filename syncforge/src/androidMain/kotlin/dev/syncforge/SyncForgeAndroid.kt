@@ -10,7 +10,7 @@ import androidx.work.Configuration
 import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.EntitySyncHandler
-import dev.syncforge.network.KtorSyncTransport
+import dev.syncforge.network.createDefaultKtorSyncTransport
 import dev.syncforge.network.NetworkMonitorFactory
 import dev.syncforge.network.SyncAuthProvider
 import dev.syncforge.network.SyncTransport
@@ -172,7 +172,7 @@ class AndroidSyncForgeDsl internal constructor(
         }
 
         builder.transport = builder.transport
-            ?: KtorSyncTransport(resolvedBaseUrl, auth)
+            ?: createDefaultKtorSyncTransport(resolvedBaseUrl, auth)
         builder.cursorStore = builder.cursorStore ?: SyncCursorStoreFactory.create(context)
         builder.networkMonitor = builder.networkMonitor ?: NetworkMonitorFactory.create(context)
         builder.workScheduler = builder.workScheduler ?: AndroidSyncWorkScheduler(context)

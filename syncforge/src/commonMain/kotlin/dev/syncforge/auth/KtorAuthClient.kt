@@ -1,8 +1,6 @@
 package dev.syncforge.auth
 
 import dev.syncforge.network.SyncTransportException
-import dev.syncforge.network.buildSyncForgeHttpClient
-import dev.syncforge.network.createPlatformHttpClient
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
@@ -79,9 +77,9 @@ internal class KtorAuthClient(
             engine: HttpClientEngine? = null,
         ): KtorAuthClient {
             val client = if (engine != null) {
-                buildSyncForgeHttpClient(engine, auth = null, AuthJson)
+                createAuthHttpClient(engine, AuthJson)
             } else {
-                createPlatformHttpClient(auth = null, AuthJson)
+                createAuthHttpClient(AuthJson)
             }
             return KtorAuthClient(baseUrl, config, client)
         }
