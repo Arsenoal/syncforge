@@ -32,6 +32,10 @@ class ConflictPolicyBuilder {
         defaultStrategy = strategy
     }
 
+    fun default(kind: ConflictStrategyKind) {
+        default(ConflictStrategies.fromKind(kind))
+    }
+
     fun entity(entityType: String, block: ConflictEntityBuilder.() -> Unit) {
         val builder = ConflictEntityBuilder()
         builder.apply(block)
@@ -47,6 +51,10 @@ class ConflictEntityBuilder {
 
     fun strategy(strategy: ConflictStrategy) {
         this.strategy = strategy
+    }
+
+    fun strategy(kind: ConflictStrategyKind) {
+        strategy(ConflictStrategies.fromKind(kind))
     }
 
     fun lastWriteWins() {

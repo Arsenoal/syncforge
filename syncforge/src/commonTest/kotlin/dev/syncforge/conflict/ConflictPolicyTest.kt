@@ -95,4 +95,16 @@ class ConflictPolicyTest {
         assertEquals("remote", merged.entity.title)
         assertEquals(true, merged.entity.completed)
     }
+
+    @Test
+    fun mergeStrategy_kindOfReturnsMerge() {
+        val policy = conflictPolicy {
+            entity("tasks") {
+                merge<Task> { local, remote ->
+                    local.copy(title = preferRemote(local.title, remote.title))
+                }
+            }
+        }
+        assertEquals(ConflictStrategyKind.MERGE, ConflictStrategies.kindOf(policy.strategyFor("tasks")))
+    }
 }

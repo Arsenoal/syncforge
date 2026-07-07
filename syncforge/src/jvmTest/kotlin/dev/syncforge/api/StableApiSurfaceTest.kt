@@ -9,6 +9,7 @@ import dev.syncforge.compose.toUiModel
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictStrategies
+import dev.syncforge.conflict.ConflictStrategyKind
 import dev.syncforge.conflict.conflictPolicy
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.Change
@@ -42,6 +43,18 @@ class StableApiSurfaceTest {
     fun conflictChoiceAndDefaultPolicyAreStable() {
         assertNotNull(ConflictPolicy.Default)
         assertEquals(ConflictChoice.KeepLocal, ConflictChoice.KeepLocal)
+    }
+
+    @Test
+    fun conflictStrategyKindCatalogIsStable() {
+        val policy = conflictPolicy {
+            entity("notes") { strategy(ConflictStrategies.acceptRemote) }
+            default(ConflictStrategyKind.LAST_WRITE_WINS)
+        }
+        assertEquals(
+            ConflictStrategyKind.ACCEPT_REMOTE,
+            ConflictStrategies.kindOf(policy.strategyFor("notes")),
+        )
     }
 
     @Test
