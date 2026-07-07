@@ -39,11 +39,13 @@ internal class ConflictPullApplier(
         }
 
         val strategy = policy.strategyFor(handler.entityType)
+        val mergeBasePayload = mergeBaseRecorder.loadPayload(handler, delta.entityId)
         val context = ConflictContext(
             entityType = handler.entityType,
             local = local,
             remote = remoteMeta,
             remotePayload = remotePayload,
+            mergeBasePayload = mergeBasePayload,
         )
         val outcome = strategy.resolve(context)
         val now = clock()

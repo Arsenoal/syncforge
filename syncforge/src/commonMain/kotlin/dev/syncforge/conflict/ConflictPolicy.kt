@@ -1,5 +1,6 @@
 package dev.syncforge.conflict
 
+import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.SyncedEntity
 
 /**
@@ -77,6 +78,17 @@ class ConflictEntityBuilder {
         noinline block: MergeScope<T>.(local: T, remote: T) -> T,
     ) {
         strategy(ConflictStrategies.merge(block))
+    }
+
+    /**
+     * Git-like three-way merge using [MergeBaseStore] snapshots (see [MergeBaseStore]).
+     * When no merge base exists yet, [threeWayMerge] receives `base = local` (two-way fallback).
+     */
+    @ExperimentalSyncForgeApi
+    fun <T : SyncedEntity> gitLike(
+        block: GitLikeEntityBuilder<T>.() -> Unit,
+    ) {
+        strategy(GitLikeEntityBuilder<T>().apply(block).build())
     }
 }
 

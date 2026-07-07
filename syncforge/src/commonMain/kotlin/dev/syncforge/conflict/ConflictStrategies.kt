@@ -38,7 +38,7 @@ object ConflictStrategies {
                 )
             ConflictStrategyKind.GIT_LIKE ->
                 throw IllegalArgumentException(
-                    "ConflictStrategyKind.GIT_LIKE requires gitLike { } (not yet available)",
+                    "ConflictStrategyKind.GIT_LIKE requires gitLike { } — fromKind() cannot supply a threeWayMerge block",
                 )
             ConflictStrategyKind.CRDT ->
                 throw IllegalArgumentException(
@@ -57,6 +57,7 @@ object ConflictStrategies {
             is AlwaysRemoteStrategy -> ConflictStrategyKind.ACCEPT_REMOTE
             is DeferToUserStrategy -> ConflictStrategyKind.DEFER_TO_USER
             is MergeStrategy<*> -> ConflictStrategyKind.MERGE
+            is GitLikeMergeStrategy<*> -> ConflictStrategyKind.GIT_LIKE
             else -> null
         }
 }

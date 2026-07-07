@@ -16,6 +16,8 @@ data class ConflictContext<T : SyncedEntity>(
     val local: T,
     val remote: RemoteMetadata,
     val remotePayload: T?,
+    /** Last successfully synced entity decoded from [MergeBaseStore], if present. */
+    val mergeBasePayload: T? = null,
 )
 
 sealed interface ConflictOutcome<out T : SyncedEntity> {

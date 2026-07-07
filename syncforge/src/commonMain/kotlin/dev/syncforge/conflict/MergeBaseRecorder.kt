@@ -63,4 +63,12 @@ internal class MergeBaseRecorder(
     suspend fun remove(entityType: String, entityId: String) {
         store.remove(entityType, entityId)
     }
+
+    suspend fun <T : SyncedEntity> loadPayload(
+        handler: TypedEntitySyncHandler<T>,
+        entityId: String,
+    ): T? {
+        val snapshot = store.get(handler.entityType, entityId) ?: return null
+        return runCatching { handler.decodePayload(snapshot.payloadJson) }.getOrNull()
+    }
 }
