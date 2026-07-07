@@ -415,7 +415,7 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 - [x] Encrypted TokenStore + CharArray auth overloads
 - [x] DataStore cursor (Android) + iOS fallback docs
 - [x] RECIPES.md DI section (Koin + Hilt)
-- [ ] BOM optional artifacts listed; no 1.0 API breaks
+- [x] BOM optional artifacts listed; no 1.0 API breaks
 ```
 
 Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate: `scripts/generate-1.1-docx.py`).
@@ -433,8 +433,8 @@ Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate:
 - [x] DataStore cursor on Android; file/UserDefaults fallback documented for iOS until unified
 - [x] Encrypted `TokenStore` default on Android; iOS Keychain; migration from plain SharedPreferences documented
 - [x] `login`/`register` `CharArray` overloads published; AUTH_API documents wipe semantics and IdP preference
-- [ ] BOM lists optional integration + store artifacts (not transitive)
-- [ ] No breaking changes to 1.0 stable APIs (Room KSP path remains default)
+- [x] BOM lists optional integration + store artifacts (not transitive)
+- [x] No breaking changes to 1.0 stable APIs (Room KSP path remains default)
 
 ---
 
@@ -912,6 +912,31 @@ E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
 | 10 | External dogfood / third-party integration | Community | ⬜ deferred (P1-07) |
 
 **1.0.0 verdict:** GA. Tag `v1.0.0` marks the stable baseline; row 10 remains optional community soak (P1-07).
+
+### 1.1.0 sign-off checklist
+
+Run automated checks locally:
+
+```bash
+./gradlew verifySignOffMatrix          # verifyReleaseSignOff (pre-tag)
+# After portal Publish + Central sync:
+#   Actions → Verify Maven Central Release (manual, version 1.1.0)
+# or locally: verify-maven-central-artifacts.sh 1.1.0 + verifyConsumerSmokeMavenCentral
+```
+
+| # | Criterion | Verification | Status (1.1.0 GA, July 2026) |
+|---|-----------|--------------|------------------------------|
+| 1 | All 1.1 epics complete (A–F) | Roadmap § 1.1.0 acceptance criteria | ✅ |
+| 2 | No breaking changes to 1.0 stable APIs | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest` | ✅ in `verifyReleaseSignOff` |
+| 3 | Built-in auth stable | Auth API guards + `AUTH_API.md` | ✅ |
+| 4 | BOM lists optional 1.1 artifacts | `:syncforge-bom:verifyBomConstraints` | ✅ in `verifyReleaseSignOff` |
+| 5 | Optional modules publish to Maven Central | `publishAllToMavenCentral` artifact list | ✅ configured |
+| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e` | ⬜ post-tag |
+| 7 | Maven Central all artifacts at `1.1.0` | `verifyConsumerSmokeMavenCentralArtifacts` | ⬜ after portal Publish |
+| 8 | Docs freeze | `CHANGELOG [1.1.0]`, `MODULES`, `GETTING_STARTED` | ✅ |
+| 9 | Encrypted tokens + cursor migration | `TokenStoreTest`, `SyncCursorStoreTest` | ✅ in `verifyReleaseSignOff` |
+
+**1.1.0 verdict:** Ready to tag `v1.1.0`. Rows 6–7 complete after publish workflow + Central sync.
 
 ### 2.0.0 sign-off checklist
 

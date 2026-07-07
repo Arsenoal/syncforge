@@ -778,25 +778,18 @@ Demonstrates `SyncForge.android { }`, conflict resolution, and `SyncDebugLaunche
 
 ---
 
-## What comes next — 1.0.0
+## What comes next — 1.1.0
 
 See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) for the full plan.
 
-**Phase 6 (`0.6.0`) — complete:**
+**1.1.0 (Wire-up) — GA:**
 
-- ✅ iOS target, Darwin Ktor, SQLDelight persistence, `SyncForge.ios { }`
-- ✅ SQLDelight Android default; legacy Room internals removed from public API
-- ✅ JVM desktop (`SyncForge.desktop { }`) and native macOS (`SyncForge.macos { }`)
-- ✅ SKIE / Swift API polish on `:syncforge` and `:sample-ios-shared`
-- ✅ Automatic Room → SQLDelight data migrator (`RoomToSqlDelightMigrator`)
+- ✅ `SyncHttpClient` + `RestSyncTransport` + `:syncforge-network-ktor` (optional BOM entry)
+- ✅ `EntityStore` + `@SyncForgeStore` KSP + `:syncforge-store-room` / `:syncforge-store-inmemory`
+- ✅ Encrypted `TokenStore` (Android/iOS), `CharArray` auth overloads, built-in auth stable
+- ✅ `DataStoreSyncCursorStore` (Android); iOS UserDefaults + desktop file fallback documented
+- ✅ `:syncforge-integration-koin` / `:syncforge-integration-hilt` (optional BOM entries)
+- ✅ Maven Central — BOM constraints for all optional 1.1 artifacts
+- ✅ Tag `v1.1.0` — see [ROADMAP_1_0_TO_2_0.md § 1.1.0 sign-off](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist)
 
-**Phase 7 (distribution & 1.0) — GA (`1.0.0`):**
-
-- ✅ Maven Central — `studio.syncforge` BOM, KMP targets, Gradle plugin (`1.0.0`)
-- ✅ API graduation — stable Android DSL, core `SyncManager`, `ConflictPolicy`, Compose status + conflict UI
-- ✅ Docs freeze — `CHANGELOG`, `MODULES`, `GETTING_STARTED` match 1.0 APIs
-- ✅ Tag `v1.0.0` — see [ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist)
-
-**Post-1.0:**
-
-- ✅ DataStore cursor persistence (Android 1.1+); iOS UserDefaults + desktop file fallback documented
+**Next (1.2.x):** per-entity conflict strategies and git-like merge — see [ROADMAP.md](ROADMAP.md).

@@ -62,11 +62,11 @@ pluginManagement {
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("studio.syncforge.android") version "1.0.0"
+    id("studio.syncforge.android") version "1.1.0"
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:1.0.0"))
+    implementation(platform("studio.syncforge:syncforge-bom:1.1.0"))
     implementation("studio.syncforge:syncforge")
 }
 ```
@@ -95,8 +95,8 @@ classpath via SyncForge's Android transitive deps. For BYO store, add only what 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("studio.syncforge:syncforge:1.0.0")
-            implementation("studio.syncforge:syncforge-network-ktor:1.0.0")  // default Ktor REST transport
+            implementation("studio.syncforge:syncforge:1.1.0")
+            implementation("studio.syncforge:syncforge-network-ktor:1.1.0")  // default Ktor REST transport
         }
     }
 }
@@ -110,8 +110,8 @@ Apply KSP on the module that owns `@SyncForgeEntity` and `@SyncForgeDao` or `@Sy
 
 ```kotlin
 dependencies {
-    implementation("studio.syncforge:syncforge:1.0.0")
-    implementation("studio.syncforge:syncforge-network-ktor:1.0.0")  // default Ktor REST transport
+    implementation("studio.syncforge:syncforge:1.1.0")
+    implementation("studio.syncforge:syncforge-network-ktor:1.1.0")  // default Ktor REST transport
 }
 ```
 

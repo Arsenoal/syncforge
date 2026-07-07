@@ -7,23 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-07
+
+**Wire-up** minor release — pluggable entity stores, injectable Ktor `HttpClient`, optional DI modules, encrypted token storage, DataStore pull cursor. No breaking changes to 1.0 stable APIs.
+
+**Upgrade from `1.0.0`:** bump coordinates to `1.1.0`. Existing tokens and sync cursors migrate automatically on first launch. Optional artifacts (`syncforge-store-*`, `syncforge-integration-*`) are BOM-listed but not transitive — add explicitly when needed.
+
 ### Added
 
-- **Encrypted `TokenStore`** — Android default uses `EncryptedSharedPreferences` (Keystore-backed); migrates legacy plain `syncforge_auth_tokens` prefs on first read
-- **Keychain `TokenStore`** — iOS/macOS default; migrates legacy `syncforge.auth.*` UserDefaults keys on first read
-- **`login(email, password: CharArray)` / `register(email, password: CharArray)`** — password wiped in `finally` after request body is built; `credentialFields()` in `auth { }` for custom JSON keys
-- **`TokenStoreTest`** — Robolectric coverage for encrypted persistence, legacy migration, and clear
+- **`SyncHttpClient`** — REST push/pull contract decoupled from Ktor (`commonMain`)
+- **`RestSyncTransport`** — transport implementation over `SyncHttpClient`; `KtorSyncTransport` delegates through it (backward compatible)
+- **`:syncforge-network-ktor`** — optional Ktor adapter (`KtorSyncHttpClient`, platform engines); listed in BOM, not transitive in `:syncforge`
+- **`httpClient(client)`** — inject app-owned Ktor `HttpClient` on Android / iOS / desktop DSLs
+- **`EntityStore`** — pluggable entity persistence contract in `commonMain`; `EntitySyncHandler` delegates through it
+- **`@SyncForgeStore`** — KSP annotation generating handlers from `EntityStore` implementations
+- **`:syncforge-store-room`** — Room DAO → `EntityStore` adapter (optional BOM artifact)
+- **`:syncforge-store-inmemory`** — thread-safe in-memory `EntityStore` for tests and prototyping (optional BOM artifact)
 - **`:syncforge-integration-koin`** — optional `syncForgeModule { }` and `syncForgeWorkManagerConfiguration()` helpers
 - **`:syncforge-integration-hilt`** — optional `SyncForgeHilt` factory helpers for `@Provides` wiring
-- **RECIPES.md** — Koin + Hilt DI section matching `:sample` (tasks, notes, tags)
+- **Encrypted `TokenStore`** — Android default uses `EncryptedSharedPreferences` (Keystore-backed); migrates legacy plain `syncforge_auth_tokens` prefs on first read
+- **Keychain `TokenStore`** — iOS/macOS default; migrates legacy `syncforge.auth.*` UserDefaults keys on first read
+- **`login(email, password: CharArray)` / `register(email, password: CharArray)`** — password wiped in `finally` after the request body is built; `credentialFields()` in `auth { }` for custom JSON keys
 - **`DataStoreSyncCursorStore`** — Android default pull cursor via DataStore Preferences; migrates legacy SharedPreferences cursor on first read
 - **`androidx.datastore:datastore-preferences`** — Android-only dependency for cursor persistence
+- **`TokenStoreTest`** — Robolectric coverage for encrypted persistence, legacy migration, and clear
+- **`verifyBomConstraints`** — Gradle check that optional 1.1 modules are BOM-listed
+- **RECIPES.md** — injectable HttpClient, BYO store, Koin + Hilt DI sections
 
 ### Changed
 
-- **Built-in auth graduated to stable (1.1)** — `AndroidSyncForgeDsl.auth { }`, `SyncManager.authState` / `session` / `register` / `login` / `logout` no longer require `@OptIn(ExperimentalSyncForgeApi::class)`
+- **Built-in auth graduated to stable** — `AndroidSyncForgeDsl.auth { }`, `SyncManager.authState` / `session` / `register` / `login` / `logout` no longer require `@OptIn(ExperimentalSyncForgeApi::class)`
 - **`StableApiSurfaceTest` / `StableAndroidApiSurfaceTest`** — auth members included in stable API guards
 - **`SyncCursorStoreFactory.create(context)`** — returns `DataStoreSyncCursorStore` instead of `SharedPreferencesSyncCursorStore` (override with `cursorStore(...)` still supported)
+- **`syncforge-bom`** — constraints for `syncforge-network-ktor`, `syncforge-store-room`, `syncforge-store-inmemory`, `syncforge-integration-koin`, `syncforge-integration-hilt`
+- **Maven Central artifact verification** — optional 1.1 modules included in `verifyMavenCentralArtifacts`
 
 ## [1.0.0] - 2026-07-07
 

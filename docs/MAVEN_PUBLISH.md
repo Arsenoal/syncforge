@@ -1,6 +1,6 @@
 # Maven Central publish checklist
 
-Step-by-step guide for publishing SyncForge to Maven Central. Current stable release: **1.0.0**.
+Step-by-step guide for publishing SyncForge to Maven Central. Current stable release: **1.1.0**.
 
 **Repository:** [github.com/Arsenoal/syncforge](https://github.com/Arsenoal/syncforge)  
 **Group ID:** `studio.syncforge` (namespace verified via DNS on `syncforge.studio`)  
@@ -123,7 +123,12 @@ git push origin v1.0.0
 | `studio.syncforge:syncforge-ksp` | KSP processor |
 | `studio.syncforge:syncforge-persistence` | SQLDelight persistence |
 | `studio.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
-| `studio.syncforge:syncforge-bom` | Version alignment BOM |
+| `studio.syncforge:syncforge-network-ktor` | Optional Ktor REST adapter (BOM-listed, not transitive) |
+| `studio.syncforge:syncforge-store-room` | Optional Room → `EntityStore` adapter |
+| `studio.syncforge:syncforge-store-inmemory` | Optional in-memory `EntityStore` for tests |
+| `studio.syncforge:syncforge-integration-koin` | Optional Koin DI helpers |
+| `studio.syncforge:syncforge-integration-hilt` | Optional Hilt DI helpers |
+| `studio.syncforge:syncforge-bom` | Version alignment BOM (core + optional modules above) |
 | `studio.syncforge:syncforge-gradle-plugin` | Gradle plugin implementation (Maven `pluginMaven`) |
 | `studio.syncforge.android:studio.syncforge.android.gradle.plugin` | Plugin marker for `id("studio.syncforge.android")` |
 
@@ -180,6 +185,29 @@ bash .github/scripts/verify-maven-central-artifacts.sh 1.0.0
 ./gradlew verifyConsumerSmokeMavenCentral
 ```
 | Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
+
+---
+
+## 9. 1.0.0 → 1.1.0
+
+| Step | Action |
+|------|--------|
+| Release prep | ✅ Repo bumped to `1.1.0`; `CHANGELOG [1.1.0]`; BOM optional artifacts verified |
+| Pre-tag | `./gradlew verifySignOffMatrix` |
+| Tag | `git tag v1.1.0 && git push origin v1.1.0` |
+| Publish | Actions → Publish Release (tag `v1.1.0`); portal Publish all VALIDATED deployments |
+| Post-publish | Bump `consumer-smoke/android-minimal` pins to `1.1.0`; Actions → Verify Maven Central Release |
+
+```bash
+./gradlew verifySignOffMatrix
+git tag v1.1.0
+git push origin v1.1.0
+# After Central sync:
+bash .github/scripts/verify-maven-central-artifacts.sh 1.1.0
+./gradlew verifyConsumerSmokeMavenCentral
+```
+
+| Sign-off | [ROADMAP_1_0_TO_2_0.md § 1.1.0 sign-off](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist) |
 
 ---
 

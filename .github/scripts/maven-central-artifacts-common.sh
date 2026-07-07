@@ -15,6 +15,10 @@ SYNCFORGE_REQUIRED_ARTIFACTS=(
   syncforge-persistence
   syncforge-android-deps
   syncforge-network-ktor
+  syncforge-store-room
+  syncforge-store-inmemory
+  syncforge-integration-koin
+  syncforge-integration-hilt
   syncforge-gradle-plugin
 )
 

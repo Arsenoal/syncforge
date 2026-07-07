@@ -35,3 +35,31 @@ publishing {
         }
     }
 }
+
+/** F1: optional 1.1 artifacts must be BOM constraints (not transitive in :syncforge). */
+tasks.register("verifyBomConstraints") {
+    group = "verification"
+    description = "Fails unless all expected SyncForge library artifacts are listed as BOM constraints."
+    doLast {
+        val expected = setOf(
+            "syncforge",
+            "syncforge-annotations",
+            "syncforge-ksp",
+            "syncforge-persistence",
+            "syncforge-android-deps",
+            "syncforge-network-ktor",
+            "syncforge-store-room",
+            "syncforge-store-inmemory",
+            "syncforge-integration-koin",
+            "syncforge-integration-hilt",
+        )
+        val found = configurations.getByName("api")
+            .allDependencyConstraints
+            .map { it.name }
+            .toSet()
+        val missing = expected - found
+        check(missing.isEmpty()) {
+            "syncforge-bom missing constraints for: ${missing.joinToString()}"
+        }
+    }
+}

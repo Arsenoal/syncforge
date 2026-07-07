@@ -58,6 +58,7 @@ tasks.register("verifyReleaseSignOff") {
         ":mock-server:compileKotlin",
         ":sample:compileDebugKotlin",
         ":sample:compileDebugAndroidTestKotlin",
+        ":syncforge-bom:verifyBomConstraints",
         "verifyConsumerSmoke",
     )
 }
@@ -129,6 +130,10 @@ val mavenCentralRequiredArtifacts = listOf(
     "syncforge-persistence",
     "syncforge-android-deps",
     "syncforge-network-ktor",
+    "syncforge-store-room",
+    "syncforge-store-inmemory",
+    "syncforge-integration-koin",
+    "syncforge-integration-hilt",
     "syncforge-bom",
     "syncforge-ksp",
     "syncforge-gradle-plugin",

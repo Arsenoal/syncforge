@@ -21,7 +21,7 @@ val syncManager = SyncForge.ios {
 }
 ```
 
-Add `implementation("studio.syncforge:syncforge-network-ktor:1.0.0")` to the shared module that
+Add `implementation("studio.syncforge:syncforge-network-ktor:1.1.0")` to the shared module that
 calls `SyncForge.ios { }`. See [Getting Started → HTTP client](GETTING_STARTED.md#http-client--default-vs-injectable).
 
 ### Defaults applied automatically
