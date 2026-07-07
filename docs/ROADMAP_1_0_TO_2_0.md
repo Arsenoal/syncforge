@@ -14,7 +14,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 
 ```
 1.0.0  Stable ship     — API freeze, Maven Central 1.0, remove pre-1.0 deprecations
-1.1.x  Integration DX  — EntityStore abstraction, DI modules, auth graduation, cursor polish
+1.1.x  Integration DX  — EntityStore + pluggable HTTP client (Retrofit/Ktor), DI, auth, cursor
 1.2.x  Smart conflicts — CRDT primitives, crdt { } strategy, KSP field-merge
 1.3.x  Platform parity — Desktop sample, iOS SPM/XCFramework, CMP debug UI
 1.4.x  Ecosystem       — Spring/GraphQL/Supabase transports, multi-device E2E, version catalog
@@ -33,6 +33,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **App entity store**      | Room-first DX (KSP)     | **`EntityStore` abstraction** + adapters | Any store via handler; Room not required     |
 | **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Legacy Room internals removed at 1.0         |
 | **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
+| **HTTP client (REST)**    | Ktor bundled in `KtorSyncTransport` | **`SyncHttpClient` abstraction** — Retrofit, Ktor, custom | User picks client; SyncForge owns push/pull route mapping |
 | **Backend / transport**   | REST v1 frozen (`KtorSyncTransport`) | Optional adapters (GraphQL, Supabase, Spring) | REST v2 only if op-log needs it; wire format pluggable via `SyncTransport` |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
 
@@ -43,7 +44,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | Version   | Codename      | Target window | Headline                                               |
 |-----------|---------------|---------------|--------------------------------------------------------|
 | **1.0.0** | *Stable*      | Q3 2026       | First semver-stable release                            |
-| **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore abstraction, DI, auth stable, DataStore cursor |
+| **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore + HTTP client abstraction, DI, auth, DataStore cursor |
 | **1.2.0** | *Merge-smart* | Q1 2027       | CRDT primitives + `crdt { }` strategy (experimental)   |
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
@@ -105,6 +106,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 - Desktop sample app (`:sample-desktop`)
 - **`EntityStore` abstraction** — formal contract + KSP beyond Room DAOs (see 1.1.x)
+- **`SyncHttpClient` abstraction** — pluggable REST client (Retrofit, Ktor); SyncForge maps push/pull routes (see 1.1.x)
 - DataStore KMP cursor
 - CRDT / DI integration artifacts
 - GraphQL / Supabase / Spring transport adapters
@@ -140,7 +142,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 ### Goal
 
-Reduce boilerplate for real apps: **pluggable entity stores**, dependency injection, smoother auth, unified cursor storage. Core sync semantics unchanged.
+Reduce boilerplate for real apps: **pluggable entity stores**, **pluggable HTTP clients** (Retrofit, Ktor, …), dependency injection, smoother auth, unified cursor storage. Core sync semantics unchanged.
 
 ### Features
 
@@ -158,6 +160,11 @@ Reduce boilerplate for real apps: **pluggable entity stores**, dependency inject
 | 1.1-10 | **KSP `@SyncForgeStore`** — generate handlers from any `EntityStore` impl                | P0       | Keeps `@SyncForgeDao` (Room) as one adapter; not the only path                    |
 | 1.1-11 | **Store adapter modules** — optional artifacts, not in core BOM                          | P1       | e.g. `:syncforge-store-room` (current DAO path), `:syncforge-store-realm`, in-memory for tests |
 | 1.1-12 | **Docs + Gradle plugin** — Room optional; “sync-aware entity” not “Room entity”          | P1       | GETTING_STARTED branch for BYO store; `studio.syncforge.android` skips Room KSP when unused |
+| 1.1-13 | **`SyncHttpClient` contract** — pluggable REST executor in `commonMain`                  | P0       | `postPush` / `getPull` with auth + status mapping; DTOs from `dev.syncforge.network.api` |
+| 1.1-14 | **`RestSyncTransport`** — default REST transport using injected `SyncHttpClient`         | P0       | Refactor `KtorSyncTransport` to delegate here; paths `/sync/push`, `/sync/pull` configurable |
+| 1.1-15 | **`:syncforge-network-retrofit`** adapter                                                | P1       | Android/JVM; user supplies `Retrofit` + optional service interface or adapter lambda |
+| 1.1-16 | **`:syncforge-network-ktor`** adapter (extract from core)                                | P1       | Current Ktor `HttpClient` path; share auth refresh with `RefreshingSyncAuthProvider` |
+| 1.1-17 | **DSL `httpClient { }`** on platform DSLs                                                | P1       | `httpClient(retrofitClient)` or `httpClient(SyncHttpClient)`; falls back to Ktor if omitted |
 
 ### Entity store architecture (1.1)
 
@@ -193,20 +200,67 @@ SyncForge separates **your app database** from **SyncForge’s internal outbox/c
 
 **Realm / other ORMs:** implement `EntityStore` (or `TypedEntitySyncHandler` manually at 1.0); KSP generates the handler in 1.1. No Realm dependency in `:syncforge` core.
 
+### Network client architecture (1.1)
+
+Three layers — sync semantics, REST routing, and the user’s HTTP library:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SyncManager — outbox, push/pull orchestration (unchanged)       │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ SyncTransport
+              ┌──────────────┴──────────────┐
+              │                             │
+       RestSyncTransport            GraphQlSyncTransport (1.4)
+       (REST push/pull routes)      (separate wire format)
+              │
+              │ uses SyncHttpClient
+    ┌─────────┼─────────┬─────────────┐
+    │         │         │             │
+ Ktor adapter Retrofit  OkHttp/custom  …
+ (1.1-16)     (1.1-15)
+```
+
+**`SyncHttpClient` (target 1.1)** — minimal REST executor; SyncForge maps sync DTOs to routes:
+
+| Method | Route (default) | Body / params |
+|--------|-----------------|---------------|
+| `postPush(baseUrl, PushRequest, auth)` | `POST {baseUrl}/sync/push` | JSON batch from outbox |
+| `getPull(baseUrl, since, types, limit, cursor, auth)` | `GET {baseUrl}/sync/pull` | Query params per REST_API.md |
+
+User provides the **client implementation** (e.g. existing app `Retrofit` instance). SyncForge does **not** require Retrofit in core — only optional `:syncforge-network-retrofit`.
+
+**Example (target DSL):**
+
+```kotlin
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    httpClient(RetrofitSyncHttpClient(appRetrofit))  // user's Retrofit
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+// → RestSyncTransport uses Retrofit for /sync/push and /sync/pull only
+```
+
+**Today (1.0):** `KtorSyncTransport` bundles Ktor end-to-end, or implement full `SyncTransport` with Retrofit manually. **1.1** splits client from transport so users wire their existing networking stack without reimplementing push/pull mapping.
+
 ### DI architecture (1.1)
 
 ```
-:syncforge                    ← no Koin/Dagger/Room/Realm dependency (unchanged)
+:syncforge                    ← no Koin/Dagger/Room/Realm/Retrofit dependency (unchanged)
 :syncforge-integration-koin   ← optional, depends on koin-core
 :syncforge-integration-hilt   ← optional, Android-only
 :syncforge-store-room         ← optional, Room DAO → EntityStore adapter
 :syncforge-store-realm        ← optional, Realm → EntityStore adapter
+:syncforge-network-ktor       ← optional, Ktor SyncHttpClient (default)
+:syncforge-network-retrofit   ← optional, Retrofit SyncHttpClient (Android/JVM)
 ```
 
-App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflicts { }`. Library supplies factory helpers and optional adapters only.
+App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflicts { }`, and optionally `httpClient`. Library supplies factory helpers and optional adapters only.
 
 ### 1.1.0 acceptance criteria
 
+- [ ] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
+- [ ] Retrofit adapter documented with sample using app-owned `Retrofit` instance
 - [ ] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [ ] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
 - [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
@@ -312,11 +366,12 @@ The sync **contract** (batch push, cursor pull, pagination, tombstones) is separ
                              │ SyncTransport.push / .pull
         ┌────────────────────┼────────────────────┐
         │                    │                    │
-  KtorSyncTransport   GraphQlSyncTransport   SupabaseTransport …
-  (REST, 1.0 default)  (:syncforge-transport-graphql, 1.4)
+  RestSyncTransport    GraphQlSyncTransport   SupabaseTransport …
+  (1.1, via SyncHttpClient)  (1.4)              (1.4)
         │                    │                    │
-   POST /sync/push      mutation syncPush     hosted adapter
-   GET  /sync/pull      query    syncPull
+   Ktor / Retrofit …    mutation syncPush     hosted adapter
+   POST /sync/push      query    syncPull
+   GET  /sync/pull
 ```
 
 **GraphQL (target 1.4):** server exposes operations with the same semantics as [REST_API.md](REST_API.md) — not generic CRUD. Client adapter converts `OutboxEntry` batches and pull cursors to GraphQL variables and maps responses to `PushResult` / `PullResult`.
@@ -453,6 +508,7 @@ Backend implementers should pin to a library major version in their compatibilit
 | Multi-device E2E flakiness            | Medium   | Nightly only initially; mock-server health gate                                |
 | Scope creep into “full backend”       | Medium   | Starters are reference kits; `:syncforge-server` stays minimal                 |
 | GraphQL schema drift vs REST contract | Medium   | Document canonical push/pull semantics; adapter tests share contract test kit  |
+| HTTP client adapter proliferation     | Low      | `SyncHttpClient` in core; Ktor + Retrofit optional modules only                |
 
 ---
 
