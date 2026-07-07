@@ -15,7 +15,7 @@ until a later release.
 | Level | Marker | Meaning |
 |-------|--------|---------|
 | **Stable** | *(no annotation)* | Supported public API; binary-compatible guarantees from 1.0 onward. |
-| **Experimental** | `@ExperimentalSyncForgeApi` | Shipped for early adopters but may change in minor releases before 1.0. Requires explicit opt-in. |
+| **Experimental** | `@ExperimentalSyncForgeApi` | Shipped for early adopters; may change in minor releases. Requires explicit opt-in. |
 | **Internal** | `internal` modifier | Implementation detail — not part of the public contract. Do not reference from app code. |
 
 ### Opting in to experimental APIs
@@ -44,6 +44,8 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | Area | Stability | Notes |
 |------|-----------|-------|
 | `SyncForge.android { }`, `SyncForgeAndroid` | **Stable** | Primary Android entry point; SQLDelight outbox by default (0.6.0). |
+| `AndroidSyncForgeDsl.authToken` / `auth(SyncAuthProvider)` | **Stable** | Bearer or custom token provider for `KtorSyncTransport`. |
+| `AndroidSyncForgeDsl.auth { }` (built-in register/login) | **Experimental** | Wires `SyncManager.register`/`login`/`logout`; see [AUTH_API.md](AUTH_API.md). |
 | `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }` | **Experimental** | Newer KMP platform DSLs; less production mileage than Android. |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
 | `SyncManager` — `status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync contract. |
@@ -520,12 +522,13 @@ into push/pull cycles.
 
 | Type | Stability | Description |
 |------|-----------|-------------|
-| `SyncManager` | Stable | `status`, `conflicts`, `sync()`, `push()`, `pull()`, `enqueueChange()`, `resolveConflict()` |
+| `SyncManager` | Stable | `status`, `conflicts`, `sync()`, `push()`, `pull()`, `enqueueChange()`, `resolveConflict()`, `findOpenConflict()`, `schedulePeriodicSync()`, `cancelScheduledSync()` |
+| `SyncManager.authState` / `register` / `login` / `logout` | Experimental | Built-in `auth { }` DSL only |
 | `SyncManager.debug` / `conflictHistory` | Experimental | Debug observability streams |
 | `SyncConfig` | Stable | Entity types, batch sizes, retry limits, periodic interval |
 | `SyncCursorStore` | Stable | Pull cursor persistence interface |
 | `SyncManagerImpl` | Internal | Default implementation |
-| `SyncWorkScheduler` | Experimental | Platform hook for background scheduling (via `create()` only) |
+| `SyncWorkScheduler` | Stable | Platform hook for background scheduling; wired by platform DSLs |
 
 ### `SyncConfig` defaults
 
@@ -704,7 +707,10 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `commonTest/.../LastWriteWinsStrategyTest` | LWW conflict scenarios |
 | `commonTest/.../OptimisticSyncCoordinatorTest` | Optimistic write + outbox flow |
 | `commonTest/.../PullPaginationTest` | Multi-page pull loop |
+| `commonTest/.../SyncEngineIntegrationTest` | Retry exhaustion, multi-page pull, offline queue (P1-04) |
 | `commonTest/.../SyncForgeBuilderTest` | Builder entity type derivation |
+| `jvmTest/.../StableApiSurfaceTest` | Stable vs experimental API boundary (core SyncManager, conflicts, Compose status) |
+| `androidUnitTest/.../StableAndroidApiSurfaceTest` | Stable Android DSL + `SyncForgeAndroid` entry points |
 | `androidUnitTest/.../SyncManagerImplTest` | Push cycle with in-memory outbox |
 | `jvmTest/.../SqlDelightOutboxRepositoryTest` | SQLDelight outbox (JDBC in-memory) |
 | `jvmTest/.../SqlDelightConflictStoreTest` | SQLDelight conflict store (JDBC in-memory) |
@@ -760,14 +766,25 @@ Demonstrates `SyncForge.android { }`, conflict resolution, and `SyncDebugLaunche
 
 ---
 
-## What comes next — Phase 7
+## What comes next — 1.0.0
 
-See [ROADMAP.md](ROADMAP.md) for the full plan. Phase 6 (`0.6.0`) **complete**:
+See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) for the full plan.
+
+**Phase 6 (`0.6.0`) — complete:**
 
 - ✅ iOS target, Darwin Ktor, SQLDelight persistence, `SyncForge.ios { }`
 - ✅ SQLDelight Android default; legacy Room internals removed from public API
 - ✅ JVM desktop (`SyncForge.desktop { }`) and native macOS (`SyncForge.macos { }`)
 - ✅ SKIE / Swift API polish on `:syncforge` and `:sample-ios-shared`
 - ✅ Automatic Room → SQLDelight data migrator (`RoomToSqlDelightMigrator`)
-- ⬜ Maven Central publication (Phase 7)
+
+**Phase 7 (distribution & 1.0) — in progress (`0.9.0-rc.5` soak):**
+
+- ✅ Maven Central — `studio.syncforge` BOM, KMP targets, Gradle plugin
+- ✅ API graduation — stable Android DSL, core `SyncManager`, `ConflictPolicy`, Compose status + conflict UI
+- ✅ Docs freeze — `CHANGELOG`, `MODULES`, `GETTING_STARTED` match 1.0 APIs
+- ⬜ Tag `1.0.0` after sign-off matrix (see [ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist))
+
+**Post-1.0:**
+
 - ⬜ DataStore cursor persistence

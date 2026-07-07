@@ -165,7 +165,8 @@ Most pre-1.0 P0 work is complete (Sample App Proof, iOS parity, auth refresh, ba
 |---------|--------|
 | API graduation (`@ExperimentalSyncForgeApi` removal on stable surfaces) | ✅ |
 | Remove `useRoomPersistence()` | ✅ |
+| Docs freeze (`CHANGELOG`, `MODULES`, `GETTING_STARTED`) | ✅ |
 | Publish `1.0.0` to Maven Central | ⬜ |
-| 1.0 sign-off matrix + docs freeze | ⬜ |
+| 1.0 sign-off matrix | ⬜ |
 
 See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for the full checklist and post-1.0 milestones.

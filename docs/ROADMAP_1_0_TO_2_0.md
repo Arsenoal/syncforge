@@ -72,18 +72,21 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | **Distribution**     | Maven Central BOM, `studio.syncforge.android` Gradle plugin, Apache 2.0                          |
 | **CI**               | `androidE2e`, `iosE2e`, `verifyReleaseSignOff`, `verifyConsumerSmoke`                            |
 | **API cleanup**      | `ConflictResolver` family removed; `useSqlDelightPersistence()` and `useRoomPersistence()` removed |
+| **API graduation**   | Stable Android DSL, core `SyncManager`, `ConflictPolicy`, Compose status + conflict UI (`StableApiSurfaceTest`) |
 | **Docs**             | GETTING_STARTED, MODULES stability table, AUTH_API, MAVEN_PUBLISH, REST versioning policy        |
+| **Docs freeze**      | `CHANGELOG`, `MODULES`, `GETTING_STARTED` match 1.0 APIs (P0-06, July 2026)                      |
+| **Integration tests**| `SyncEngineIntegrationTest` — retry exhaustion, multi-page pull, offline queue (P1-04)           |
 
 ### Remaining P0 (1.0 blockers)
 
 | ID        | Job                                                                                                                                                                                                                                                           | Area    |
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| 1.0-P0-01 | **API graduation** — remove `@ExperimentalSyncForgeApi` from `SyncForge.android`, core `SyncManager` (`status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`), `ConflictPolicy` / `ConflictStrategies`, Compose status + conflict UI | API     |
+| 1.0-P0-01 | **API graduation** — remove `@ExperimentalSyncForgeApi` from `SyncForge.android`, core `SyncManager` (`status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`), `ConflictPolicy` / `ConflictStrategies`, Compose status + conflict UI | API ✅  |
 | 1.0-P0-02 | **Remove `useRoomPersistence()`** — legacy Room opt-in deleted (migration path documented in upgrade guide)                                                                                                                                                   | Android ✅ |
 | 1.0-P0-03 | **Publish `1.0.0` to Maven Central** — all artifacts: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin                                                                                                                  | Dist    |
 | 1.0-P0-04 | **1.0 sign-off matrix** — run full acceptance checklist (Section 8); tag `v1.0.0`                                                                                                                                                                             | QA      |
 | 1.0-P0-05 | **macOS tag publish** — iOS/macOS frameworks from CI without manual steps                                                                                                                                                                                     | CI      |
-| 1.0-P0-06 | **Docs freeze** — CHANGELOG, MODULES, GETTING_STARTED match 1.0 APIs exactly                                                                                                                                                                                  | Docs    |
+| 1.0-P0-06 | **Docs freeze** — CHANGELOG, MODULES, GETTING_STARTED match 1.0 APIs exactly                                                                                                                                                                                  | Docs ✅ |
 
 ### P1 (strongly recommended for 1.0.0; may slip to 1.0.1)
 
@@ -92,7 +95,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | 1.0-P1-01 | Upgrade guide: pre-0.6 Room → 0.6+ SQLDelight                         | Docs      |
 | 1.0-P1-02 | Conflict recipes for 3+ entity types in RECIPES.md                    | Docs      |
 | 1.0-P1-03 | Consumer ProGuard/R8 rules documented + tested (`consumer-rules.pro`) | Android   |
-| 1.0-P1-04 | Integration tests: retry exhaustion, multi-page pull, offline queue   | QA        |
+| 1.0-P1-04 | Integration tests: retry exhaustion, multi-page pull, offline queue   | QA ✅     |
 | 1.0-P1-05 | Performance test: 1000+ outbox entries, batch push                    | QA        |
 | 1.0-P1-06 | Security doc pass: TLS, token storage, no secrets in logs             | Docs      |
 | 1.0-P1-07 | At least one external dogfood or documented third-party integration   | Community |

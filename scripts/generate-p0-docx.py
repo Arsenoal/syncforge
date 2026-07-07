@@ -19,10 +19,9 @@ SECTIONS = [
         ],
     ),
     (
-        "Documentation (1.0-P0-06)",
+        "Documentation (P1-01)",
         [
-            "Docs freeze — CHANGELOG, MODULES, GETTING_STARTED match 1.0 APIs exactly",
-            "Upgrade guide — pre-0.6 Room → SQLDelight (P1-01, recommended)",
+            "Upgrade guide — pre-0.6 Room → SQLDelight (recommended; migration path in ANDROID_SETUP.md)",
         ],
     ),
     (

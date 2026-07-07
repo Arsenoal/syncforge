@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`SyncEngineIntegrationTest`** (P1-04) — retry exhaustion, multi-page pull, and offline queue scenarios in `commonTest` (runs on JVM + Android unit test targets)
+- **Docs freeze** (P0-06) — `CHANGELOG.md`, `docs/MODULES.md`, and `docs/GETTING_STARTED.md` aligned with 1.0 stable API boundaries (`StableApiSurfaceTest` / `StableAndroidApiSurfaceTest`)
+
+### Changed
+
+- **Publish Release workflow** — always runs `publishAllToMavenCentral` (supplemental partial-publish mode removed); tag or `workflow_dispatch` with version tag only
+
 ### Fixed
 
 - **Maven Central publish** — `publishAllToMavenCentral` now targets `*MavenCentralRepository` tasks explicitly; CI re-publishes `syncforge-bom` and `syncforge-ksp` and verifies required POMs on `repo1.maven.org` (fixes incomplete `0.9.0-rc.5` staging)
+- **Supplemental publish scripts** — Bash 3.2 compatibility on macOS CI (`declare -A` / `mapfile` removed)
 
 ## [0.9.0-rc.5] - 2026-07-06
 

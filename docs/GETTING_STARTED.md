@@ -193,7 +193,7 @@ You never hand-write handler boilerplate.
 `SyncForge.android { }` applies Android defaults: SQLDelight outbox + conflicts (`syncforge.db`),
 automatic Room → SQLDelight migration on upgrade, persisted pull cursor, connectivity monitoring,
 Ktor transport, exponential retry, and WorkManager scheduling. See [ANDROID_SETUP.md](ANDROID_SETUP.md)
-for legacy Room opt-in.
+for the Room → SQLDelight migration path (legacy `useRoomPersistence()` was removed in 0.9.0-rc.5).
 
 ```kotlin
 class MyApplication : Application(), Configuration.Provider {
@@ -397,3 +397,5 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | Entity design tips | [Best Practices](BEST_PRACTICES.md) |
 | Backend contract | [REST API](REST_API.md) |
 | Full API reference | [Module Reference](MODULES.md) |
+| Stable vs experimental APIs | [Module Reference → API stability](MODULES.md#api-stability) |
+| Upgrade from pre-0.6 Room | [Android Setup → Legacy Room storage](ANDROID_SETUP.md#legacy-room-storage-pre-060) |
