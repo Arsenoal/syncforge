@@ -4,7 +4,8 @@ package dev.syncforge.api
  * Marks API that is public but not covered by SyncForge's semver-stable contract.
  *
  * **Stable (no annotation):** [dev.syncforge.SyncForge.android], [dev.syncforge.SyncForgeAndroid],
- * core [dev.syncforge.sync.SyncManager] (sync lifecycle, outbox, conflicts — not auth/debug),
+ * core [dev.syncforge.sync.SyncManager] (sync lifecycle, outbox, conflicts, built-in auth),
+ * [dev.syncforge.AndroidSyncForgeDsl.auth] (built-in register/login DSL),
  * [dev.syncforge.conflict.ConflictPolicy] / [dev.syncforge.conflict.ConflictStrategies],
  * [dev.syncforge.compose.SyncStatusUiModel], and production conflict/status Compose helpers.
  *

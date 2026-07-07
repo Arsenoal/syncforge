@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Encrypted `TokenStore`** — Android default uses `EncryptedSharedPreferences` (Keystore-backed); migrates legacy plain `syncforge_auth_tokens` prefs on first read
+- **Keychain `TokenStore`** — iOS/macOS default; migrates legacy `syncforge.auth.*` UserDefaults keys on first read
+- **`login(email, password: CharArray)` / `register(email, password: CharArray)`** — password wiped in `finally` after request body is built; `credentialFields()` in `auth { }` for custom JSON keys
+- **`TokenStoreTest`** — Robolectric coverage for encrypted persistence, legacy migration, and clear
 - **`:syncforge-integration-koin`** — optional `syncForgeModule { }` and `syncForgeWorkManagerConfiguration()` helpers
 - **`:syncforge-integration-hilt`** — optional `SyncForgeHilt` factory helpers for `@Provides` wiring
 - **RECIPES.md** — Koin + Hilt DI section matching `:sample` (tasks, notes, tags)
@@ -17,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Built-in auth graduated to stable (1.1)** — `AndroidSyncForgeDsl.auth { }`, `SyncManager.authState` / `session` / `register` / `login` / `logout` no longer require `@OptIn(ExperimentalSyncForgeApi::class)`
+- **`StableApiSurfaceTest` / `StableAndroidApiSurfaceTest`** — auth members included in stable API guards
 - **`SyncCursorStoreFactory.create(context)`** — returns `DataStoreSyncCursorStore` instead of `SharedPreferencesSyncCursorStore` (override with `cursorStore(...)` still supported)
 
 ## [1.0.0] - 2026-07-07

@@ -24,23 +24,30 @@ interface SyncManager {
     val status: StateFlow<SyncStatus>
 
     /** Session state when built-in `auth { }` is configured; otherwise [AuthState.LoggedOut]. */
-    @ExperimentalSyncForgeApi
     val authState: StateFlow<AuthState>
 
     /** Current session metadata (no raw tokens). Null when logged out. */
-    @ExperimentalSyncForgeApi
     val session: Session?
 
     /** Register a new user. Request body fields are sent as JSON keys. Requires `auth { }` DSL. */
-    @ExperimentalSyncForgeApi
     suspend fun register(fields: Map<String, String>): AuthResult
 
+    /**
+     * Register with [password] wiped in `finally` after the request is built.
+     * Prefer over [String] in UI layers that collect credentials in [CharArray].
+     */
+    suspend fun register(email: String, password: CharArray): AuthResult
+
     /** Log in. Request body fields are sent as JSON keys. Requires `auth { }` DSL. */
-    @ExperimentalSyncForgeApi
     suspend fun login(fields: Map<String, String>): AuthResult
 
+    /**
+     * Log in with [password] wiped in `finally` after the request is built.
+     * Prefer over [String] in UI layers that collect credentials in [CharArray].
+     */
+    suspend fun login(email: String, password: CharArray): AuthResult
+
     /** Clear local session and call logout endpoint when configured. */
-    @ExperimentalSyncForgeApi
     suspend fun logout(): AuthResult
 
     /** In-app debug console — outbox, health, conflicts, event log. */

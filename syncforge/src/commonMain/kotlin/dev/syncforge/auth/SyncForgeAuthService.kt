@@ -1,6 +1,5 @@
 package dev.syncforge.auth
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.network.RefreshingSyncAuthProvider
 import dev.syncforge.network.SyncAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +13,6 @@ import kotlinx.coroutines.sync.withLock
  *
  * Wired automatically when using `auth { }` in [dev.syncforge.SyncForge.android].
  */
-@ExperimentalSyncForgeApi
 class SyncForgeAuthService internal constructor(
     val config: BuiltInAuthConfig,
     private val tokenStore: TokenStore,
@@ -47,6 +45,26 @@ class SyncForgeAuthService internal constructor(
         mutex.withLock {
             runAuth { client.login(fields) }
         }
+
+    suspend fun register(email: String, password: CharArray): AuthResult {
+        try {
+            return register(
+                authFields(email, password, config.emailField, config.passwordField),
+            )
+        } finally {
+            wipePassword(password)
+        }
+    }
+
+    suspend fun login(email: String, password: CharArray): AuthResult {
+        try {
+            return login(
+                authFields(email, password, config.emailField, config.passwordField),
+            )
+        } finally {
+            wipePassword(password)
+        }
+    }
 
     suspend fun logout(): AuthResult = mutex.withLock {
         runCatching { client.logout() }

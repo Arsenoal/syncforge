@@ -9,6 +9,7 @@ workmanager = "2.10.1"
 datastore = "1.1.7"
 koin = "4.0.1"
 hilt = "2.56.1"
+security-crypto = "1.1.0"
 ktor = "3.1.1"
 compose-runtime = "1.7.8"
 compose-ui = "1.7.8"
@@ -52,6 +53,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }

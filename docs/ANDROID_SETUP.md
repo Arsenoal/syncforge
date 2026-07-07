@@ -139,7 +139,7 @@ syncManager.sync()
 ```
 
 - Observe `syncManager.authState` (`LoggedOut`, `LoggedIn`, `Refreshing`, `Error`)
-- Tokens persist via `TokenStore` (SharedPreferences on Android)
+- Tokens persist via encrypted `TokenStore` (EncryptedSharedPreferences; migrates legacy plain prefs on upgrade)
 - Bearer token and 401 refresh are wired into `KtorSyncTransport` automatically
 - Local reference backend: `./gradlew :backend-starter:run` (emulator: `http://10.0.2.2:8080`)
 

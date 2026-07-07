@@ -1,8 +1,5 @@
 package dev.syncforge.auth
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
-
-@ExperimentalSyncForgeApi
 class BuiltInAuthDsl {
     private var registerPath: String = "/auth/register"
     private var loginPath: String = "/auth/login"
@@ -13,6 +10,8 @@ class BuiltInAuthDsl {
     private var requireAuthForSync: Boolean = true
     private var syncAfterLogin: Boolean = true
     private var syncAfterRegister: Boolean = true
+    private var emailField: String = "email"
+    private var passwordField: String = "password"
 
     fun registerPath(path: String) {
         registerPath = path
@@ -54,6 +53,12 @@ class BuiltInAuthDsl {
         syncAfterRegister = enabled
     }
 
+    /** Field names for [dev.syncforge.sync.SyncManager.login]/[register] `CharArray` overloads. */
+    fun credentialFields(email: String = "email", password: String = "password") {
+        emailField = email
+        passwordField = password
+    }
+
     internal fun build(): BuiltInAuthConfig = BuiltInAuthConfig(
         registerPath = registerPath,
         loginPath = loginPath,
@@ -64,5 +69,7 @@ class BuiltInAuthDsl {
         requireAuthForSync = requireAuthForSync,
         syncAfterLogin = syncAfterLogin,
         syncAfterRegister = syncAfterRegister,
+        emailField = emailField,
+        passwordField = passwordField,
     )
 }

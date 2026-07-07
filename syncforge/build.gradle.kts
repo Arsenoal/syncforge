@@ -93,6 +93,7 @@ kotlin {
         androidMain.dependencies {
             api(project(":syncforge-android-deps"))
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.androidx.security.crypto)
             implementation(libs.compose.runtime)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)

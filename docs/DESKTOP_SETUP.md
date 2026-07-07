@@ -28,6 +28,10 @@ val syncManager = SyncForge.desktop {
 | Network | `AlwaysOnlineNetworkMonitor` |
 | Transport | `KtorSyncTransport` (OkHttp engine) |
 | Background sync | `NoOpSyncWorkScheduler` |
+| Token storage (built-in `auth { }`) | `InMemoryTokenStore` — tokens lost when the process exits |
+
+For production desktop apps with built-in auth, prefer `auth(SyncAuthProvider)` backed by your own
+secure storage (OS keychain bindings, encrypted file, etc.). See [AUTH_API.md](AUTH_API.md).
 
 ---
 

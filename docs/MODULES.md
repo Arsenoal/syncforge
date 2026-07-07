@@ -45,10 +45,10 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 |------|-----------|-------|
 | `SyncForge.android { }`, `SyncForgeAndroid` | **Stable** | Primary Android entry point; SQLDelight outbox by default (0.6.0). |
 | `AndroidSyncForgeDsl.authToken` / `auth(SyncAuthProvider)` | **Stable** | Bearer or custom token provider for `KtorSyncTransport`. |
-| `AndroidSyncForgeDsl.auth { }` (built-in register/login) | **Experimental** | Wires `SyncManager.register`/`login`/`logout`; see [AUTH_API.md](AUTH_API.md). |
+| `AndroidSyncForgeDsl.auth { }` (built-in register/login) | **Stable** | Wires `SyncManager.register`/`login`/`logout`; see [AUTH_API.md](AUTH_API.md). |
 | `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }` | **Experimental** | Newer KMP platform DSLs; less production mileage than Android. |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
-| `SyncManager` — `status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync contract. |
+| `SyncManager` — `status`, `authState`, `session`, `register`/`login`/`logout`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync + built-in auth contract (1.1). |
 | `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
 | `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Conflict-resolution API. |
@@ -448,9 +448,9 @@ Single developer API for auth + sync. Configure via `auth { }` on `SyncForge.and
 |------|------|
 | `BuiltInAuthDsl` / `BuiltInAuthConfig` | Endpoint paths, token field mapping, `requireAuthForSync` |
 | `SyncForgeAuthService` | `register`, `login`, `logout`, `refreshAccessToken` |
-| `TokenStore` | Persist access + refresh tokens (`expect/actual`) |
+| `TokenStore` | Persist access + refresh tokens (`expect/actual`); Android EncryptedSharedPreferences, iOS Keychain, JVM in-memory |
 | `AuthState` | `LoggedOut`, `LoggedIn`, `Refreshing`, `Error` — exposed on `SyncManager.authState` |
-| `SyncManager.register/login/logout` | App-facing API (experimental) |
+| `SyncManager.register/login/logout` | App-facing API (stable); `CharArray` overloads wipe password after use |
 
 Android flow diagram and Compose examples: [AUTH_API.md → Android auth flow](AUTH_API.md#android-auth-flow).
 
@@ -718,6 +718,7 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `androidUnitTest/.../KtorSyncTransportTest` | REST transport push/pull parsing |
 | `jvmTest/.../KtorSyncTransportAuthRefreshTest` | 401 refresh + retry, 403 no-retry |
 | `androidUnitTest/.../SyncCursorStoreTest` | DataStore cursor persistence + SharedPreferences migration |
+| `androidUnitTest/.../TokenStoreTest` | Encrypted token persistence + legacy SharedPreferences migration |
 
 ```bash
 ./gradlew :syncforge:jvmTest :syncforge:testDebugUnitTest

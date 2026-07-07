@@ -14,4 +14,8 @@ data class BuiltInAuthConfig(
     val requireAuthForSync: Boolean = true,
     val syncAfterLogin: Boolean = true,
     val syncAfterRegister: Boolean = true,
+    /** JSON field for email/username in [CharArray] credential overloads. */
+    val emailField: String = "email",
+    /** JSON field for password in [CharArray] credential overloads. */
+    val passwordField: String = "password",
 )

@@ -60,6 +60,9 @@ class StableAndroidApiSurfaceTest {
         val authProvider = AndroidSyncForgeDsl::class.java.methods
             .single { it.name == "auth" && it.parameterCount == 1 && it.parameterTypes[0] == SyncAuthProvider::class.java }
         assertNull(authProvider.getAnnotation(ExperimentalSyncForgeApi::class.java))
+        val builtInAuth = AndroidSyncForgeDsl::class.java.methods
+            .single { it.name == "auth" && it.parameterCount == 1 && it.parameterTypes[0] != SyncAuthProvider::class.java }
+        assertNull(builtInAuth.getAnnotation(ExperimentalSyncForgeApi::class.java))
     }
 
     /** Compile-time: stable DSL configures without opt-in. */
@@ -71,6 +74,13 @@ class StableAndroidApiSurfaceTest {
             databaseName("syncforge.db")
             schedulePeriodicSyncOnStart(false)
             authToken { null }
+            auth {
+                tokenFields(
+                    accessToken = "access_token",
+                    refreshToken = "refresh_token",
+                    expiresInSeconds = "expires_in",
+                )
+            }
             conflicts {
                 entity("tasks") { deferToUser() }
                 default(ConflictStrategies.lastWriteWins())

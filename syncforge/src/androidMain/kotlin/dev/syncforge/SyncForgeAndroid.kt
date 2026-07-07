@@ -75,7 +75,6 @@ class AndroidSyncForgeDsl internal constructor(
      * Built-in register/login/refresh against your backend. Wires [RefreshingSyncAuthProvider]
      * automatically and adds [SyncManager.register]/[SyncManager.login]/[SyncManager.logout].
      */
-    @ExperimentalSyncForgeApi
     fun auth(block: BuiltInAuthDsl.() -> Unit) {
         useBuiltInAuth = true
         builtInAuth = block

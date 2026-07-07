@@ -244,6 +244,11 @@ Use `ConflictPolicy` + `ConflictPullApplier` with fake handlers. See `commonTest
 - Don't log `ConflictRecord` JSON in production (may contain PII)
 - Validate server TLS in production (`KtorSyncTransport` uses HTTPS)
 - Implement auth on your backend — mock server ignores it for local dev
+- Prefer `syncManager.login(email, password: CharArray)` / `register(email, password: CharArray)` — passwords are wiped in `finally` after the request is built
+- Avoid caching passwords in `String` or `Map<String, String>` longer than necessary; use `CharArray` in ViewModels and clear UI fields after submit
+- Tokens at rest: Android uses EncryptedSharedPreferences; iOS uses Keychain — both migrate legacy plain storage on upgrade (see [AUTH_API.md](AUTH_API.md#token-storage-and-migration-11))
+- For Auth0, Firebase, or custom OAuth, use `auth(SyncAuthProvider)` instead of built-in `auth { }` — SyncForge stores tokens only, never passwords
+- JVM desktop defaults to in-memory tokens — wire `auth(SyncAuthProvider)` with your own secure store for production desktop apps
 
 ---
 

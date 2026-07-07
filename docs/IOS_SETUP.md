@@ -130,6 +130,32 @@ still enables 401 refresh at the transport layer.
 
 ---
 
+## Built-in auth
+
+Use `auth { }` when your backend exposes register/login/refresh endpoints (same API as Android):
+
+```kotlin
+SyncForge.ios {
+    baseUrl("https://api.example.com")
+    registry(handlers)
+    auth {
+        tokenFields(
+            accessToken = "access_token",
+            refreshToken = "refresh_token",
+            expiresInSeconds = "expires_in",
+        )
+    }
+}
+
+syncManager.login(email, password.toCharArray())
+```
+
+- Tokens persist in **Keychain** (`kSecAttrAccessibleAfterFirstUnlock`)
+- Upgrading from 1.0.x: legacy `syncforge.auth.*` UserDefaults keys migrate automatically on first read
+- Prefer `login`/`register` `CharArray` overloads — see [AUTH_API.md](AUTH_API.md)
+
+---
+
 ## Background sync (BGTaskScheduler)
 
 iOS uses `BGAppRefreshTask` via `IosBackgroundSyncWorkScheduler` (implements [SyncWorkScheduler](MODULES.md)). The system decides when tasks run; `periodicSyncInterval` sets the earliest begin date (minimum ~15 minutes, same default as Android WorkManager).

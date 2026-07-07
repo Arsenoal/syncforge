@@ -53,7 +53,7 @@ sequenceDiagram
 |---------|--------|
 | Login / register UI (Compose screens) | **Your app** |
 | HTTP register / login / refresh | **SyncForge** (`syncManager.register` / `login`) |
-| Token persistence | **SyncForge** (`TokenStore` — SharedPreferences on Android today) |
+| Token persistence | **SyncForge** (`TokenStore` — EncryptedSharedPreferences on Android, Keychain on iOS) |
 | `Authorization: Bearer` on push/pull | **SyncForge** (`KtorSyncTransport`) |
 | Refresh on HTTP 401 | **SyncForge** (`RefreshingSyncAuthProvider`) |
 | Task/note mutations & sync | **SyncForge** (`enqueueChange`, `sync`) — same API as without auth |
@@ -61,7 +61,6 @@ sequenceDiagram
 ### 1. Application setup
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 class MyApplication : Application(), Configuration.Provider {
 
     lateinit var syncManager: SyncManager
@@ -113,29 +112,24 @@ When `auth { }` is present, `SyncForge.android` automatically:
 Pass any `Map<String, String>` — keys become JSON fields in the POST body:
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 class AuthViewModel(
     private val syncManager: SyncManager,
 ) : ViewModel() {
 
     val authState = syncManager.authState
 
-    fun register(email: String, password: String) {
+    fun register(email: String, password: CharArray) {
         viewModelScope.launch {
-            when (val result = syncManager.register(
-                mapOf("email" to email, "password" to password),
-            )) {
+            when (val result = syncManager.register(email, password)) {
                 is AuthResult.Success -> { /* navigate to main */ }
                 is AuthResult.Failure -> { /* show result.error.message */ }
             }
         }
     }
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: CharArray) {
         viewModelScope.launch {
-            when (val result = syncManager.login(
-                mapOf("email" to email, "password" to password),
-            )) {
+            when (val result = syncManager.login(email, password)) {
                 is AuthResult.Success -> { /* navigate to main */ }
                 is AuthResult.Failure -> { /* show result.error.message */ }
             }
@@ -148,13 +142,19 @@ class AuthViewModel(
 }
 ```
 
+`login(email, password: CharArray)` and `register(email, password: CharArray)` wipe the password
+buffer in `finally` after the request body is built. Prefer these over `Map<String, String>` in UI
+layers. The `Map` overload remains for custom field names beyond email/password.
+
+For external IdPs (Auth0, Firebase), skip built-in `auth { }` and use `auth(SyncAuthProvider)` —
+SyncForge never stores passwords in that path.
+
 On success SyncForge parses tokens using `tokenFields`, saves them, sets `authState` to
 `LoggedIn`, and optionally calls `sync()` (`syncAfterLogin` / `syncAfterRegister`, default `true`).
 
 ### 3. Observe auth state in Compose
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 @Composable
 fun AppRoot(syncManager: SyncManager) {
     val authState by syncManager.authState.collectAsState()
@@ -246,6 +246,16 @@ syncManager.logout()
 ```
 
 Same `auth { }` block works on `SyncForge.ios { }` and `SyncForge.desktop { }`.
+
+### Token storage and migration (1.1+)
+
+| Platform | Default `TokenStore` | Legacy migration |
+|----------|---------------------|------------------|
+| Android | `EncryptedSharedPreferences` (AES-256 via Android Keystore) | Plain `syncforge_auth_tokens` SharedPreferences migrated on first read, then cleared |
+| iOS / macOS | Keychain (`kSecAttrAccessibleAfterFirstUnlock`) | Legacy `syncforge.auth.*` UserDefaults keys migrated on first read, then removed |
+| JVM desktop | `InMemoryTokenStore` (process lifetime) | N/A — use `auth(SyncAuthProvider)` with app-owned secure storage for production desktop apps |
+
+Upgrading from 1.0.x: existing tokens are preserved automatically; no app code changes required.
 
 ---
 

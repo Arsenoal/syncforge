@@ -102,6 +102,24 @@ internal class SyncManagerImpl(
         return result
     }
 
+    override suspend fun register(email: String, password: CharArray): AuthResult {
+        val service = authService ?: return authNotConfigured()
+        val result = service.register(email, password)
+        if (result is AuthResult.Success && service.config.syncAfterRegister) {
+            sync()
+        }
+        return result
+    }
+
+    override suspend fun login(email: String, password: CharArray): AuthResult {
+        val service = authService ?: return authNotConfigured()
+        val result = service.login(email, password)
+        if (result is AuthResult.Success && service.config.syncAfterLogin) {
+            sync()
+        }
+        return result
+    }
+
     override suspend fun logout(): AuthResult {
         val service = authService ?: return authNotConfigured()
         cancelScheduledSync()

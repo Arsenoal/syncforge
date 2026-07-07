@@ -2,6 +2,8 @@ package dev.syncforge.api
 
 import dev.syncforge.SyncForge
 import dev.syncforge.SyncForgeBuilder
+import dev.syncforge.auth.AuthResult
+import dev.syncforge.auth.AuthState
 import dev.syncforge.compose.SyncStatusUiModel
 import dev.syncforge.compose.toUiModel
 import dev.syncforge.conflict.ConflictChoice
@@ -62,7 +64,12 @@ class StableApiSurfaceTest {
     fun syncManagerStableMembersHaveNoExperimentalAnnotation() {
         val stable = setOf(
             "getStatus",
+            "getAuthState",
+            "getSession",
             "getConflicts",
+            "register",
+            "login",
+            "logout",
             "sync",
             "push",
             "pull",
@@ -93,6 +100,8 @@ class StableApiSurfaceTest {
     /** Compile-time check: core [SyncManager] members are stable (debug/conflictHistory excluded). */
     private suspend fun useStableSyncManagerContract(manager: SyncManager) {
         val status: StateFlow<SyncStatus> = manager.status
+        val authState: StateFlow<AuthState> = manager.authState
+        val session = manager.session
         val conflicts = manager.conflicts
         manager.schedulePeriodicSync()
         manager.cancelScheduledSync()
@@ -109,7 +118,15 @@ class StableApiSurfaceTest {
         )
         manager.resolveConflict("task", "1", ConflictChoice.KeepLocal)
         manager.findOpenConflict("task", "1")
+        val registerResult: AuthResult = manager.register(mapOf("email" to "a@b.c", "password" to "x"))
+        val loginResult: AuthResult = manager.login("a@b.c", charArrayOf('x'))
+        val logoutResult: AuthResult = manager.logout()
         assertNotNull(status)
+        assertNotNull(authState)
         assertNotNull(conflicts)
+        assertNotNull(registerResult)
+        assertNotNull(loginResult)
+        assertNotNull(logoutResult)
+        assertNotNull(session)
     }
 }
