@@ -1,10 +1,6 @@
 package dev.syncforge.sync
 
-import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPullApplier
-import dev.syncforge.conflict.ConflictStore
-import dev.syncforge.conflict.MergeBaseRecorder
-import dev.syncforge.conflict.NoOpConflictStore
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.PullApplyOutcome
 import dev.syncforge.entity.TypedEntitySyncHandler
@@ -12,12 +8,8 @@ import dev.syncforge.network.RemoteDelta
 
 internal class PullDeltaApplier(
     private val registry: EntityRegistry,
-    private val conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
-    private val conflictStore: ConflictStore = NoOpConflictStore,
-    private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
+    private val conflictApplier: ConflictPullApplier,
 ) {
-
-    private val conflictApplier = ConflictPullApplier(conflictPolicy, conflictStore, mergeBaseRecorder)
 
     suspend fun applyAll(deltas: List<RemoteDelta>): PullStats {
         var conflictsResolved = 0

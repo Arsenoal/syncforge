@@ -78,6 +78,15 @@ deleteByIds:
 DELETE FROM syncforge_outbox
 WHERE id IN :ids;
 
+findByEntity:
+SELECT * FROM syncforge_outbox
+WHERE entityType = :entityType AND entityId = :entityId
+ORDER BY createdAtMillis ASC;
+
+deleteByEntity:
+DELETE FROM syncforge_outbox
+WHERE entityType = :entityType AND entityId = :entityId;
+
 updateOutboxEntry:
 UPDATE syncforge_outbox
 SET

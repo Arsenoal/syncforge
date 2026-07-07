@@ -63,6 +63,14 @@ internal class SyncManagerImpl(
 
     private val loggedOutAuthState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     private val mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore)
+    private val optimisticCoordinator = OptimisticSyncCoordinator(config, registry, outbox)
+    private val outboxReconciler = OutboxReconciler(outbox, optimisticCoordinator)
+    private val conflictPullApplier = ConflictPullApplier(
+        policy = conflictPolicy,
+        conflictStore = conflictStore,
+        mergeBaseRecorder = mergeBaseRecorder,
+        outboxReconciler = outboxReconciler,
+    )
 
     private val engine: SyncEngine = SyncEngine(
         config = config,
@@ -72,12 +80,12 @@ internal class SyncManagerImpl(
         conflictStore = conflictStore,
         conflictPolicy = conflictPolicy,
         mergeBaseStore = mergeBaseStore,
+        conflictPullApplier = conflictPullApplier,
     )
-    private val optimisticCoordinator = OptimisticSyncCoordinator(config, registry, outbox)
     private val conflictResolutionService = ConflictResolutionService(
         registry = registry,
         conflictStore = conflictStore,
-        conflictApplier = ConflictPullApplier(conflictPolicy, conflictStore, mergeBaseRecorder),
+        conflictApplier = conflictPullApplier,
     )
     private val eventLog = SyncEventLog(clock = ::currentTimeMillis)
 

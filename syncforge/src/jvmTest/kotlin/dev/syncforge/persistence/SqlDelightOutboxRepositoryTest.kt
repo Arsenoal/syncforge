@@ -52,6 +52,23 @@ class SqlDelightOutboxRepositoryTest {
     }
 
     @Test
+    fun removeForEntity_deletesMatchingRowsOnly() = runTest {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        SyncForgePersistenceDatabase.Schema.create(driver)
+        val repository = SyncForgePersistence.create(driver).outboxRepository()
+
+        val taskOne = TestEntity(id = "task-1", localVersion = 1, updatedAtMillis = 1_000L)
+        val taskTwo = TestEntity(id = "task-2", localVersion = 1, updatedAtMillis = 1_000L)
+        repository.enqueue(change = Change.create("tasks", taskOne), payloadJson = """{"id":"task-1"}""")
+        repository.enqueue(change = Change.update("tasks", taskTwo), payloadJson = """{"id":"task-2"}""")
+
+        repository.removeForEntity("tasks", "task-1")
+
+        assertEquals(0, repository.findForEntity("tasks", "task-1").size)
+        assertEquals(1, repository.findForEntity("tasks", "task-2").size)
+    }
+
+    @Test
     fun markFailed_incrementsRetryCount() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         SyncForgePersistenceDatabase.Schema.create(driver)

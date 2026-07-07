@@ -91,6 +91,19 @@ internal class SqlDelightOutboxRepository(
         }
     }
 
+    override suspend fun findForEntity(entityType: String, entityId: String): List<OutboxEntry> =
+        withContext(dispatcher) {
+            queries.findByEntity(entityType = entityType, entityId = entityId)
+                .executeAsList()
+                .map { it.toModel() }
+        }
+
+    override suspend fun removeForEntity(entityType: String, entityId: String) {
+        withContext(dispatcher) {
+            queries.deleteByEntity(entityType = entityType, entityId = entityId)
+        }
+    }
+
     override suspend fun markFailed(id: Long, error: String, retryable: Boolean, maxRetries: Int) {
         withContext(dispatcher) {
             val current = queries.findById(id).executeAsOneOrNull() ?: return@withContext

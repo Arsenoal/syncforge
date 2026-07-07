@@ -35,6 +35,12 @@ interface OutboxRepository {
 
     suspend fun markAcknowledged(ids: List<Long>)
 
+    /** Pending outbox rows for a single entity (may be multiple if edits stacked). */
+    suspend fun findForEntity(entityType: String, entityId: String): List<OutboxEntry>
+
+    /** Removes all outbox rows for an entity — used after [AcceptRemote][dev.syncforge.conflict.ConflictResolution.AcceptRemote]. */
+    suspend fun removeForEntity(entityType: String, entityId: String)
+
     suspend fun markFailed(id: Long, error: String, retryable: Boolean = true, maxRetries: Int)
 
     /** Earliest [OutboxEntry.nextRetryAtMillis] among entries waiting for backoff. */

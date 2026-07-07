@@ -5,11 +5,13 @@ import dev.syncforge.entity.RemoteMetadata
 import dev.syncforge.entity.TypedEntitySyncHandler
 import dev.syncforge.model.SyncState
 import dev.syncforge.network.RemoteDelta
+import dev.syncforge.sync.OutboxReconciler
 
 internal class ConflictPullApplier(
     private val policy: ConflictPolicy,
     private val conflictStore: ConflictStore,
     private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
+    private val outboxReconciler: OutboxReconciler? = null,
     private val clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
 ) {
 
@@ -112,33 +114,37 @@ internal class ConflictPullApplier(
         handler: TypedEntitySyncHandler<T>,
         entityId: String,
         resolution: ConflictResolution<T>,
-    ): PullApplyOutcome = when (resolution) {
-        ConflictResolution.DeleteLocal -> {
-            handler.deleteLocal(entityId)
-            mergeBaseRecorder.remove(handler.entityType, entityId)
-            PullApplyOutcome.DELETED
-        }
+    ): PullApplyOutcome {
+        val outcome = when (resolution) {
+            ConflictResolution.DeleteLocal -> {
+                handler.deleteLocal(entityId)
+                mergeBaseRecorder.remove(handler.entityType, entityId)
+                PullApplyOutcome.DELETED
+            }
 
-        is ConflictResolution.KeepLocal -> {
-            handler.persistEntity(
-                handler.withSyncState(resolution.entity, SyncState.PENDING),
-                insert = false,
-            )
-            PullApplyOutcome.CONFLICT_RESOLVED
-        }
+            is ConflictResolution.KeepLocal -> {
+                handler.persistEntity(
+                    handler.withSyncState(resolution.entity, SyncState.PENDING),
+                    insert = false,
+                )
+                PullApplyOutcome.CONFLICT_RESOLVED
+            }
 
-        is ConflictResolution.AcceptRemote -> {
-            val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
-            handler.persistEntity(synced, insert = false)
-            mergeBaseRecorder.recordFromHandler(handler, synced)
-            PullApplyOutcome.CONFLICT_RESOLVED
-        }
+            is ConflictResolution.AcceptRemote -> {
+                val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
+                handler.persistEntity(synced, insert = false)
+                mergeBaseRecorder.recordFromHandler(handler, synced)
+                PullApplyOutcome.CONFLICT_RESOLVED
+            }
 
-        is ConflictResolution.Merged -> {
-            val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
-            handler.persistEntity(synced, insert = false)
-            mergeBaseRecorder.recordFromHandler(handler, synced)
-            PullApplyOutcome.CONFLICT_RESOLVED
+            is ConflictResolution.Merged -> {
+                val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
+                handler.persistEntity(synced, insert = false)
+                mergeBaseRecorder.recordFromHandler(handler, synced)
+                PullApplyOutcome.CONFLICT_RESOLVED
+            }
         }
+        outboxReconciler?.reconcile(handler.entityType, entityId, resolution)
+        return outcome
     }
 }

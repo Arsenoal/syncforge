@@ -1,7 +1,9 @@
 package dev.syncforge.sync
 
+import dev.syncforge.conflict.ConflictPullApplier
 import dev.syncforge.conflict.MergeBaseRecorder
 import dev.syncforge.conflict.MergeBaseStore
+import dev.syncforge.conflict.NoOpConflictStore
 import dev.syncforge.conflict.NoOpMergeBaseStore
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.TypedEntitySyncHandler
@@ -19,15 +21,15 @@ internal class SyncEngine(
     private val outbox: OutboxRepository,
     private val transport: SyncTransport,
     private val registry: EntityRegistry,
-    private val conflictStore: dev.syncforge.conflict.ConflictStore = dev.syncforge.conflict.NoOpConflictStore,
+    private val conflictStore: dev.syncforge.conflict.ConflictStore = NoOpConflictStore,
     private val conflictPolicy: dev.syncforge.conflict.ConflictPolicy = dev.syncforge.conflict.ConflictPolicy.Default,
     private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(NoOpMergeBaseStore),
-    private val pullDeltaApplier: PullDeltaApplier = PullDeltaApplier(
-        registry,
+    private val conflictPullApplier: ConflictPullApplier = ConflictPullApplier(
         conflictPolicy,
         conflictStore,
         mergeBaseRecorder,
     ),
+    private val pullDeltaApplier: PullDeltaApplier = PullDeltaApplier(registry, conflictPullApplier),
     private val clock: () -> Long = { currentTimeMillis() },
 ) {
 
@@ -39,6 +41,7 @@ internal class SyncEngine(
         conflictStore: dev.syncforge.conflict.ConflictStore,
         conflictPolicy: dev.syncforge.conflict.ConflictPolicy,
         mergeBaseStore: MergeBaseStore,
+        conflictPullApplier: ConflictPullApplier,
         clock: () -> Long = { currentTimeMillis() },
     ) : this(
         config = config,
@@ -48,6 +51,7 @@ internal class SyncEngine(
         conflictStore = conflictStore,
         conflictPolicy = conflictPolicy,
         mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore, clock),
+        conflictPullApplier = conflictPullApplier,
         clock = clock,
     )
 

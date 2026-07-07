@@ -76,6 +76,18 @@ class InMemoryOutboxRepository : OutboxRepository {
         }
     }
 
+    override suspend fun findForEntity(entityType: String, entityId: String): List<OutboxEntry> =
+        mutex.withLock {
+            entries.filter { it.entityType == entityType && it.entityId == entityId }
+        }
+
+    override suspend fun removeForEntity(entityType: String, entityId: String) {
+        mutex.withLock {
+            entries.removeAll { it.entityType == entityType && it.entityId == entityId }
+            version.value++
+        }
+    }
+
     override suspend fun markFailed(id: Long, error: String, retryable: Boolean, maxRetries: Int) =
         mutex.withLock {
             val index = entries.indexOfFirst { it.id == id }
