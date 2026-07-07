@@ -5,12 +5,13 @@ import dev.syncforge.entity.SyncedEntity
 @PublishedApi
 internal class MergeStrategy<T : SyncedEntity>(
     private val merge: MergeScope<T>.(local: T, remote: T) -> T,
+    private val onRemoteDelete: ConflictStrategy = DeleteLocalOnRemoteTombstoneStrategy,
 ) : ConflictStrategy {
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : SyncedEntity> resolve(context: ConflictContext<T>): ConflictOutcome<T> {
         if (context.remote.isDeleted) {
-            return ConflictOutcome.Resolved(ConflictResolution.DeleteLocal)
+            return onRemoteDelete.resolveRemoteDelete(context)
         }
         val remote = context.remotePayload
             ?: return ConflictOutcome.Resolved(ConflictResolution.KeepLocal(context.local))

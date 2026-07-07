@@ -6,7 +6,13 @@ internal class LastWriteWinsStrategy : ConflictStrategy {
 
     override suspend fun <T : SyncedEntity> resolve(context: ConflictContext<T>): ConflictOutcome<T> {
         if (context.remote.isDeleted) {
-            return ConflictOutcome.Resolved(ConflictResolution.DeleteLocal)
+            val resolution = when {
+                context.local.updatedAtMillis > context.remote.updatedAtMillis ->
+                    ConflictResolution.KeepLocal(context.local)
+
+                else -> ConflictResolution.DeleteLocal
+            }
+            return ConflictOutcome.Resolved(resolution)
         }
 
         val remoteEntity = context.remotePayload

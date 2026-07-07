@@ -11,6 +11,7 @@ class GitLikeEntityBuilder<T : SyncedEntity> {
 
     private var threeWayMerge: ((T, T, T) -> ThreeWayMergeResult<T>)? = null
     private var onUnmergeableStrategy: ConflictStrategy = ConflictStrategies.deferToUser()
+    private var onRemoteDeleteStrategy: ConflictStrategy = DeleteLocalOnRemoteTombstoneStrategy
 
     fun threeWayMerge(block: (base: T, local: T, remote: T) -> ThreeWayMergeResult<T>) {
         threeWayMerge = block
@@ -21,9 +22,13 @@ class GitLikeEntityBuilder<T : SyncedEntity> {
         onUnmergeableStrategy = fallback.strategy ?: ConflictStrategies.deferToUser()
     }
 
+    fun onRemoteDelete(block: ConflictEntityBuilder.() -> Unit) {
+        onRemoteDeleteStrategy = ConflictEntityBuilder().strategyForRemoteDelete(block)
+    }
+
     internal fun build(): ConflictStrategy {
         val merge = threeWayMerge
             ?: error("gitLike { } requires threeWayMerge { base, local, remote -> … }")
-        return GitLikeMergeStrategy(merge, onUnmergeableStrategy)
+        return GitLikeMergeStrategy(merge, onUnmergeableStrategy, onRemoteDeleteStrategy)
     }
 }

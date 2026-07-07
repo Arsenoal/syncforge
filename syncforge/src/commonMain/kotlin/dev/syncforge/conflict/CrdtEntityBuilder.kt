@@ -18,6 +18,7 @@ class CrdtEntityBuilder<T : SyncedEntity>(
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
     private val fieldMergers = linkedMapOf<String, CrdtJsonFieldMerger>()
+    private var onRemoteDeleteStrategy: ConflictStrategy = DeleteLocalOnRemoteTombstoneStrategy
 
     fun field(name: String, block: CrdtFieldBuilder.() -> Unit) {
         val builder = CrdtFieldBuilder().apply(block)
@@ -25,8 +26,12 @@ class CrdtEntityBuilder<T : SyncedEntity>(
             ?: error("field(\"$name\") requires a CRDT kind — e.g. orSet(), gCounter(), or lwwRegister()")
     }
 
+    fun onRemoteDelete(block: ConflictEntityBuilder.() -> Unit) {
+        onRemoteDeleteStrategy = ConflictEntityBuilder().strategyForRemoteDelete(block)
+    }
+
     internal fun build(): ConflictStrategy =
-        CrdtMergeStrategy(entitySerializer, fieldMergers, json)
+        CrdtMergeStrategy(entitySerializer, fieldMergers, onRemoteDeleteStrategy, json)
 }
 
 /** Per-field CRDT kind inside [CrdtEntityBuilder.field]. */

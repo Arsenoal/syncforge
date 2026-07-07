@@ -15,6 +15,7 @@ import kotlinx.serialization.json.buildJsonObject
 internal class CrdtMergeStrategy<T : SyncedEntity>(
     private val entitySerializer: KSerializer<T>,
     private val fieldMergers: Map<String, CrdtJsonFieldMerger>,
+    private val onRemoteDelete: ConflictStrategy = DeleteLocalOnRemoteTombstoneStrategy,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) : ConflictStrategy {
 
@@ -25,7 +26,7 @@ internal class CrdtMergeStrategy<T : SyncedEntity>(
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : SyncedEntity> resolve(context: ConflictContext<T>): ConflictOutcome<T> {
         if (context.remote.isDeleted) {
-            return ConflictOutcome.Resolved(ConflictResolution.DeleteLocal)
+            return onRemoteDelete.resolveRemoteDelete(context)
         }
         val remote = context.remotePayload
             ?: return ConflictOutcome.Resolved(ConflictResolution.KeepLocal(context.local))

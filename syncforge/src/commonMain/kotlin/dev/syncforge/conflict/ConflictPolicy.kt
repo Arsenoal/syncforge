@@ -83,6 +83,15 @@ class ConflictEntityBuilder {
     }
 
     /**
+     * Field-level merge with optional [MergeEntityBuilder.onRemoteDelete] tombstone handling.
+     */
+    fun <T : SyncedEntity> merge(
+        block: MergeEntityBuilder<T>.() -> Unit,
+    ) {
+        strategy(MergeEntityBuilder<T>().apply(block).build())
+    }
+
+    /**
      * Git-like three-way merge using [MergeBaseStore] snapshots (see [MergeBaseStore]).
      * When no merge base exists yet, [threeWayMerge] receives `base = local` (two-way fallback).
      */
