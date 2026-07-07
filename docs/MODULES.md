@@ -778,12 +778,12 @@ See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) 
 - ✅ SKIE / Swift API polish on `:syncforge` and `:sample-ios-shared`
 - ✅ Automatic Room → SQLDelight data migrator (`RoomToSqlDelightMigrator`)
 
-**Phase 7 (distribution & 1.0) — in progress (`0.9.0-rc.5` soak):**
+**Phase 7 (distribution & 1.0) — release prep (`1.0.0`):**
 
-- ✅ Maven Central — `studio.syncforge` BOM, KMP targets, Gradle plugin
+- ✅ Maven Central — `studio.syncforge` BOM, KMP targets, Gradle plugin (`0.9.0-rc.5` soak)
 - ✅ API graduation — stable Android DSL, core `SyncManager`, `ConflictPolicy`, Compose status + conflict UI
 - ✅ Docs freeze — `CHANGELOG`, `MODULES`, `GETTING_STARTED` match 1.0 APIs
-- ⬜ Tag `1.0.0` after sign-off matrix (see [ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist))
+- ⬜ Tag `v1.0.0` and publish (see [ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist))
 
 **Post-1.0:**
 

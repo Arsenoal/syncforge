@@ -1,6 +1,6 @@
 # SyncForge roadmap
 
-**Current version:** `0.9.0-rc.5` (pre-1.0; 1.0 soak in progress)
+**Current version:** `1.0.0` (release prep — tag `v1.0.0` to publish to Maven Central)
 
 ---
 
@@ -150,23 +150,24 @@
 | `0.5.x` | KMP platform expansion |
 | `0.6.x` – `0.9.x` | SQLDelight default, KMP samples, Maven Central RC |
 | `1.0.0` | Stable public API + semver guarantees |
-| `1.1.x` – `1.5.x` | EntityStore + HTTP client abstraction, DI, CRDT, platform parity, GraphQL/Supabase transports, observability |
+| `1.1.x` – `1.5.x` | EntityStore, encrypted TokenStore, per-entity conflict strategies + gitLike merge, DI, CRDT, platform parity, GraphQL/Supabase transports, observability |
 | `2.0.0` | Optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
 
 **Detailed plan from 1.0.0 through 2.0.0:** [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md)
 
 ---
 
-## 1.0.0 status (soak from `0.9.0-rc.5`)
+## 1.0.0 status
 
-Most pre-1.0 P0 work is complete (Sample App Proof, iOS parity, auth refresh, backend starter, E2E CI, Maven Central RC). Remaining before tagging **1.0.0**:
+Pre-1.0 P0 work is complete. Release prep bumps repo to `1.0.0`; remaining step is **tag and publish**:
 
 | Blocker | Status |
 |---------|--------|
 | API graduation (`@ExperimentalSyncForgeApi` removal on stable surfaces) | ✅ |
 | Remove `useRoomPersistence()` | ✅ |
 | Docs freeze (`CHANGELOG`, `MODULES`, `GETTING_STARTED`) | ✅ |
-| Publish `1.0.0` to Maven Central | ⬜ |
-| 1.0 sign-off matrix (0.9.0-rc.5 soak) | ✅ — re-verify at `1.0.0` tag |
+| Version bump + `CHANGELOG` `[1.0.0]` | ✅ release prep |
+| Publish `1.0.0` to Maven Central | ⬜ tag `v1.0.0` + CI publish |
+| 1.0 sign-off matrix | ✅ soak on `0.9.0-rc.5` — re-run after Central sync |
 
 See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for the full checklist and post-1.0 milestones.

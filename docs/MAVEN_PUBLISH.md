@@ -161,9 +161,17 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 
 | Step | Action |
 |------|--------|
-| Soak | Let `0.9.0-rc.5` sit; CI + optional external dogfood |
-| Fixes | Tag `v0.9.0-rc.5` if needed |
-| Stable | Bump version, tag `v1.0.0`, repeat publish + verification |
+| Soak | ✅ `0.9.0-rc.5` complete |
+| Release prep | ✅ Repo bumped to `1.0.0`; `CHANGELOG` updated |
+| Stable | Tag `v1.0.0`, push, CI publish + verification |
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+# After Central sync (~15–30 min):
+./gradlew verifySignOffMatrix
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.0.0/syncforge-bom-1.0.0.pom" | head -1
+```
 | Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
 
 ---

@@ -7,20 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-07
+
+First **semver-stable** public release. Stable without `@OptIn(ExperimentalSyncForgeApi::class)`:
+
+- `SyncForge.android { }`, `SyncForgeAndroid.workManagerConfiguration`
+- Core `SyncManager` — sync lifecycle, outbox, conflicts, scheduling hooks
+- `ConflictPolicy`, `conflicts { }`, `ConflictChoice`, `resolveConflict()`
+- Compose production UI — `SyncStatusUiModel`, conflict chip/sheet
+
+REST push/pull contract (**v1**) is frozen per [REST_API.md](docs/REST_API.md). Auth, debug, KMP platform DSLs, and `SyncForgeBuilder` remain experimental.
+
+**Upgrade from `0.9.0-rc.5`:** stable API unchanged; bump coordinates to `1.0.0`. Remove `useRoomPersistence()` if still present (removed in rc.5).
+
 ### Added
 
 - **`verifySignOffMatrix`** Gradle task — runs `verifyReleaseSignOff` + `verifyConsumerSmokeMavenCentral` (1.0-P0-04 automated soak checks)
 - **`.github/scripts/run-sign-off-matrix.sh`** — local runner with CI E2E reminder
-- **`SyncEngineIntegrationTest`** (P1-04) — retry exhaustion, multi-page pull, and offline queue scenarios in `commonTest` (runs on JVM + Android unit test targets)
-- **Docs freeze** (P0-06) — `CHANGELOG.md`, `docs/MODULES.md`, and `docs/GETTING_STARTED.md` aligned with 1.0 stable API boundaries (`StableApiSurfaceTest` / `StableAndroidApiSurfaceTest`)
+- **`SyncEngineIntegrationTest`** (P1-04) — retry exhaustion, multi-page pull, and offline queue scenarios in `commonTest`
+- **Docs freeze** (P0-06) — `CHANGELOG.md`, `docs/MODULES.md`, and `docs/GETTING_STARTED.md` aligned with 1.0 stable API boundaries
 
 ### Changed
 
-- **Publish Release workflow** — always runs `publishAllToMavenCentral` (supplemental partial-publish mode removed); tag or `workflow_dispatch` with version tag only
+- **Publish Release workflow** — always runs `publishAllToMavenCentral`; tag or `workflow_dispatch` with version tag only
+- **Maven Central** — `1.0.0` artifact set under `studio.syncforge` (BOM, KMP targets, KSP, Gradle plugin `studio.syncforge.android`)
 
 ### Fixed
 
-- **Maven Central publish** — `publishAllToMavenCentral` now targets `*MavenCentralRepository` tasks explicitly; CI re-publishes `syncforge-bom` and `syncforge-ksp` and verifies required POMs on `repo1.maven.org` (fixes incomplete `0.9.0-rc.5` staging)
+- **Maven Central publish** — `publishAllToMavenCentral` targets `*MavenCentralRepository` tasks explicitly; CI verifies required POMs on `repo1.maven.org`
 - **Supplemental publish scripts** — Bash 3.2 compatibility on macOS CI (`declare -A` / `mapfile` removed)
 
 ## [0.9.0-rc.5] - 2026-07-06
@@ -431,7 +445,7 @@ interfaces and stubs that will be filled in during Phase 2.
 
 #### Network (`dev.syncforge.network`)
 
-- `SyncTransport` — pluggable push/pull boundary (bring your own Ktor, Retrofit, etc.)
+- `SyncTransport` — pluggable push/pull boundary (default `KtorSyncTransport`, or custom wire formats)
 - `PushResult`, `PullResult`, `RemoteDelta` — transport-level data types
 - `NoOpSyncTransport` — no-network stub for tests and offline-only development
 

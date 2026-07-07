@@ -28,7 +28,7 @@ From the repo root:
 ./gradlew publishAllToMavenLocal verifyConsumerSmoke
 ```
 
-Uses the repo's `syncforge.version` (e.g. `0.9.0-rc.5`) from `mavenLocal()` after publish.
+Uses the repo's `syncforge.version` (e.g. `1.0.0`) from `mavenLocal()` after publish.
 
 ### Run locally (Maven Central only)
 

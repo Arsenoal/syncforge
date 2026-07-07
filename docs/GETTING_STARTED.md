@@ -61,11 +61,11 @@ pluginManagement {
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("studio.syncforge.android") version "0.9.0-rc.5"
+    id("studio.syncforge.android") version "1.0.0"
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:0.9.0-rc.5"))
+    implementation(platform("studio.syncforge:syncforge-bom:1.0.0"))
     implementation("studio.syncforge:syncforge")
 }
 ```
@@ -89,7 +89,7 @@ already on the classpath — usually covered by SyncForge's Android transitive d
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("studio.syncforge:syncforge:0.9.0-rc.5")
+            implementation("studio.syncforge:syncforge:1.0.0")
         }
     }
 }
@@ -102,7 +102,7 @@ in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS
 
 ```kotlin
 dependencies {
-    implementation("studio.syncforge:syncforge:0.9.0-rc.5")
+    implementation("studio.syncforge:syncforge:1.0.0")
 }
 ```
 
@@ -193,7 +193,7 @@ You never hand-write handler boilerplate.
 `SyncForge.android { }` applies Android defaults: SQLDelight outbox + conflicts (`syncforge.db`),
 automatic Room → SQLDelight migration on upgrade, persisted pull cursor, connectivity monitoring,
 Ktor transport, exponential retry, and WorkManager scheduling. See [ANDROID_SETUP.md](ANDROID_SETUP.md)
-for the Room → SQLDelight migration path (legacy `useRoomPersistence()` was removed in 0.9.0-rc.5).
+for the Room → SQLDelight migration path (legacy `useRoomPersistence()` was removed in 1.0.0).
 
 ```kotlin
 class MyApplication : Application(), Configuration.Provider {

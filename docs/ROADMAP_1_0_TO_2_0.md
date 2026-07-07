@@ -1,6 +1,6 @@
 # SyncForge roadmap: 1.0.0 → 2.0.0
 
-**Baseline:** `0.9.0-rc.5` (published on Maven Central; 1.0 soak in progress)  
+**Baseline:** `1.0.0` (release prep committed; publish via tag `v1.0.0`)
 **Document date:** July 2026  
 **Scope:** Everything from the first stable public release through the next major version.
 
@@ -14,8 +14,8 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 
 ```
 1.0.0  Stable ship     — API freeze, Maven Central 1.0, remove pre-1.0 deprecations
-1.1.x  Integration DX  — EntityStore + pluggable HTTP client (Retrofit/Ktor), DI, auth, cursor
-1.2.x  Smart conflicts — CRDT primitives, crdt { } strategy, KSP field-merge
+1.1.x  Integration DX  — EntityStore + injectable Ktor client, DI, auth hardening, cursor
+1.2.x  Smart conflicts — per-entity strategies, gitLike { }, CRDT, KSP field-merge
 1.3.x  Platform parity — Desktop sample, iOS SPM/XCFramework, CMP debug UI
 1.4.x  Ecosystem       — Spring/GraphQL/Supabase transports, multi-device E2E, version catalog
 1.5.x  Production ops — OpenTelemetry, SyncHealth dashboard, hierarchical sync recipes
@@ -29,12 +29,12 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | Theme                     | 1.0                     | 1.x                                    | 2.0                                          |
 |---------------------------|-------------------------|----------------------------------------|----------------------------------------------|
 | **Core sync loop**        | Stable                  | Hardening only                         | Optional second mode (op-log / CRDT doc)     |
-| **Conflict resolution**   | LWW, merge, deferToUser | CRDT helpers + KSP codegen             | `crdt { }` first-class; tombstone-aware sets |
+| **Conflict resolution**   | Per-entity `conflicts { }` — LWW, merge, defer, alwaysLocal/Remote | `gitLike { }` three-way merge, strategy catalog, app-selectable per entity | `crdt { }` stable; tombstone-aware sets |
 | **App entity store**      | Room-first DX (KSP)     | **`EntityStore` abstraction** + adapters | Any store via handler; Room not required     |
 | **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Legacy Room internals removed at 1.0         |
 | **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
-| **HTTP client (REST)**    | Ktor bundled in `KtorSyncTransport` | **`SyncHttpClient` abstraction** — Retrofit, Ktor, custom | User picks client; SyncForge owns push/pull route mapping |
-| **Backend / transport**   | REST v1 frozen (`KtorSyncTransport`) | Optional adapters (GraphQL, Supabase, Spring) | REST v2 only if op-log needs it; wire format pluggable via `SyncTransport` |
+| **HTTP client (REST)**    | Ktor bundled in `KtorSyncTransport` | Injectable `HttpClient` + `RestSyncTransport` refactor | User supplies Ktor client (interceptors, engines); SyncForge owns push/pull DTOs |
+| **Backend / transport**   | REST v1 frozen (`KtorSyncTransport`); `SyncTransport` plug-in | **`SyncDeltaStore` + `DeltaStoreSyncTransport`** for BaaS; GraphQL/Supabase/Firebase modules | REST v2 only if op-log needs it; wire format pluggable via `SyncTransport` |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
 
 ---
@@ -44,8 +44,8 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | Version   | Codename      | Target window | Headline                                               |
 |-----------|---------------|---------------|--------------------------------------------------------|
 | **1.0.0** | *Stable*      | Q3 2026       | First semver-stable release                            |
-| **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore + HTTP client abstraction, DI, auth, DataStore cursor |
-| **1.2.0** | *Merge-smart* | Q1 2027       | CRDT primitives + `crdt { }` strategy (experimental)   |
+| **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore + HTTP client, DI, encrypted tokens + credential APIs, DataStore cursor |
+| **1.2.0** | *Merge-smart* | Q1 2027       | Per-entity strategy catalog, `gitLike { }`, CRDT + KSP field-merge |
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
 | **1.5.0** | *Operate*     | Q4 2027       | Tracing, metrics dashboard, hierarchical recipes       |
@@ -85,7 +85,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | 1.0-P0-01 | **API graduation** — remove `@ExperimentalSyncForgeApi` from `SyncForge.android`, core `SyncManager` (`status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`), `ConflictPolicy` / `ConflictStrategies`, Compose status + conflict UI | API ✅  |
 | 1.0-P0-02 | **Remove `useRoomPersistence()`** — legacy Room opt-in deleted (migration path documented in upgrade guide)                                                                                                                                                   | Android ✅ |
-| 1.0-P0-03 | **Publish `1.0.0` to Maven Central** — all artifacts: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin                                                                                                                  | Dist    |
+| 1.0-P0-03 | **Publish `1.0.0` to Maven Central** — all artifacts: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin                                                                                                                  | Dist ⬜ tag |
 | 1.0-P0-04 | **1.0 sign-off matrix** — run full acceptance checklist (Section 8); tag `v1.0.0`                                                                                                                                                                             | QA ✅ soak |
 | 1.0-P0-05 | **macOS tag publish** — iOS/macOS frameworks from CI without manual steps                                                                                                                                                                                     | CI      |
 | 1.0-P0-06 | **Docs freeze** — CHANGELOG, MODULES, GETTING_STARTED match 1.0 APIs exactly                                                                                                                                                                                  | Docs ✅ |
@@ -99,14 +99,14 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | 1.0-P1-03 | Consumer ProGuard/R8 rules documented + tested (`consumer-rules.pro`) | Android   |
 | 1.0-P1-04 | Integration tests: retry exhaustion, multi-page pull, offline queue   | QA ✅     |
 | 1.0-P1-05 | Performance test: 1000+ outbox entries, batch push                    | QA        |
-| 1.0-P1-06 | Security doc pass: TLS, token storage, no secrets in logs             | Docs      |
+| 1.0-P1-06 | Security doc pass: TLS, token storage, no secrets in logs (expanded in 1.1-17/18) | Docs      |
 | 1.0-P1-07 | At least one external dogfood or documented third-party integration   | Community |
 
 ### Explicitly post-1.0 (do not block 1.0)
 
 - Desktop sample app (`:sample-desktop`)
 - **`EntityStore` abstraction** — formal contract + KSP beyond Room DAOs (see 1.1.x)
-- **`SyncHttpClient` abstraction** — pluggable REST client (Retrofit, Ktor); SyncForge maps push/pull routes (see 1.1.x)
+- **`SyncHttpClient` abstraction** — injectable Ktor `HttpClient`; SyncForge maps push/pull routes (see 1.1.x)
 - DataStore KMP cursor
 - CRDT / DI integration artifacts
 - GraphQL / Supabase / Spring transport adapters
@@ -119,7 +119,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 - `SyncForge.android { }`, `SyncForgeAndroid.workManagerConfiguration`
 - `SyncManager` — sync lifecycle, outbox enqueue, conflict resolution, scheduling hooks
-- `ConflictPolicy`, `conflicts { }`, `ConflictChoice`, `resolveConflict()`
+- `ConflictPolicy`, `conflicts { }` — **per-entity** strategy (`entity("notes") { alwaysRemote() }`, `entity("tasks") { merge { } }`, …), `ConflictChoice`, `resolveConflict()`
 - Compose production UI — `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict chip/sheet
 - `databaseName()`, KSP-generated handlers (Room DAO path — default DX)
 
@@ -142,7 +142,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 ### Goal
 
-Reduce boilerplate for real apps: **pluggable entity stores**, **pluggable HTTP clients** (Retrofit, Ktor, …), dependency injection, smoother auth, unified cursor storage. Core sync semantics unchanged.
+Reduce boilerplate for real apps: **pluggable entity stores**, **injectable Ktor HTTP client** (interceptors, shared app `HttpClient`), dependency injection, smoother auth (**encrypted token storage**, safer credential APIs), unified cursor storage. Core sync semantics unchanged.
 
 ### Features
 
@@ -160,11 +160,51 @@ Reduce boilerplate for real apps: **pluggable entity stores**, **pluggable HTTP 
 | 1.1-10 | **KSP `@SyncForgeStore`** — generate handlers from any `EntityStore` impl                | P0       | Keeps `@SyncForgeDao` (Room) as one adapter; not the only path                    |
 | 1.1-11 | **Store adapter modules** — optional artifacts, not in core BOM                          | P1       | e.g. `:syncforge-store-room` (current DAO path), `:syncforge-store-realm`, in-memory for tests |
 | 1.1-12 | **Docs + Gradle plugin** — Room optional; “sync-aware entity” not “Room entity”          | P1       | GETTING_STARTED branch for BYO store; `studio.syncforge.android` skips Room KSP when unused |
-| 1.1-13 | **`SyncHttpClient` contract** — pluggable REST executor in `commonMain`                  | P0       | `postPush` / `getPull` with auth + status mapping; DTOs from `dev.syncforge.network.api` |
+| 1.1-13 | **`SyncHttpClient` contract** — Ktor-backed REST executor in `commonMain`                | P0       | `postPush` / `getPull` with auth + status mapping; DTOs from `dev.syncforge.network.api` |
 | 1.1-14 | **`RestSyncTransport`** — default REST transport using injected `SyncHttpClient`         | P0       | Refactor `KtorSyncTransport` to delegate here; paths `/sync/push`, `/sync/pull` configurable |
-| 1.1-15 | **`:syncforge-network-retrofit`** adapter                                                | P1       | Android/JVM; user supplies `Retrofit` + optional service interface or adapter lambda |
-| 1.1-16 | **`:syncforge-network-ktor`** adapter (extract from core)                                | P1       | Current Ktor `HttpClient` path; share auth refresh with `RefreshingSyncAuthProvider` |
-| 1.1-17 | **DSL `httpClient { }`** on platform DSLs                                                | P1       | `httpClient(retrofitClient)` or `httpClient(SyncHttpClient)`; falls back to Ktor if omitted |
+| 1.1-15 | **`:syncforge-network-ktor`** adapter (extract from core)                                | P1       | Default Ktor `HttpClient` path; share auth refresh with `RefreshingSyncAuthProvider` |
+| 1.1-16 | **DSL `httpClient { }`** on platform DSLs                                                | P1       | `httpClient(appHttpClient)` or `httpClient(SyncHttpClient)`; falls back to bundled Ktor if omitted |
+| 1.1-17 | **Encrypted `TokenStore`** — platform secure storage for access/refresh tokens           | P1       | Android: EncryptedSharedPreferences / Keystore; iOS: Keychain; JVM/desktop: documented secure option |
+| 1.1-18 | **`CharArray` credential APIs** — `login`/`register` with wipe-after-use semantics       | P1       | Optional overloads alongside `Map<String, String>`; AUTH_API + BEST_PRACTICES security pass |
+
+### Auth security architecture (1.1)
+
+SyncForge does **not** persist passwords — only tokens. Security work targets **token at-rest** and **credential handling in memory**:
+
+```
+Login UI (SecureTextField)
+        │
+        ├── preferred: external IdP (Firebase Auth) → SyncAuthProvider only (no password in SyncForge)
+        │
+        └── built-in auth:
+                login(email, password: CharArray)  ← 1.1-18; wipe in finally { }
+                        │
+                        ▼
+                POST /auth/login (HTTPS) — password never stored
+                        │
+                        ▼
+                TokenStore.save(access, refresh)  ← 1.1-17 encrypted at rest
+                        │
+                        ▼
+                SyncAuthProvider → push/pull Bearer header
+```
+
+| Concern | 1.0 today | Target 1.1 |
+|---------|-----------|------------|
+| Password persistence | Not stored | Unchanged — never stored |
+| Password in memory | `Map<String, String>` only | Optional `CharArray` overload + documented wipe |
+| Token at rest | SharedPreferences (Android), UserDefaults (iOS), in-memory (JVM) | Encrypted platform stores |
+| TLS | App/backend responsibility | Documented in security pass (`1.0-P1-06` / AUTH_API) |
+| BYO IdP | `SyncAuthProvider.refreshing` | Unchanged — recommended for production |
+
+**`CharArray` API (target 1.1-18)** — additive; existing `login(Map<String, String>)` remains:
+
+```kotlin
+suspend fun login(email: String, password: CharArray): AuthResult
+suspend fun register(email: String, password: CharArray): AuthResult
+// Implementation: convert to JSON body inside try/finally; password.fill('\u0000') in finally
+// Note: JSON/HTTP may still allocate transient Strings — document limits in BEST_PRACTICES
+```
 
 ### Entity store architecture (1.1)
 
@@ -200,9 +240,36 @@ SyncForge separates **your app database** from **SyncForge’s internal outbox/c
 
 **Realm / other ORMs:** implement `EntityStore` (or `TypedEntitySyncHandler` manually at 1.0); KSP generates the handler in 1.1. No Realm dependency in `:syncforge` core.
 
+### Entity JSON mapping (1.0 → 1.1)
+
+SyncForge does **not** deserialize network responses straight into Room rows. The flow has two JSON layers:
+
+```
+Your @SyncForgeEntity + @Serializable data class
+        │
+        ▼  KSP generates *EntitySyncHandler
+   toJson(entity) / fromJson(string)     ← kotlinx.serialization on your entity type
+        │
+        ▼  outbox entry or pull delta
+   payloadJson: String                   ← entity JSON embedded in sync envelope
+        │
+        ▼  KtorSyncTransport
+   PushRequest / PullResponse DTOs        ← dev.syncforge.network.api wire types
+        │
+        ▼  POST /sync/push · GET /sync/pull
+   Server
+```
+
+| Layer | What is serialized | Who parses |
+|-------|-------------------|------------|
+| **Entity** | Your Room (or store) row as JSON | KSP-generated handler (`toJson` / `fromJson`) |
+| **Transport** | `OutboxEntryDto`, `RemoteDeltaDto` with `payloadJson` string fields | `KtorSyncTransport` + kotlinx.serialization |
+
+On **push**, the handler serializes the entity → `payloadJson` on the outbox entry → transport wraps entries in `PushRequest`. On **pull**, transport parses `PullResponse` → each delta’s `payloadJson` → handler `fromJson` → DAO upsert (via `ConflictPullApplier`). Ktor handles REST HTTP; handlers own entity JSON — no separate HTTP codegen layer.
+
 ### Network client architecture (1.1)
 
-Three layers — sync semantics, REST routing, and the user’s HTTP library:
+Three layers — sync semantics, REST routing, and Ktor HTTP:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -214,45 +281,45 @@ Three layers — sync semantics, REST routing, and the user’s HTTP library:
        RestSyncTransport            GraphQlSyncTransport (1.4)
        (REST push/pull routes)      (separate wire format)
               │
-              │ uses SyncHttpClient
-    ┌─────────┼─────────┬─────────────┐
-    │         │         │             │
- Ktor adapter Retrofit  OkHttp/custom  …
- (1.1-16)     (1.1-15)
+              │ uses SyncHttpClient (Ktor-backed)
+    ┌─────────┴─────────┬─────────────┐
+    │                   │             │
+ bundled Ktor      user's HttpClient  custom SyncHttpClient
+ (default)          (interceptors)     (advanced)
+ (1.1-15)          (1.1-16 DSL)
 ```
 
-**`SyncHttpClient` (target 1.1)** — minimal REST executor; SyncForge maps sync DTOs to routes:
+**`SyncHttpClient` (target 1.1)** — Ktor REST executor; SyncForge maps sync DTOs to routes:
 
 | Method | Route (default) | Body / params |
 |--------|-----------------|---------------|
 | `postPush(baseUrl, PushRequest, auth)` | `POST {baseUrl}/sync/push` | JSON batch from outbox |
 | `getPull(baseUrl, since, types, limit, cursor, auth)` | `GET {baseUrl}/sync/pull` | Query params per REST_API.md |
 
-User provides the **client implementation** (e.g. existing app `Retrofit` instance). SyncForge does **not** require Retrofit in core — only optional `:syncforge-network-retrofit`.
+User may supply an existing app **`HttpClient`** (logging, auth interceptors, shared engine). SyncForge does **not** add alternate HTTP stacks — Ktor is the sole REST client.
 
 **Example (target DSL):**
 
 ```kotlin
 SyncForge.android(this) {
     baseUrl("https://api.example.com")
-    httpClient(RetrofitSyncHttpClient(appRetrofit))  // user's Retrofit
+    httpClient(appHttpClient)  // user's Ktor HttpClient
     registry(SyncForgeHandlers.registry(taskDao))
 }
-// → RestSyncTransport uses Retrofit for /sync/push and /sync/pull only
+// → RestSyncTransport uses the injected client for /sync/push and /sync/pull only
 ```
 
-**Today (1.0):** `KtorSyncTransport` bundles Ktor end-to-end, or implement full `SyncTransport` with Retrofit manually. **1.1** splits client from transport so users wire their existing networking stack without reimplementing push/pull mapping.
+**Today (1.0):** `KtorSyncTransport` bundles Ktor end-to-end, or implement full `SyncTransport` for non-REST backends. **1.1** splits transport from injectable `HttpClient` so apps reuse their Ktor setup without reimplementing push/pull mapping.
 
 ### DI architecture (1.1)
 
 ```
-:syncforge                    ← no Koin/Dagger/Room/Realm/Retrofit dependency (unchanged)
+:syncforge                    ← no Koin/Dagger/Room/Realm dependency (unchanged)
 :syncforge-integration-koin   ← optional, depends on koin-core
 :syncforge-integration-hilt   ← optional, Android-only
 :syncforge-store-room         ← optional, Room DAO → EntityStore adapter
 :syncforge-store-realm        ← optional, Realm → EntityStore adapter
-:syncforge-network-ktor       ← optional, Ktor SyncHttpClient (default)
-:syncforge-network-retrofit   ← optional, Retrofit SyncHttpClient (Android/JVM)
+:syncforge-network-ktor       ← optional, default Ktor SyncHttpClient (extract from core)
 ```
 
 App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflicts { }`, and optionally `httpClient`. Library supplies factory helpers and optional adapters only.
@@ -260,51 +327,142 @@ App always supplies: `baseUrl`, `EntityRegistry` (handlers or stores), `conflict
 ### 1.1.0 acceptance criteria
 
 - [ ] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
-- [ ] Retrofit adapter documented with sample using app-owned `Retrofit` instance
+- [ ] Injectable Ktor `HttpClient` documented with sample using app-owned client (interceptors, shared engine)
 - [ ] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [ ] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
 - [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)
 - [ ] RECIPES.md DI section with working Koin + Hilt examples matching `:sample`
 - [ ] DataStore cursor on Android; file/UserDefaults fallback documented for iOS until unified
+- [ ] Encrypted `TokenStore` default on Android; iOS Keychain; migration from plain SharedPreferences documented
+- [ ] `login`/`register` `CharArray` overloads published; AUTH_API documents wipe semantics and IdP preference
 - [ ] BOM lists optional integration + store artifacts (not transitive)
 - [ ] No breaking changes to 1.0 stable APIs (Room KSP path remains default)
 
 ---
 
-## 1.2.x — Conflict evolution (CRDT as strategy)
+## 1.2.x — Conflict evolution (per-entity strategies + git-like merge)
 
 ### Goal
 
-Reduce hand-written `merge { }` code and auto-resolve more pull conflicts for mergeable fields — **without replacing** outbox → push → pull.
+Let apps pick a **conflict resolver per entity type** (notes → accept-remote, tasks → merge, settings → last-write-wins, …) from a **catalog of built-in strategies**, with optional **runtime overrides** from app preferences. Add **git-like three-way merge** (`gitLike { }`) that tries auto-merge then falls back to user choice (accept local / accept remote / custom merge). Reduce hand-written `merge { }` via CRDT helpers and KSP — **without replacing** outbox → push → pull.
+
+### Per-entity conflict strategies
+
+**Already in 1.0 (stable):** each synced entity type gets its own resolver in `conflicts { }`:
+
+```kotlin
+SyncForge.android(this) {
+    conflicts {
+        default(lastWriteWins())  // optional — this is the default
+
+        entity("notes") { alwaysRemote() }   // accept-remote on pull conflict
+        entity("tasks") {
+            merge<TaskEntity> { local, remote -> /* field combine */ }
+        }
+        entity("settings") { alwaysRemote() }
+        entity("drafts") { alwaysLocal() }
+        entity("legal_records") { deferToUser() }  // user picks: local | remote | merge
+    }
+}
+```
+
+| Built-in strategy (1.0) | Git analogue | Resolution |
+|-------------------------|--------------|------------|
+| `lastWriteWins()` | Implicit timestamp merge | Auto — newer `updatedAtMillis` wins |
+| `alwaysLocal()` | `--ours` | Auto — accept local |
+| `alwaysRemote()` | `--theirs` | Auto — accept remote |
+| `merge { }` | Custom merge driver | Auto — your field-level combine |
+| `deferToUser()` | Conflict markers → user | Manual — `KeepLocal` / `AcceptRemote` / `Custom(merged)` |
+
+**Target 1.2 — strategy catalog + app customization:**
+
+```kotlin
+// Pick from catalog — static or from app settings / DataStore
+conflicts {
+    entity("notes") { strategy(ConflictStrategies.acceptRemote) }
+    entity("tasks") { strategy(userPrefs.tasksStrategy) }  // runtime-selected kind
+    entity("collab_docs") {
+        gitLike<DocEntity> {
+            threeWayMerge { base, local, remote -> /* auto-merge non-overlapping fields */ }
+            onUnmergeable { deferToUser() }  // fall back to accept local | remote | merge UI
+        }
+    }
+}
+
+// Optional: change policy at runtime (e.g. settings screen)
+syncManager.updateConflictPolicy(conflictPolicy { /* … */ })
+```
+
+| `ConflictStrategyKind` (target 1.2) | Maps to |
+|-------------------------------------|---------|
+| `ACCEPT_LOCAL` | `alwaysLocal()` |
+| `ACCEPT_REMOTE` | `alwaysRemote()` |
+| `MERGE` | `merge { }` or KSP-generated merge |
+| `GIT_LIKE` | `gitLike { }` — three-way auto + `deferToUser` fallback |
+| `DEFER_TO_USER` | `deferToUser()` |
+| `LAST_WRITE_WINS` | `lastWriteWins()` |
+| `CRDT` | `crdt { }` (experimental) |
+
+### Git-like merge architecture (target 1.2)
+
+Two-way merge (1.0) compares **local + remote** only. Git-like merge adds a **merge base** (last synced snapshot):
+
+```
+Last successful sync          Local edit (PENDING)       Remote delta (pull)
+        │                            │                          │
+        ▼                            ▼                          ▼
+   mergeBaseJson              local entity               remote entity
+        │                            │                          │
+        └──────────── threeWayMerge(base, local, remote) ──────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+              auto-merged            unmergeable fields
+              → SYNCED + push          → deferToUser()
+                                       → KeepLocal | AcceptRemote | Custom
+```
+
+Merge base storage: persist last-synced entity JSON per `(entityType, entityId)` on push ack or pull apply (see `1.2-07`).
 
 ### Features
 
 | ID     | Job                                                                            | Priority | Notes                                          |
 |--------|--------------------------------------------------------------------------------|----------|------------------------------------------------|
-| 1.2-01 | **CRDT primitives** — `LwwRegister<T>`, `OrSet<T>`, `GCounter` in `commonMain` | P0       | Serializable; usable inside `merge { }`        |
+| 1.2-01 | **CRDT primitives** — `LwwRegister<T>`, `OrSet<T>`, `GCounter` in `commonMain` | P0       | Serializable; usable inside `merge { }` / `crdt { }` |
 | 1.2-02 | **`crdt { }` conflict strategy** (experimental)                                | P0       | Per-field CRDT config in `conflicts { }`       |
 | 1.2-03 | **KSP field-merge annotations** — `@Lww`, `@OrSet`, `@GCounter`                | P1       | Generates merge logic into handlers            |
 | 1.2-04 | **Tombstone-aware merge recipes**                                              | P1       | Delete vs update; when to keep `deferToUser()` |
 | 1.2-05 | **Multi-device E2E (single emulator concurrent edit)**                         | P1       | Validates LWW + merge + defer paths            |
-| 1.2-06 | **CONFLICT_RESOLUTION.md v2**                                                  | P1       | Decision tree: LWW vs merge vs crdt vs defer   |
+| 1.2-06 | **CONFLICT_RESOLUTION.md v2**                                                  | P1       | Per-entity matrix; git-like flow; strategy catalog |
+| 1.2-07 | **Merge-base snapshot store**                                                  | P0       | Last-synced JSON per `(entityType, entityId)`; feeds three-way merge |
+| 1.2-08 | **`gitLike { }` strategy** — `threeWayMerge` + `onUnmergeable { deferToUser() }` | P0    | Accept local / accept remote / custom merge fallback |
+| 1.2-09 | **`ConflictStrategyKind` catalog** — enum + `ConflictStrategies.fromKind()`    | P0       | App selects resolver per entity from all built-in types |
+| 1.2-10 | **Runtime policy updates** — `updateConflictPolicy()` + preference-driven DSL  | P1       | Settings screen can switch strategy per entity without recompile |
+| 1.2-11 | **Outbox reconcile on resolve** — clear stale outbox on `AcceptRemote`; enqueue hint on `Custom` | P1 | Keeps push state aligned with user/git-like resolution |
 
 ### Conflict strategy matrix (target 1.2)
 
-| Entity pattern           | Recommended strategy                     |
-|--------------------------|------------------------------------------|
-| Simple row (settings)    | `lastWriteWins()` or `alwaysRemote()`    |
-| Multi-field edits        | `merge { }` or `crdt { }`                |
-| Tags, collaborators      | `crdt { field("tags") { orSet() } }`     |
-| Counters                 | `crdt { field("views") { gCounter() } }` |
-| Delete semantics / legal | `deferToUser()`                          |
-| Tasks (sample)           | `deferToUser()` — unchanged              |
+| Entity (example)         | Recommended strategy                     | Why |
+|--------------------------|------------------------------------------|-----|
+| **Notes** (`:sample`)    | `alwaysRemote()` / `ACCEPT_REMOTE`       | Server-owned content; device accepts server copy |
+| **Tasks** (`:sample`)    | `merge { }` or `gitLike { }`             | Independent fields (title vs completed); or three-way with user fallback |
+| **Settings / config**    | `alwaysRemote()`                         | Server is source of truth |
+| **Tags, collaborators**  | `crdt { field("tags") { orSet() } }`     | Additive set merges |
+| **Counters**             | `crdt { field("views") { gCounter() } }` | Increment-only |
+| **Legal / high-value**   | `deferToUser()` or `gitLike` fallback    | Human must confirm |
+| **Low-stakes rows**      | `lastWriteWins()`                        | Simplest default |
+
+`:sample` may adopt notes=`alwaysRemote`, tasks=`merge` or `gitLike` as reference wiring in 1.2.
 
 ### 1.2.0 acceptance criteria
 
 - [ ] `CrdtMergeStrategy` implements `ConflictStrategy`; wired through `ConflictPullApplier`
+- [ ] `gitLike { }` + merge-base store: three-way auto-merge unit tests; unmergeable fields fall back to `deferToUser` UI
+- [ ] `ConflictStrategyKind` catalog documented; app can assign a kind per `entityType` (static + runtime)
 - [ ] Unit tests per CRDT primitive + integration test for concurrent tag merge on pull
-- [ ] `crdt { }` marked `@ExperimentalSyncForgeApi` until 2.0 graduation
-- [ ] Delete-conflict E2E still passes with `deferToUser()` on tasks
+- [ ] `crdt { }` and `gitLike { }` marked `@ExperimentalSyncForgeApi` until 2.0 graduation
+- [ ] Delete-conflict E2E still passes; notes accept-remote + tasks merge/gitLike covered in sample or RECIPES
+- [ ] Outbox reconciled after `AcceptRemote` / documented `enqueueChange` after `Custom` merge
 
 ---
 
@@ -346,43 +504,137 @@ Meet teams where their backend already lives — REST, GraphQL, or hosted BaaS �
 | ID     | Job                                                   | Priority | Notes                                              |
 |--------|-------------------------------------------------------|----------|----------------------------------------------------|
 | 1.4-01 | **Spring Boot backend starter**                       | P0       | Uses `:syncforge-server` routes; JDBC store option |
-| 1.4-02 | **Supabase transport adapter** (experimental)         | P1       | Optional; maps push/pull to Supabase patterns      |
-| 1.4-03 | **Gradle version catalog for consumers**              | P1       | Published alongside BOM                            |
-| 1.4-04 | **Multi-device E2E** — two emulators, concurrent edit | P1       | Conflict + CRDT validation                         |
-| 1.4-05 | **Backend contract test kit**                         | P2       | Shared test harness for custom servers             |
-| 1.4-06 | **Firebase / custom webhook transport spike**         | P3       | Evaluate demand before committing                  |
-| 1.4-07 | **`syncforge-transport-graphql`** client adapter      | P1       | `SyncTransport` over Apollo/Ktor GraphQL; maps push/pull mutations + cursor query |
-| 1.4-08 | **GraphQL schema + resolver recipes**                 | P1       | Sample `syncPush` / `syncPull` operations; RECIPES.md + optional `:backend-starter-graphql` |
-| 1.4-09 | **Custom `SyncTransport` guide**                      | P2       | Document hand-written GraphQL/REST/gRPC path (works at 1.0 via `transport { }`) |
+| 1.4-02 | **`SyncDeltaStore` port + `DeltaStoreSyncTransport`** | P0       | General BaaS adapter in `:syncforge-transport-core`; one push/pull mapping for all backends |
+| 1.4-03 | **`:syncforge-transport-supabase`** — `SyncDeltaStore` impl | P1  | Supabase Postgres / Realtime patterns              |
+| 1.4-04 | **`:syncforge-transport-firebase`** — `SyncDeltaStore` impl | P1  | Firestore (or Functions-backed store)              |
+| 1.4-05 | **Gradle version catalog for consumers**              | P1       | Published alongside BOM                            |
+| 1.4-06 | **Multi-device E2E** — two emulators, concurrent edit | P1       | Conflict + CRDT validation                         |
+| 1.4-07 | **Backend contract test kit**                         | P2       | Shared harness for REST + `SyncDeltaStore` impls     |
+| 1.4-08 | **`syncforge-transport-graphql`** client adapter      | P1       | `SyncTransport` over Apollo/Ktor GraphQL; maps push/pull mutations + cursor query |
+| 1.4-09 | **GraphQL schema + resolver recipes**                 | P1       | Sample `syncPush` / `syncPull` operations; RECIPES.md + optional `:backend-starter-graphql` |
+| 1.4-10 | **Custom transport guide** — BYO `SyncTransport` or `SyncDeltaStore` | P2 | Works at 1.0 via `transport { }`; 1.4 adds store port |
 
 ### Transport architecture (1.4)
 
-The sync **contract** (batch push, cursor pull, pagination, tombstones) is separate from the **wire format**. `SyncTransport` is the extension point:
+SyncForge separates **sync control** (what the engine needs) from **wire/storage** (how you reach the backend):
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  :syncforge — SyncManager, outbox, conflicts (unchanged)     │
 └────────────────────────────┬─────────────────────────────────┘
-                             │ SyncTransport.push / .pull
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-  RestSyncTransport    GraphQlSyncTransport   SupabaseTransport …
-  (1.1, via SyncHttpClient)  (1.4)              (1.4)
-        │                    │                    │
-   Ktor / Retrofit …    mutation syncPush     hosted adapter
-   POST /sync/push      query    syncPull
-   GET  /sync/pull
+                             │ SyncTransport  ← general transport control (1.0)
+        ┌────────────────────┼────────────────────┬──────────────────┐
+        │                    │                    │                  │
+ RestSyncTransport    DeltaStoreSyncTransport   GraphQlSyncTransport  …
+ (1.1, REST/Ktor)      (1.4, general BaaS)      (1.4, GraphQL wire)
+        │                    │
+ SyncHttpClient         SyncDeltaStore  ← storage/query port (1.4-02)
+        │                    │
+   POST /sync/push     ┌──────┼──────┬──────────┐
+   GET  /sync/pull     │      │      │          │
+                  Firebase Supabase  Custom   JDBC
+                  impl     impl     impl     (server SyncStore)
 ```
 
-**GraphQL (target 1.4):** server exposes operations with the same semantics as [REST_API.md](REST_API.md) — not generic CRUD. Client adapter converts `OutboxEntry` batches and pull cursors to GraphQL variables and maps responses to `PushResult` / `PullResult`.
+| Layer | Interface | Role |
+|-------|-----------|------|
+| **Transport control** | `SyncTransport` | What `SyncManager` calls — `push()` / `pull()` (stable 1.0) |
+| **REST wire** | `SyncHttpClient` | Ktor HTTP for `/sync/push` + `/sync/pull` (1.1) |
+| **BaaS / hosted store** | `SyncDeltaStore` | Append outbox batches + query deltas since cursor — **one contract, many backends** (1.4) |
+| **General adapter** | `DeltaStoreSyncTransport` | Implements `SyncTransport` by delegating to any `SyncDeltaStore` — no per-vendor push/pull duplication |
+| **Server-side mirror** | `SyncStore` (`:syncforge-server`) | Same semantics for self-hosted Ktor/Spring backends |
 
-**Today (1.0):** any GraphQL backend can integrate by implementing `SyncTransport` manually and passing it to `SyncForge.android { transport(myTransport) }`. No GraphQL dependency in `:syncforge` core.
+**`SyncDeltaStore` (target 1.4)** — client-side port; mirrors server `SyncStore`:
+
+```kotlin
+interface SyncDeltaStore {
+    suspend fun appendEntries(entries: List<OutboxEntry>): PushResult
+    suspend fun queryDeltas(
+        sinceTimestampMillis: Long,
+        entityTypes: Set<String>,
+        pageSize: Int,
+        pageCursor: String?,
+    ): PullResult
+}
+
+// General adapter — works with any store implementation
+class DeltaStoreSyncTransport(
+    private val store: SyncDeltaStore,
+    private val auth: SyncAuthProvider? = null,
+) : SyncTransport { /* maps to push/pull once */ }
+```
+
+**Firebase / Supabase / custom:** implement `SyncDeltaStore` only (Firestore queries, Supabase RPC, etc.). Wire once:
+
+```kotlin
+SyncForge.android(this) {
+    transport(DeltaStoreSyncTransport(FirestoreSyncDeltaStore(firestore)))
+    // or: DeltaStoreSyncTransport(SupabaseSyncDeltaStore(client))
+    registry(SyncForgeHandlers.registry(taskDao))
+    conflicts { entity("notes") { alwaysRemote() } }
+}
+```
+
+Optional modules ship ready-made `SyncDeltaStore` impls; apps with unusual schemas implement the port themselves (~100–200 lines) without touching `SyncManager`.
+
+### How users adapt GraphQL
+
+GraphQL is a **wire-format swap** — the sync engine, outbox, handlers, and entity JSON stay the same. Only `SyncTransport` changes.
+
+**Contract (server):** expose two operations with the same semantics as [REST_API.md](REST_API.md) — not per-entity CRUD:
+
+| REST (1.0 default) | GraphQL equivalent (your schema) |
+|--------------------|----------------------------------|
+| `POST /sync/push` body: `PushRequest` | `mutation syncPush(entries: [OutboxEntryInput!]!): PushPayload!` |
+| `GET /sync/pull?since=…&types=…` | `query syncPull(since: Long!, types: [String!]!, limit: Int, cursor: String): PullPayload!` |
+
+`payloadJson` on each entry/delta remains an opaque **string** — your entity handlers still parse it; GraphQL does not need to know your Room schema.
+
+**Today (1.0) — bring your own transport:**
+
+```kotlin
+class GraphQlSyncTransport(
+    private val client: ApolloClient, // or Ktor GraphQL, etc.
+) : SyncTransport {
+
+    override suspend fun push(entries: List<OutboxEntry>): PushResult {
+        val response = client.mutation(SyncPushMutation(entries.map { it.toGraphQlInput() }))
+        return response.data!!.syncPush.toPushResult()  // map to PushResult
+    }
+
+    override suspend fun pull(
+        sinceTimestampMillis: Long,
+        entityTypes: Set<String>,
+        pageSize: Int,
+        pageCursor: String?,
+    ): PullResult {
+        val response = client.query(
+            SyncPullQuery(sinceTimestampMillis, entityTypes.toList(), pageSize, pageCursor),
+        )
+        return response.data!!.syncPull.toPullResult()  // map to PullResult
+    }
+}
+
+SyncForge.android(this) {
+    transport(GraphQlSyncTransport(apolloClient))
+    registry(SyncForgeHandlers.registry(taskDao))
+    // baseUrl() omitted — your transport owns the endpoint
+}
+```
+
+You implement the mapping (`OutboxEntry` → mutation input, GraphQL response → `PushResult` / `PullResult`). Entity handlers and KSP codegen are unchanged.
+
+**1.4 (optional convenience):** `:syncforge-transport-graphql` ships a ready-made `SyncTransport` (Apollo or Ktor GraphQL) plus schema/resolver recipes (`1.4-08`–`1.4-09`). BaaS backends use `DeltaStoreSyncTransport` + vendor `SyncDeltaStore` (`1.4-02`–`1.4-04`). Same contract; less boilerplate.
+
+**Non-goals:** SyncForge does not generate GraphQL types from `@SyncForgeEntity`, and does not replace your app's domain GraphQL API. Sync operations are a dedicated push/pull channel alongside your existing queries/mutations.
 
 ### 1.4.0 acceptance criteria
 
+- [ ] `SyncDeltaStore` + `DeltaStoreSyncTransport` published in `:syncforge-transport-core` (optional BOM entry)
+- [ ] At least two `SyncDeltaStore` implementations (Supabase + Firebase) pass shared contract test kit
 - [ ] Spring starter documented with docker-compose quickstart
-- [ ] `syncforge-transport-graphql` published (optional BOM entry); sample push/pull against `:mock-server` GraphQL facade or standalone schema
-- [ ] RECIPES.md: custom `SyncTransport` + GraphQL schema snippet
+- [ ] `syncforge-transport-graphql` published; sample push/pull against `:mock-server` GraphQL facade or standalone schema
+- [ ] RECIPES.md: BYO `SyncDeltaStore`, custom `SyncTransport`, GraphQL schema snippet
 - [ ] Version catalog published to Maven Central
 - [ ] Multi-device E2E green in nightly CI
 - [ ] REST_API.md documents transport adapter expectations (same push/pull semantics; wire format may differ)
@@ -501,6 +753,9 @@ Backend implementers should pin to a library major version in their compatibilit
 |---------------------------------------|----------|--------------------------------------------------------------------------------|
 | 1.0 API surface too large             | Medium   | Stable = Android + common contracts; KMP stays experimental until 1.3          |
 | CRDT gives wrong merges for deletes   | High     | Keep `deferToUser()`; document tombstone patterns; never default CRDT globally |
+| Per-entity strategy misconfiguration  | Medium   | `ConflictStrategyKind` catalog + CONFLICT_RESOLUTION v2 matrix; sample shows notes vs tasks |
+| gitLike three-way merge complexity    | Medium   | Merge-base store; fall back to `deferToUser`; experimental until 2.0 |
+| Token theft on rooted/jailbroken device | Medium | Encrypted `TokenStore` (1.1-17); recommend external IdP; no password storage |
 | DI integration artifact fragmentation | Low      | Max two optional DI modules; recipes first in 1.1.0                              |
 | Store adapter fragmentation (Realm…)  | Medium   | `EntityStore` in core; adapters optional; hand-written handler always works      |
 | iOS SPM publish complexity            | Medium   | Ship XCFramework from existing macOS CI job; fallback to KMP framework         |
@@ -508,7 +763,7 @@ Backend implementers should pin to a library major version in their compatibilit
 | Multi-device E2E flakiness            | Medium   | Nightly only initially; mock-server health gate                                |
 | Scope creep into “full backend”       | Medium   | Starters are reference kits; `:syncforge-server` stays minimal                 |
 | GraphQL schema drift vs REST contract | Medium   | Document canonical push/pull semantics; adapter tests share contract test kit  |
-| HTTP client adapter proliferation     | Low      | `SyncHttpClient` in core; Ktor + Retrofit optional modules only                |
+| HTTP client adapter proliferation     | Low      | Ktor-only; `SyncHttpClient` in core; optional `:syncforge-network-ktor` extract |
 
 ---
 
@@ -543,20 +798,20 @@ Run automated checks locally:
 
 E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
 
-| # | Criterion | Verification | Status (0.9.0-rc.5 soak, July 2026) |
-|---|-----------|--------------|--------------------------------------|
-| 1 | All 1.0-P0 jobs complete | P0 table above | ⬜ P0-03 (`1.0.0` publish), P0-05 (re-verify tag publish on `v1.0.0`) |
+| # | Criterion | Verification | Status (1.0.0 release prep, July 2026) |
+|---|-----------|--------------|----------------------------------------|
+| 1 | All 1.0-P0 jobs complete | P0 table above | ⬜ P0-03 publish + P0-05 re-verify on `v1.0.0` tag |
 | 2 | Sample App Proof — 2+ entities/DAOs/screens, shared `SyncManager` | `androidE2e`, `iosE2e` | ✅ CI ([run #102](https://github.com/Arsenoal/syncforge/actions/runs/28838303714)) |
 | 3 | No `@ExperimentalSyncForgeApi` on stable surfaces | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest` | ✅ in `verifyReleaseSignOff` |
 | 4 | Deprecated APIs removed | grep + compile | ✅ `ConflictResolver`, `useSqlDelightPersistence`, `useRoomPersistence` gone |
-| 5 | Maven Central all artifacts at release version | `verifyConsumerSmokeMavenCentralArtifacts` | ✅ `0.9.0-rc.5` — ⬜ re-pin to `1.0.0` at tag |
-| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e`, `verifyConsumerSmokeMavenCentral` | ✅ [CI run #102](https://github.com/Arsenoal/syncforge/actions/runs/28838303714) all jobs green |
-| 7 | macOS tag publish (iOS/macOS KMP targets) | `publish-release.yml` on tag | ✅ `v0.9.0-rc.5` — ⬜ confirm on `v1.0.0` |
-| 8 | Docs freeze | `CHANGELOG`, `MODULES`, `GETTING_STARTED` | ✅ P0-06 |
+| 5 | Maven Central all artifacts at release version | `verifyConsumerSmokeMavenCentralArtifacts` | ⬜ pins `1.0.0` — run after Central sync |
+| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e`, `verifyConsumerSmokeMavenCentral` | ✅ soak on rc.5 — re-run post-publish |
+| 7 | macOS tag publish (iOS/macOS KMP targets) | `publish-release.yml` on tag | ⬜ confirm on `v1.0.0` |
+| 8 | Docs freeze | `CHANGELOG`, `MODULES`, `GETTING_STARTED` | ✅ P0-06 + `1.0.0` pins |
 | 9 | Room → SQLDelight migration | `SyncForgeAndroidMigrationTest`, `RoomMigrationInstrumentedTest` | ✅ in `androidE2e` |
 | 10 | External dogfood / third-party integration | Community | ⬜ deferred (P1-07) |
 
-**Pre-tag soak verdict:** automated + CI criteria **pass** on `0.9.0-rc.5`. Tag `v1.0.0` when rows 1, 5, 7 are re-verified at `1.0.0` (row 10 optional).
+**Release prep verdict:** repo bumped to `1.0.0`. Push, tag `v1.0.0`, wait for Maven Central + macOS publish, then re-run `verifySignOffMatrix` (row 10 optional).
 
 ### 2.0.0 sign-off checklist
 

@@ -5,7 +5,7 @@ import dev.syncforge.model.SyncError
 import dev.syncforge.model.SyncResult
 
 /**
- * Pluggable network boundary — implement with Ktor, Retrofit, or your own HTTP client.
+ * Pluggable network boundary — default `KtorSyncTransport`, or implement for GraphQL / custom wire formats.
  *
  * SyncForge never dictates API shape beyond these delta-sync primitives.
  */
