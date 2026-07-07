@@ -5,6 +5,7 @@ import dev.syncforge.auth.AuthResult
 import dev.syncforge.auth.AuthState
 import dev.syncforge.auth.Session
 import dev.syncforge.conflict.ConflictChoice
+import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictRecord
 import dev.syncforge.conflict.ConflictSummary
 import dev.syncforge.debug.SyncDebug
@@ -87,6 +88,12 @@ interface SyncManager {
         entityId: String,
         choice: ConflictChoice,
     )
+
+    /**
+     * Replaces the active [ConflictPolicy] at runtime (e.g. after a settings change).
+     * Affects future pull conflicts only — open deferred conflicts are unchanged.
+     */
+    fun updateConflictPolicy(policy: ConflictPolicy)
 
     /** Returns persisted JSON snapshots for an open conflict, if any. */
     suspend fun findOpenConflict(

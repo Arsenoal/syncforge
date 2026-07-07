@@ -90,6 +90,7 @@ class StableApiSurfaceTest {
             "schedulePeriodicSync",
             "cancelScheduledSync",
             "resolveConflict",
+            "updateConflictPolicy",
             "findOpenConflict",
         )
         for (method in SyncManager::class.java.methods) {
@@ -130,6 +131,7 @@ class StableApiSurfaceTest {
             ),
         )
         manager.resolveConflict("task", "1", ConflictChoice.KeepLocal)
+        manager.updateConflictPolicy(ConflictPolicy.Default)
         manager.findOpenConflict("task", "1")
         val registerResult: AuthResult = manager.register(mapOf("email" to "a@b.c", "password" to "x"))
         val loginResult: AuthResult = manager.login("a@b.c", charArrayOf('x'))

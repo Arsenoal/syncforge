@@ -116,3 +116,20 @@ inline fun <reified T : SyncedEntity> ConflictEntityBuilder.crdt(
 
 fun conflictPolicy(block: ConflictPolicyBuilder.() -> Unit): ConflictPolicy =
     ConflictPolicyBuilder().apply(block).build()
+
+/**
+ * Builds a [ConflictPolicy] from persisted [ConflictStrategyKind] values — e.g. DataStore / UserDefaults.
+ *
+ * Complex kinds ([ConflictStrategyKind.MERGE], [ConflictStrategyKind.GIT_LIKE], [ConflictStrategyKind.CRDT])
+ * cannot be expressed here; register those in static `conflicts { }` or pass a full [ConflictPolicy] to
+ * [dev.syncforge.sync.SyncManager.updateConflictPolicy].
+ */
+fun conflictPolicyFromKinds(
+    perEntity: Map<String, ConflictStrategyKind>,
+    defaultKind: ConflictStrategyKind = ConflictStrategyKind.LAST_WRITE_WINS,
+): ConflictPolicy = conflictPolicy {
+    default(defaultKind)
+    perEntity.forEach { (entityType, kind) ->
+        entity(entityType) { strategy(kind) }
+    }
+}

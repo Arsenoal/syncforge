@@ -8,12 +8,26 @@ import dev.syncforge.network.RemoteDelta
 import dev.syncforge.sync.OutboxReconciler
 
 internal class ConflictPullApplier(
-    private val policy: ConflictPolicy,
+    private val policy: MutableConflictPolicy,
     private val conflictStore: ConflictStore,
     private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
     private val outboxReconciler: OutboxReconciler? = null,
     private val clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
 ) {
+
+    constructor(
+        policy: ConflictPolicy,
+        conflictStore: ConflictStore,
+        mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
+        outboxReconciler: OutboxReconciler? = null,
+        clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
+    ) : this(
+        policy = MutableConflictPolicy(policy),
+        conflictStore = conflictStore,
+        mergeBaseRecorder = mergeBaseRecorder,
+        outboxReconciler = outboxReconciler,
+        clock = clock,
+    )
 
     suspend fun <T : dev.syncforge.entity.SyncedEntity> applyDelta(
         handler: TypedEntitySyncHandler<T>,

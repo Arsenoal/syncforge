@@ -7,6 +7,7 @@ import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPullApplier
+import dev.syncforge.conflict.MutableConflictPolicy
 import dev.syncforge.conflict.ConflictResolutionService
 import dev.syncforge.conflict.ConflictStore
 import dev.syncforge.conflict.ConflictSummary
@@ -54,7 +55,7 @@ internal class SyncManagerImpl(
     private val networkMonitor: NetworkMonitor = AlwaysOnlineNetworkMonitor,
     private val retryScheduler: RetryScheduler = NoOpRetryScheduler,
     private val workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
-    private val conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
+    conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
     private val conflictStore: ConflictStore = NoOpConflictStore,
     private val mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
     private val scope: CoroutineScope,
@@ -62,11 +63,12 @@ internal class SyncManagerImpl(
 ) : SyncManager {
 
     private val loggedOutAuthState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
+    private val mutableConflictPolicy = MutableConflictPolicy(conflictPolicy)
     private val mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore)
     private val optimisticCoordinator = OptimisticSyncCoordinator(config, registry, outbox)
     private val outboxReconciler = OutboxReconciler(outbox, optimisticCoordinator)
     private val conflictPullApplier = ConflictPullApplier(
-        policy = conflictPolicy,
+        policy = mutableConflictPolicy,
         conflictStore = conflictStore,
         mergeBaseRecorder = mergeBaseRecorder,
         outboxReconciler = outboxReconciler,
@@ -78,7 +80,6 @@ internal class SyncManagerImpl(
         transport = transport,
         registry = registry,
         conflictStore = conflictStore,
-        conflictPolicy = conflictPolicy,
         mergeBaseStore = mergeBaseStore,
         conflictPullApplier = conflictPullApplier,
     )
@@ -235,6 +236,10 @@ internal class SyncManagerImpl(
             )
             refreshStatus()
         }
+    }
+
+    override fun updateConflictPolicy(policy: ConflictPolicy) {
+        mutableConflictPolicy.update(policy)
     }
 
     override suspend fun findOpenConflict(
