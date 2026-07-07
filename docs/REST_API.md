@@ -76,7 +76,7 @@ major SyncForge release. Migration notes for backend authors are published in th
    your framework requires it — SyncForge maps transport failures to `SyncError`, not response bodies.
 3. Treat push batches as **idempotent** where possible (safe client retries).
 4. Use monotonic `serverVersion` and `updatedAtMillis` per entity; honour tombstones on pull (`isDeleted: true`).
-5. Pin your tested contract to a SyncForge release (e.g. `1.0.0`) in your service README or OpenAPI description.
+5. Pin your tested contract to a SyncForge release (e.g. `1.1.0`) in your service README or OpenAPI description.
 
 ### Testing against a reference server
 

@@ -30,7 +30,7 @@ These live in [gradle.properties](../gradle.properties) and are applied by
 | `syncforge.pom.scm.developerConnection` | `scm:git:ssh://github.com/Arsenoal/syncforge.git` |
 | License | Apache 2.0 |
 
-Version is set from the git tag in CI (`v1.0.0` → `syncforge.version=1.0.0`).
+Version is set from the git tag in CI (`v1.1.0` → `syncforge.version=1.1.0`).
 
 ---
 
@@ -92,8 +92,8 @@ Close and release the staging repository in the Sonatype Central Portal UI after
 2. Create and push a version tag:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 3. Watch **Actions** → **Publish Release** on `macos-latest`:
@@ -101,7 +101,7 @@ git push origin v1.0.0
    - Runs `:syncforge:jvmTest` and `:syncforge-persistence:jvmTest`
    - Publishes **all** library artifacts via `publishAllToMavenCentral`
 
-   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v1.0.0`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
+   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v1.1.0`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
 
 4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
@@ -109,7 +109,7 @@ git push origin v1.0.0
    KMP macOS/iOS targets often create a **second** deployment (~11 components) alongside the main set (~39).
    Publish **both** — otherwise native KMP artifacts stay off Maven Central.
 6. Wait for Central sync (~15–60 minutes). CI does **not** poll Maven Central during publish.
-7. **Actions → Verify Maven Central Release → Run workflow** — enter the version (e.g. `1.0.0`).
+7. **Actions → Verify Maven Central Release → Run workflow** — enter the version (e.g. `1.1.0`).
    This checks required POMs on `repo1.maven.org` and runs consumer-smoke from Central only.
 
 ---
@@ -151,7 +151,7 @@ Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates.
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.0.0/syncforge-bom-1.0.0.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.1.0/syncforge-bom-1.1.0.pom" | head -1
 ```
 
 ### Consumer smoke against Central

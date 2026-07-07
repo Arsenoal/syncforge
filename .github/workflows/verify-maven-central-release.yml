@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Released version on Maven Central (e.g. 1.0.0)"
+        description: "Released version on Maven Central (e.g. 1.1.0)"
         required: true
-        default: "1.0.0"
+        default: "1.1.0"
 
 permissions:
   contents: read
