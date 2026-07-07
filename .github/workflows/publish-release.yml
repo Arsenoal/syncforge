@@ -170,11 +170,10 @@ jobs:
           STRICT: "true"
         run: bash .github/scripts/finalize-maven-central-staging.sh studio.syncforge
 
-      - name: Verify required artifacts on Maven Central
-        env:
-          MAVEN_CENTRAL_VERIFY_RETRIES: "20"
-          MAVEN_CENTRAL_VERIFY_SLEEP_SEC: "30"
+      - name: Post-publish steps (manual)
         run: |
           TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
           VERSION="${TAG#v}"
-          bash .github/scripts/verify-maven-central-artifacts.sh "$VERSION"
+          echo "::notice title=Maven Central portal::Open Central Portal → Deployments. Publish EVERY deployment in VALIDATED state (usually two: ~39 + ~11 KMP components)."
+          echo "::notice title=After Central sync::Actions → Verify Maven Central Release → Run workflow (version ${VERSION})."
+          echo "Do not expect artifacts on repo1.maven.org until portal Publish completes and Central syncs (~15–60 min)."

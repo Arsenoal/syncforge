@@ -103,9 +103,9 @@ tasks.register<Exec>("verifyConsumerSmokeMavenCentral") {
 tasks.register("verifySignOffMatrix") {
     group = "verification"
     description =
-        "1.0 pre-tag sign-off (automated): verifyReleaseSignOff + verifyConsumerSmokeMavenCentral. " +
-            "E2E (androidE2e, iosE2e) runs in CI — see docs/ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off."
-    dependsOn("verifyReleaseSignOff", "verifyConsumerSmokeMavenCentral")
+        "Pre-tag sign-off: verifyReleaseSignOff only. Maven Central checks run after portal Publish " +
+            "via Actions → Verify Maven Central Release or verifyConsumerSmokeMavenCentral locally."
+    dependsOn("verifyReleaseSignOff")
 }
 
 /** Required Maven Central coordinates for a complete consumer-facing release. */

@@ -105,7 +105,12 @@ git push origin v1.0.0
 
 4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
-5. In Sonatype Central Portal: **Publish** the deployment (or Close → Release on legacy flows).
+5. In Sonatype Central Portal → **Deployments**: **Publish every VALIDATED deployment**.
+   KMP macOS/iOS targets often create a **second** deployment (~11 components) alongside the main set (~39).
+   Publish **both** — otherwise native KMP artifacts stay off Maven Central.
+6. Wait for Central sync (~15–60 minutes). CI does **not** poll Maven Central during publish.
+7. **Actions → Verify Maven Central Release → Run workflow** — enter the version (e.g. `1.0.0`).
+   This checks required POMs on `repo1.maven.org` and runs consumer-smoke from Central only.
 
 ---
 
@@ -167,9 +172,12 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
-# After Central sync (~15–30 min):
-./gradlew verifySignOffMatrix
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.0.0/syncforge-bom-1.0.0.pom" | head -1
+# Portal: Publish all VALIDATED deployments (usually 2)
+# After Central sync: Actions → Verify Maven Central Release (version 1.0.0)
+# Or locally:
+./gradlew verifyReleaseSignOff
+bash .github/scripts/verify-maven-central-artifacts.sh 1.0.0
+./gradlew verifyConsumerSmokeMavenCentral
 ```
 | Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
 

@@ -1,0 +1,62 @@
+name: Verify Maven Central Release
+
+# Run manually AFTER you click Publish on all VALIDATED deployments in Sonatype
+# Central Portal (typically two: ~39 JVM/Android components + ~11 KMP native targets).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version on Maven Central (e.g. 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-artifacts:
+    name: Required POMs on repo1.maven.org
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required artifacts
+        env:
+          MAVEN_CENTRAL_VERIFY_RETRIES: "30"
+          MAVEN_CENTRAL_VERIFY_SLEEP_SEC: "60"
+        run: |
+          chmod +x .github/scripts/verify-maven-central-artifacts.sh
+          bash .github/scripts/verify-maven-central-artifacts.sh "${{ inputs.version }}"
+
+  consumer-smoke:
+    name: Consumer smoke (Maven Central only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: verify-artifacts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Pin consumer-smoke to released version
+        run: |
+          VERSION="${{ inputs.version }}"
+          sed -i.bak "s/^syncforge\.version=.*/syncforge.version=${VERSION}/" consumer-smoke/android-minimal/gradle.properties
+          sed -i.bak "s/^syncforge = .*/syncforge = \"${VERSION}\"/" consumer-smoke/android-minimal/gradle/libs.versions.toml
+
+      - name: Compile consumer app from Maven Central only
+        run: ./gradlew verifyConsumerSmokeMavenCentral --no-daemon

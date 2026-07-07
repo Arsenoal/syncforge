@@ -792,8 +792,10 @@ Adjust based on contributor capacity and dogfood feedback after 1.0.
 Run automated checks locally:
 
 ```bash
-./gradlew verifySignOffMatrix          # verifyReleaseSignOff + verifyConsumerSmokeMavenCentral
-# or: .github/scripts/run-sign-off-matrix.sh
+./gradlew verifySignOffMatrix          # verifyReleaseSignOff (pre-tag)
+# After portal Publish + Central sync:
+#   Actions → Verify Maven Central Release (manual)
+# or locally: verify-maven-central-artifacts.sh + verifyConsumerSmokeMavenCentral
 ```
 
 E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
