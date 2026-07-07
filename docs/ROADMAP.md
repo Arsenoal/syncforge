@@ -53,7 +53,7 @@
 - **`SyncForge.ios { }`** — SQLDelight outbox/conflicts, UserDefaults cursor, NWPathMonitor
 - **`SyncForge.desktop { }`** — JVM desktop with SQLDelight, `FileSyncCursorStore`, OkHttp transport
 - **`SyncForge.macos { }`** — native macOS (`macosArm64` / `macosX64`) with iOS-parity defaults
-- **SQLDelight on Android** — default since 0.6.0; legacy `useRoomPersistence()` removed in 0.9.0-rc.5
+- **SQLDelight on Android** — default since 0.6.0; legacy `useRoomPersistence()` removed in 1.0
 - **SKIE** — improved Swift interop (`Flow`, suspend) on `:syncforge` and `:sample-ios-shared`
 - **`ios-sample/`** — SwiftUI Xcode reference app (tasks + notes + tags; see [iOS sample parity](#ios-sample-parity-090-))
 
@@ -95,7 +95,7 @@
 |------|--------|-------------|
 | **iOS target** | ✅ M3 | Framework compiles; `SyncForge.ios { }` with SQLDelight, UserDefaults cursor, NWPathMonitor |
 | **SQLDelight / multiplatform storage** | ✅ M4 | Default on all platforms since 0.6.0 |
-| **Android SQLDelight default** | ✅ M4 | `SyncForge.android { }` uses SQLDelight only (Room opt-in removed 0.9.0-rc.5) |
+| **Android SQLDelight default** | ✅ M4 | `SyncForge.android { }` uses SQLDelight only (Room opt-in removed in 1.0) |
 | **Darwin Ktor engine** | ✅ Done | iOS HTTP transport via `ktor-client-darwin` |
 | **iOS network monitor** | ✅ M3 | `IosNetworkMonitor` + `NetworkMonitorFactory` |
 | **iOS persisted cursor** | ✅ M3 | `UserDefaultsSyncCursorStore` |
@@ -131,7 +131,7 @@
 
 | Item | Description |
 |------|-------------|
-| **Maven Central** | ✅ `0.9.0-rc.5` — `studio.syncforge` BOM, KMP targets, Gradle plugin |
+| **Maven Central** | ✅ `1.0.0` — `studio.syncforge` BOM, KMP targets, Gradle plugin |
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |
@@ -168,6 +168,6 @@ Pre-1.0 P0 work is complete. Release prep bumps repo to `1.0.0`; remaining step 
 | Docs freeze (`CHANGELOG`, `MODULES`, `GETTING_STARTED`) | ✅ |
 | Version bump + `CHANGELOG` `[1.0.0]` | ✅ release prep |
 | Publish `1.0.0` to Maven Central | ⬜ tag `v1.0.0` + CI publish |
-| 1.0 sign-off matrix | ✅ soak on `0.9.0-rc.5` — re-run after Central sync |
+| 1.0 sign-off matrix | ✅ soak complete — re-run after `1.0.0` Central sync |
 
 See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for the full checklist and post-1.0 milestones.

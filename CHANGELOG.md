@@ -18,7 +18,7 @@ First **semver-stable** public release. Stable without `@OptIn(ExperimentalSyncF
 
 REST push/pull contract (**v1**) is frozen per [REST_API.md](docs/REST_API.md). Auth, debug, KMP platform DSLs, and `SyncForgeBuilder` remain experimental.
 
-**Upgrade from `0.9.0-rc.5`:** stable API unchanged; bump coordinates to `1.0.0`. Remove `useRoomPersistence()` if still present (removed in rc.5).
+**Upgrade from `0.9.0-rc.5`:** stable API unchanged; bump coordinates to `1.0.0`. Remove `useRoomPersistence()` if still present (removed in 1.0).
 
 ### Added
 

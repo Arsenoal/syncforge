@@ -61,7 +61,7 @@ Windows are indicative for a small team or part-time maintenance.
 
 Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees on the Android-primary API. Experimental markers remain only where platform maturity warrants it (iOS/desktop auth, debug surfaces).
 
-### Already complete (from 0.6 → 0.9.0-rc.5)
+### Already complete (from 0.6 → 1.0.0)
 
 | Area                 | Delivered                                                                                        |
 |----------------------|--------------------------------------------------------------------------------------------------|
@@ -805,7 +805,7 @@ E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
 | 3 | No `@ExperimentalSyncForgeApi` on stable surfaces | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest` | ✅ in `verifyReleaseSignOff` |
 | 4 | Deprecated APIs removed | grep + compile | ✅ `ConflictResolver`, `useSqlDelightPersistence`, `useRoomPersistence` gone |
 | 5 | Maven Central all artifacts at release version | `verifyConsumerSmokeMavenCentralArtifacts` | ⬜ pins `1.0.0` — run after Central sync |
-| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e`, `verifyConsumerSmokeMavenCentral` | ✅ soak on rc.5 — re-run post-publish |
+| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e`, `verifyConsumerSmokeMavenCentral` | ✅ soak complete — re-run post-publish |
 | 7 | macOS tag publish (iOS/macOS KMP targets) | `publish-release.yml` on tag | ⬜ confirm on `v1.0.0` |
 | 8 | Docs freeze | `CHANGELOG`, `MODULES`, `GETTING_STARTED` | ✅ P0-06 + `1.0.0` pins |
 | 9 | Room → SQLDelight migration | `SyncForgeAndroidMigrationTest`, `RoomMigrationInstrumentedTest` | ✅ in `androidE2e` |

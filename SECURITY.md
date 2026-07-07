@@ -4,8 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| `0.9.0-rc.x` | Best-effort fixes while approaching 1.0 |
-| `1.0.x` | Supported after stable release |
+| `1.0.x` | Supported — security fixes in patch releases |
+| `0.9.0-rc.x` | Unsupported — upgrade to `1.0.0` |
 | `< 0.9.0` | Not supported |
 
 ## Reporting a vulnerability

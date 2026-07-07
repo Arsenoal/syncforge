@@ -65,7 +65,7 @@ def build() -> None:
     )
 
     doc.add_paragraph("Date: July 2026")
-    doc.add_paragraph("Current baseline: 0.9.0-rc.5 (Maven Central complete)")
+    doc.add_paragraph("Current baseline: 1.0.0 (Maven Central stable release)")
     doc.add_paragraph(f"Remaining work items: {work_items}")
     doc.add_paragraph(f"Release sign-off checks: {sign_off_items}")
     doc.add_paragraph()

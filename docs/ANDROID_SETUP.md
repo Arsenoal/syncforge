@@ -48,7 +48,7 @@ SyncForge.android(this) {
 
 ## Legacy Room storage (pre-0.6.0)
 
-SyncForge's internal outbox/conflict backend is **SQLDelight only** since 0.9.0-rc.5.
+SyncForge's internal outbox/conflict backend is **SQLDelight only** since 1.0.
 The legacy `useRoomPersistence()` opt-in was removed for 1.0.
 
 If your app still has `syncforge_outbox.db` from a pre-0.6.0 release, the automatic

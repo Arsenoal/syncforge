@@ -1,7 +1,6 @@
 # Maven Central publish checklist
 
-Step-by-step guide for publishing SyncForge to Maven Central. Use for the **0.9.0-rc.5** release
-and the **1.0.0** stable release.
+Step-by-step guide for publishing SyncForge to Maven Central. Current stable release: **1.0.0**.
 
 **Repository:** [github.com/Arsenoal/syncforge](https://github.com/Arsenoal/syncforge)  
 **Group ID:** `studio.syncforge` (namespace verified via DNS on `syncforge.studio`)  
@@ -31,7 +30,7 @@ These live in [gradle.properties](../gradle.properties) and are applied by
 | `syncforge.pom.scm.developerConnection` | `scm:git:ssh://github.com/Arsenoal/syncforge.git` |
 | License | Apache 2.0 |
 
-Version is set from the git tag in CI (`v0.9.0-rc.5` → `syncforge.version=0.9.0-rc.5`).
+Version is set from the git tag in CI (`v1.0.0` → `syncforge.version=1.0.0`).
 
 ---
 
@@ -93,8 +92,8 @@ Close and release the staging repository in the Sonatype Central Portal UI after
 2. Create and push a version tag:
 
 ```bash
-git tag v0.9.0-rc.5
-git push origin v0.9.0-rc.5
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 3. Watch **Actions** → **Publish Release** on `macos-latest`:
@@ -102,7 +101,7 @@ git push origin v0.9.0-rc.5
    - Runs `:syncforge:jvmTest` and `:syncforge-persistence:jvmTest`
    - Publishes **all** library artifacts via `publishAllToMavenCentral`
 
-   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v0.9.0-rc.5`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
+   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v1.0.0`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
 
 4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
@@ -136,13 +135,13 @@ After the release is live on Central, update:
 - `consumer-smoke/android-minimal/gradle.properties` (`syncforge.version`)
 - `consumer-smoke/android-minimal/gradle/libs.versions.toml` (`syncforge`)
 
-Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until then, pins stay on the previous published RC (e.g. keep `0.9.0-rc.4` until `0.9.0-rc.5` syncs to `repo1.maven.org`).
+Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until Central syncs, `verifySignOffMatrix` may fail on the Maven Central artifact check.
 
 ### Resolve from Maven Central
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/0.9.0-rc.5/syncforge-bom-0.9.0-rc.5.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.0.0/syncforge-bom-1.0.0.pom" | head -1
 ```
 
 ### Consumer smoke against Central
@@ -161,7 +160,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 
 | Step | Action |
 |------|--------|
-| Soak | ✅ `0.9.0-rc.5` complete |
+| Soak | ✅ `0.9.0-rc.5` complete (shipped as `1.0.0`) |
 | Release prep | ✅ Repo bumped to `1.0.0`; `CHANGELOG` updated |
 | Stable | Tag `v1.0.0`, push, CI publish + verification |
 
