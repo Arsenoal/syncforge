@@ -10,7 +10,10 @@ import dev.syncforge.conflict.ConflictPullApplier
 import dev.syncforge.conflict.ConflictResolutionService
 import dev.syncforge.conflict.ConflictStore
 import dev.syncforge.conflict.ConflictSummary
+import dev.syncforge.conflict.MergeBaseRecorder
+import dev.syncforge.conflict.MergeBaseStore
 import dev.syncforge.conflict.NoOpConflictStore
+import dev.syncforge.conflict.NoOpMergeBaseStore
 import dev.syncforge.conflict.toSummary
 import dev.syncforge.debug.SyncDebug
 import dev.syncforge.debug.SyncDebugImpl
@@ -53,11 +56,13 @@ internal class SyncManagerImpl(
     private val workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
     private val conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
     private val conflictStore: ConflictStore = NoOpConflictStore,
+    private val mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
     private val scope: CoroutineScope,
     private val authService: SyncForgeAuthService? = null,
 ) : SyncManager {
 
     private val loggedOutAuthState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
+    private val mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore)
 
     private val engine: SyncEngine = SyncEngine(
         config = config,
@@ -66,12 +71,13 @@ internal class SyncManagerImpl(
         registry = registry,
         conflictStore = conflictStore,
         conflictPolicy = conflictPolicy,
+        mergeBaseStore = mergeBaseStore,
     )
     private val optimisticCoordinator = OptimisticSyncCoordinator(config, registry, outbox)
     private val conflictResolutionService = ConflictResolutionService(
         registry = registry,
         conflictStore = conflictStore,
-        conflictApplier = ConflictPullApplier(conflictPolicy, conflictStore),
+        conflictApplier = ConflictPullApplier(conflictPolicy, conflictStore, mergeBaseRecorder),
     )
     private val eventLog = SyncEventLog(clock = ::currentTimeMillis)
 

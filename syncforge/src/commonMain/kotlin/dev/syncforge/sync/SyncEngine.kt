@@ -1,6 +1,10 @@
 package dev.syncforge.sync
 
+import dev.syncforge.conflict.MergeBaseRecorder
+import dev.syncforge.conflict.MergeBaseStore
+import dev.syncforge.conflict.NoOpMergeBaseStore
 import dev.syncforge.entity.EntityRegistry
+import dev.syncforge.entity.TypedEntitySyncHandler
 import dev.syncforge.model.SyncError
 import dev.syncforge.model.SyncResult
 import dev.syncforge.model.SyncStatus
@@ -17,9 +21,35 @@ internal class SyncEngine(
     private val registry: EntityRegistry,
     private val conflictStore: dev.syncforge.conflict.ConflictStore = dev.syncforge.conflict.NoOpConflictStore,
     private val conflictPolicy: dev.syncforge.conflict.ConflictPolicy = dev.syncforge.conflict.ConflictPolicy.Default,
-    private val pullDeltaApplier: PullDeltaApplier = PullDeltaApplier(registry, conflictPolicy, conflictStore),
+    private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(NoOpMergeBaseStore),
+    private val pullDeltaApplier: PullDeltaApplier = PullDeltaApplier(
+        registry,
+        conflictPolicy,
+        conflictStore,
+        mergeBaseRecorder,
+    ),
     private val clock: () -> Long = { currentTimeMillis() },
 ) {
+
+    constructor(
+        config: SyncConfig,
+        outbox: OutboxRepository,
+        transport: SyncTransport,
+        registry: EntityRegistry,
+        conflictStore: dev.syncforge.conflict.ConflictStore,
+        conflictPolicy: dev.syncforge.conflict.ConflictPolicy,
+        mergeBaseStore: MergeBaseStore,
+        clock: () -> Long = { currentTimeMillis() },
+    ) : this(
+        config = config,
+        outbox = outbox,
+        transport = transport,
+        registry = registry,
+        conflictStore = conflictStore,
+        conflictPolicy = conflictPolicy,
+        mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore, clock),
+        clock = clock,
+    )
 
     suspend fun runFullSync(lastSyncCursor: Long): SyncResult {
         val pushResult = runPush()
@@ -42,7 +72,13 @@ internal class SyncEngine(
             val response = transport.push(batch)
 
             batch.filter { it.id in response.acknowledgedIds }.forEach { entry ->
-                registry.requireHandler(entry.entityType).onPushAcknowledged(entry.entityId)
+                val handler = registry.requireHandler(entry.entityType)
+                handler.onPushAcknowledged(entry.entityId)
+                if (entry.isDelete) {
+                    mergeBaseRecorder.remove(entry.entityType, entry.entityId)
+                } else if (handler is TypedEntitySyncHandler<*>) {
+                    mergeBaseRecorder.recordSyncedLocal(handler, entry.entityId)
+                }
             }
             outbox.markAcknowledged(response.acknowledgedIds)
 

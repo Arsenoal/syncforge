@@ -19,6 +19,7 @@ import dev.syncforge.persistence.RoomToSqlDelightMigrator
 import dev.syncforge.persistence.SyncForgePersistence
 import dev.syncforge.persistence.SyncForgePersistenceFactory
 import dev.syncforge.persistence.conflictStore
+import dev.syncforge.persistence.mergeBaseStore
 import dev.syncforge.persistence.outboxRepository
 import dev.syncforge.sync.SyncCursorStoreFactory
 import dev.syncforge.sync.SyncManager
@@ -165,6 +166,8 @@ class AndroidSyncForgeDsl internal constructor(
             ?: stores.outboxRepository(maxRetries = builder.maxRetries)
         builder.conflictStore = builder.conflictStore
             ?: stores.conflictStore()
+        builder.mergeBaseStore = builder.mergeBaseStore
+            ?: stores.mergeBaseStore()
 
         val resolvedBaseUrl = requireNotNull(baseUrl) { "baseUrl is required — e.g. baseUrl(\"https://api.example.com\")" }
 

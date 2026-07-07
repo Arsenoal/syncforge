@@ -16,6 +16,7 @@ import dev.syncforge.network.SyncTransport
 import dev.syncforge.persistence.SyncForgePersistence
 import dev.syncforge.persistence.conflictStore
 import dev.syncforge.persistence.createDefaultSyncForgePersistence
+import dev.syncforge.persistence.mergeBaseStore
 import dev.syncforge.persistence.outboxRepository
 import dev.syncforge.sync.SyncCursorStore
 import dev.syncforge.sync.SyncCursorStoreFactory
@@ -157,6 +158,7 @@ class IosSyncForgeDsl internal constructor() {
         val stores = persistence ?: createDefaultSyncForgePersistence()
         builder.outbox = builder.outbox ?: stores.outboxRepository(maxRetries = builder.maxRetries)
         builder.conflictStore = builder.conflictStore ?: stores.conflictStore()
+        builder.mergeBaseStore = builder.mergeBaseStore ?: stores.mergeBaseStore()
 
         val resolvedBaseUrl = requireNotNull(baseUrl) { "baseUrl is required — e.g. baseUrl(\"https://api.example.com\")" }
 

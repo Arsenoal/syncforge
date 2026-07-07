@@ -5,7 +5,9 @@ import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictPolicyBuilder
 import dev.syncforge.conflict.ConflictStore
+import dev.syncforge.conflict.MergeBaseStore
 import dev.syncforge.conflict.NoOpConflictStore
+import dev.syncforge.conflict.NoOpMergeBaseStore
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.entity.EntitySyncHandler
 import dev.syncforge.network.AlwaysOnlineNetworkMonitor
@@ -48,6 +50,7 @@ class SyncForgeBuilder {
     var enableOptimisticUpdates: Boolean = true
     var conflictPolicy: ConflictPolicy = ConflictPolicy.Default
     var conflictStore: ConflictStore? = null
+    var mergeBaseStore: MergeBaseStore? = null
     var authService: SyncForgeAuthService? = null
 
     internal var schedulePeriodicSyncOnStart: Boolean = false
@@ -96,6 +99,7 @@ class SyncForgeBuilder {
                 workScheduler = workScheduler ?: NoOpSyncWorkScheduler,
                 conflictPolicy = conflictPolicy,
                 conflictStore = conflictStore ?: NoOpConflictStore,
+                mergeBaseStore = mergeBaseStore ?: NoOpMergeBaseStore,
                 authService = authService,
             )
         } else {
@@ -111,6 +115,7 @@ class SyncForgeBuilder {
                 workScheduler = workScheduler ?: NoOpSyncWorkScheduler,
                 conflictPolicy = conflictPolicy,
                 conflictStore = conflictStore ?: NoOpConflictStore,
+                mergeBaseStore = mergeBaseStore ?: NoOpMergeBaseStore,
                 authService = authService,
             )
         }

@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS syncforge_merge_base (
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    payloadJson TEXT NOT NULL,
+    serverVersion INTEGER,
+    updatedAtMillis INTEGER NOT NULL,
+    storedAtMillis INTEGER NOT NULL,
+    PRIMARY KEY (entityType, entityId)
+);
+
+CREATE INDEX IF NOT EXISTS merge_base_entity_idx ON syncforge_merge_base(entityType, entityId);

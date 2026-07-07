@@ -4,7 +4,9 @@ import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.auth.SyncForgeAuthService
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictStore
+import dev.syncforge.conflict.MergeBaseStore
 import dev.syncforge.conflict.NoOpConflictStore
+import dev.syncforge.conflict.NoOpMergeBaseStore
 import dev.syncforge.entity.EntityRegistry
 import dev.syncforge.network.AlwaysOnlineNetworkMonitor
 import dev.syncforge.network.NetworkMonitor
@@ -50,6 +52,7 @@ object SyncForge {
         workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
         conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
         conflictStore: ConflictStore = NoOpConflictStore,
+        mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
         authService: SyncForgeAuthService? = null,
     ): SyncManager {
         require(config.entityTypes.containsAll(registry.entityTypes())) {
@@ -67,6 +70,7 @@ object SyncForge {
             workScheduler = workScheduler,
             conflictPolicy = conflictPolicy,
             conflictStore = conflictStore,
+            mergeBaseStore = mergeBaseStore,
             scope = scope,
             authService = authService,
         )
@@ -87,6 +91,7 @@ object SyncForge {
         workScheduler: SyncWorkScheduler = NoOpSyncWorkScheduler,
         conflictPolicy: ConflictPolicy = ConflictPolicy.Default,
         conflictStore: ConflictStore = NoOpConflictStore,
+        mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
         authService: SyncForgeAuthService? = null,
     ): SyncManager {
         lateinit var manager: SyncManager
@@ -105,6 +110,7 @@ object SyncForge {
             workScheduler = workScheduler,
             conflictPolicy = conflictPolicy,
             conflictStore = conflictStore,
+            mergeBaseStore = mergeBaseStore,
             authService = authService,
         )
         return manager

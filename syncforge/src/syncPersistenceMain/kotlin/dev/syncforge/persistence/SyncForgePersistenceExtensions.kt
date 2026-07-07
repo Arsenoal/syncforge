@@ -2,6 +2,7 @@ package dev.syncforge.persistence
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictStore
+import dev.syncforge.conflict.MergeBaseStore
 import dev.syncforge.outbox.OutboxRepository
 
 @ExperimentalSyncForgeApi
@@ -11,3 +12,7 @@ fun SyncForgePersistence.outboxRepository(maxRetries: Int = 5): OutboxRepository
 @ExperimentalSyncForgeApi
 fun SyncForgePersistence.conflictStore(): ConflictStore =
     SqlDelightConflictStore(database)
+
+@ExperimentalSyncForgeApi
+fun SyncForgePersistence.mergeBaseStore(): MergeBaseStore =
+    SqlDelightMergeBaseStore(database)

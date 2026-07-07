@@ -1,0 +1,40 @@
+-- Last successfully synced entity JSON per (entityType, entityId) for three-way merge (1.2).
+CREATE TABLE syncforge_merge_base (
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    payloadJson TEXT NOT NULL,
+    serverVersion INTEGER,
+    updatedAtMillis INTEGER NOT NULL,
+    storedAtMillis INTEGER NOT NULL,
+    PRIMARY KEY (entityType, entityId)
+);
+
+CREATE INDEX merge_base_entity_idx ON syncforge_merge_base(entityType, entityId);
+
+findMergeBase:
+SELECT * FROM syncforge_merge_base
+WHERE entityType = :entityType
+AND entityId = :entityId
+LIMIT 1;
+
+upsertMergeBase:
+INSERT OR REPLACE INTO syncforge_merge_base (
+    entityType,
+    entityId,
+    payloadJson,
+    serverVersion,
+    updatedAtMillis,
+    storedAtMillis
+) VALUES (
+    :entityType,
+    :entityId,
+    :payloadJson,
+    :serverVersion,
+    :updatedAtMillis,
+    :storedAtMillis
+);
+
+deleteMergeBase:
+DELETE FROM syncforge_merge_base
+WHERE entityType = :entityType
+AND entityId = :entityId;
