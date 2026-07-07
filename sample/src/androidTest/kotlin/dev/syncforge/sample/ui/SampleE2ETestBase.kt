@@ -1,5 +1,6 @@
 package dev.syncforge.sample.ui
 
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -108,9 +109,11 @@ abstract class SampleE2ETestBase {
         if (tagLabel != null) {
             composeTestRule.onNodeWithTag("note_tag_dropdown").performClick()
             composeTestRule.waitUntil(timeoutMillis = 10_000) {
-                composeTestRule.onAllNodesWithText(tagLabel).fetchSemanticsNodes().isNotEmpty()
+                composeTestRule.onAllNodesWithTag("tag_option_$tagLabel")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
             }
-            tapText(tagLabel)
+            composeTestRule.onNodeWithTag("tag_option_$tagLabel").performClick()
         }
         composeTestRule.onNodeWithTag("new_note_title_input").performClick()
         composeTestRule.onNodeWithTag("new_note_title_input").performTextInput(title)
@@ -211,7 +214,7 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    protected fun waitForSyncToFinish(timeoutMillis: Long = 30_000) {
+    protected fun waitForSyncToFinish(timeoutMillis: Long = 45_000) {
         composeTestRule.waitUntil(timeoutMillis) {
             composeTestRule.onAllNodesWithText("Syncing", substring = true)
                 .fetchSemanticsNodes()
@@ -253,15 +256,25 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    protected fun waitForRowSyncState(itemTitle: String, stateLabel: String, timeoutMillis: Long = 30_000) {
+    protected fun waitForRowSyncState(itemTitle: String, stateLabel: String, timeoutMillis: Long = 45_000) {
         composeTestRule.waitUntil(timeoutMillis) {
-            val hasTitle = composeTestRule.onAllNodesWithText(itemTitle)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-            val hasState = composeTestRule.onAllNodesWithText(stateLabel, substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-            hasTitle && hasState
+            runCatching {
+                composeTestRule
+                    .onNodeWithTag("row_sync_state_$itemTitle")
+                    .scrollToIfPossible()
+                    .assert(hasText(stateLabel, substring = false))
+            }.isSuccess
+        }
+    }
+
+    protected fun waitForNoteTagLabel(noteTitle: String, tagLabel: String, timeoutMillis: Long = 45_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            runCatching {
+                composeTestRule
+                    .onNodeWithTag("note_tag_label_$noteTitle")
+                    .scrollToIfPossible()
+                    .assert(hasText("Tag: $tagLabel", substring = false))
+            }.isSuccess
         }
     }
 

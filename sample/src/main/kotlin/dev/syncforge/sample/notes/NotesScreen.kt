@@ -105,6 +105,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
                             selectedTagId = tag.id
                             tagMenuExpanded = false
                         },
+                        modifier = Modifier.testTag("tag_option_${tag.label}"),
                     )
                 }
             }
@@ -154,12 +155,14 @@ private fun NoteRow(
             if (tagLabel != null) {
                 Text(
                     text = "Tag: $tagLabel",
+                    modifier = Modifier.testTag("note_tag_label_${note.title}"),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
             Text(
                 text = syncStateLabel(note.syncState),
+                modifier = Modifier.testTag("row_sync_state_${note.title}"),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

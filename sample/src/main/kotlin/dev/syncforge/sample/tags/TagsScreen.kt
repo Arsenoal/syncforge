@@ -99,6 +99,7 @@ private fun TagRow(
                     SyncState.CONFLICT -> "Conflict"
                     SyncState.FAILED -> "Failed"
                 },
+                modifier = Modifier.testTag("row_sync_state_${tag.label}"),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

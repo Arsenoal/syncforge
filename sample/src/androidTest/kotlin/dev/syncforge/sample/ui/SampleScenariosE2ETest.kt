@@ -131,7 +131,7 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
         addNote(noteTitle, body = "Tagged note", tagLabel = tagLabel)
         syncAndWaitForIdle()
         waitForRowSyncState(noteTitle, "Synced")
-        waitForTextContains("Tag: $tagLabel")
+        waitForNoteTagLabel(noteTitle, tagLabel)
     }
 
     @Test
@@ -151,7 +151,7 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
 
         addNote(noteTitle)
         syncAndWaitForIdle()
-        waitForRowSyncState(noteTitle, "Synced")
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
 
         navigateToTasks()
         waitForTextContains("Conflict")

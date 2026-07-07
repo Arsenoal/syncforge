@@ -221,6 +221,7 @@ private fun TaskRow(
                         SyncState.CONFLICT -> "Conflict — tap Resolve"
                         SyncState.FAILED -> "Failed"
                     },
+                    modifier = Modifier.testTag("row_sync_state_${task.title}"),
                     style = MaterialTheme.typography.labelSmall,
                     color = when (task.syncState) {
                         SyncState.CONFLICT -> MaterialTheme.colorScheme.error

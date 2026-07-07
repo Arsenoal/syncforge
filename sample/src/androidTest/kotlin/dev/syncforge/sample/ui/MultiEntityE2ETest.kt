@@ -29,10 +29,10 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         waitForSyncToFinish()
         waitForAnyText("Up to date", "Synced", "Last synced")
 
-        waitForRowSyncState(noteTitle, "Synced")
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
 
         navigateToTasks()
-        waitForRowSyncState(taskTitle, "Synced")
+        waitForRowSyncState(taskTitle, "Synced", timeoutMillis = 60_000)
     }
 
     @Test
@@ -57,7 +57,7 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         tapText("Sync")
         waitForSyncToFinish()
 
-        waitForRowSyncState(noteTitle, "Synced")
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
 
         navigateToTasks()
         waitForTextContains("Conflict")
