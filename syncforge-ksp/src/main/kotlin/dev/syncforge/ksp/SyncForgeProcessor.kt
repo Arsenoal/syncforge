@@ -138,6 +138,7 @@ class SyncForgeProcessor(
             )
             codegenInfos += info
             generateHandler(info)
+            generateFieldMergeIfNeeded(entity, info)
         }
 
         if (codegenInfos.isNotEmpty()) {
@@ -145,6 +146,26 @@ class SyncForgeProcessor(
         }
 
         return emptyList()
+    }
+
+    private fun generateFieldMergeIfNeeded(entity: KSClassDeclaration, info: EntityCodegenInfo) {
+        val fields = FieldMergeCodegen.collectMergeFields(entity, logger)
+        if (fields.isEmpty()) return
+
+        val source = FieldMergeCodegen.generateSource(
+            packageName = info.packageName,
+            entityName = info.entityName,
+            entityType = info.entityType,
+            fields = fields,
+        )
+        val fileName = "${info.entityName}FieldMerge"
+        codeGenerator.createNewFile(
+            dependencies = Dependencies(false, *info.sourceFiles.toTypedArray()),
+            packageName = info.packageName,
+            fileName = fileName,
+        ).use { stream ->
+            stream.write(source.toByteArray())
+        }
     }
 
     private fun generateHandler(info: EntityCodegenInfo) {

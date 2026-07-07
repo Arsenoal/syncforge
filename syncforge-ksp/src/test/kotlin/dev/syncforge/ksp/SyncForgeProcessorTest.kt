@@ -35,6 +35,27 @@ class SyncForgeProcessorTest {
     }
 
     @Test
+    fun generatesFieldMergeWhenPropertiesAnnotated() {
+        val compilation = KotlinCompilation().apply {
+            sources = listOf(annotatedEntitySource, storeSource)
+            symbolProcessorProviders = listOf(SyncForgeProcessorProvider())
+            inheritClassPath = true
+            messageOutputStream = System.out
+        }
+
+        val result = compilation.compile()
+        if (result.exitCode != KotlinCompilation.ExitCode.OK) {
+            System.err.println(result.messages)
+        }
+
+        val merge = generatedFile(compilation, "TaskEntityFieldMerge.kt")
+        assertTrue(merge.contains("object TaskEntityFieldMerge"))
+        assertTrue(merge.contains("remote.title else local.title"))
+        assertTrue(merge.contains("(local.tags + remote.tags).distinct()"))
+        assertTrue(merge.contains("maxOf(local.views, remote.views)"))
+    }
+
+    @Test
     fun daoPath_unchanged() {
         val compilation = KotlinCompilation().apply {
             sources = listOf(entitySource, daoSource)
@@ -57,6 +78,33 @@ class SyncForgeProcessorTest {
         val file = compilation.kspSourcesDir.walkTopDown().first { it.name == name }
         return file.readText()
     }
+
+    private val annotatedEntitySource = SourceFile.kotlin(
+        "TaskEntity.kt",
+        """
+        package com.example.tasks
+
+        import dev.syncforge.annotations.GrowOnlyCounter
+        import dev.syncforge.annotations.LastWriteWins
+        import dev.syncforge.annotations.ObservedRemoveSet
+        import dev.syncforge.annotations.SyncForgeEntity
+        import dev.syncforge.entity.SyncedEntity
+        import dev.syncforge.model.SyncState
+        import kotlinx.serialization.Serializable
+
+        @SyncForgeEntity(entityType = "tasks")
+        @Serializable
+        data class TaskEntity(
+            override val id: String,
+            @LastWriteWins val title: String,
+            @ObservedRemoveSet val tags: List<String> = emptyList(),
+            @GrowOnlyCounter val views: Int = 0,
+            override val localVersion: Long = 0,
+            override val updatedAtMillis: Long = 0,
+            override val syncState: SyncState = SyncState.SYNCED,
+        ) : SyncedEntity
+        """.trimIndent(),
+    )
 
     private val entitySource = SourceFile.kotlin(
         "TaskEntity.kt",
