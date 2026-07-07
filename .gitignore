@@ -15,9 +15,11 @@ captures/
 .docx-gen/
 docs/*.docx
 !docs/SyncForge-GitHub-Launch-Playbook.docx
+!docs/SyncForge-1.0-P0.docx
 docs/images/*-raw.mp4
 .~lock.*
 scripts/*.py
+!scripts/generate-p0-docx.py
 *.sh
 !.github/scripts/*.sh
 !scripts/record-demo-gif.sh

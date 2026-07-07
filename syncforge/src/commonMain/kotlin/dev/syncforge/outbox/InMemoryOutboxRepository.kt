@@ -19,6 +19,9 @@ class InMemoryOutboxRepository : OutboxRepository {
     private val version = MutableStateFlow(0)
     private var maxRetriesConfig: Int = 5
 
+    /** Override for tests that need deterministic retry timing (shared with [SyncEngine] clock). */
+    var clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() }
+
     fun setMaxRetriesForObservation(maxRetries: Int) {
         maxRetriesConfig = maxRetries
     }
@@ -103,5 +106,5 @@ class InMemoryOutboxRepository : OutboxRepository {
         }
     }
 
-    private fun nowMillis(): Long = dev.syncforge.sync.currentTimeMillis()
+    private fun nowMillis(): Long = clock()
 }
