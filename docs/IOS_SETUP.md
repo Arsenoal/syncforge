@@ -11,12 +11,18 @@ Configure SyncForge on Apple platforms using `SyncForge.ios { }`.
 ```kotlin
 import dev.syncforge.SyncForge
 import dev.syncforge.ios
+import dev.syncforge.network.ensureSyncForgeNetworkKtorLoaded
+
+ensureSyncForgeNetworkKtorLoaded()  // required for default Ktor transport on Kotlin/Native
 
 val syncManager = SyncForge.ios {
     baseUrl("https://api.example.com")
     registry(handlers)
 }
 ```
+
+Add `implementation("studio.syncforge:syncforge-network-ktor:1.0.0")` to the shared module that
+calls `SyncForge.ios { }`. See [Getting Started → HTTP client](GETTING_STARTED.md#http-client--default-vs-injectable).
 
 ### Defaults applied automatically
 
@@ -25,7 +31,7 @@ val syncManager = SyncForge.ios {
 | Outbox + conflicts | SQLDelight — schemas/drivers in `:syncforge-persistence`, repos in `:syncforge` `syncPersistenceMain`; DB in app Documents directory |
 | Pull cursor | `UserDefaults` via `SyncCursorStoreFactory.create()` |
 | Network | `NWPathMonitor` via `NetworkMonitorFactory.create()` |
-| Transport | `KtorSyncTransport` (Darwin engine) |
+| Transport | `KtorSyncTransport` (Darwin engine) via `syncforge-network-ktor` |
 | Retry | Exponential backoff (same as Android) |
 | Reconnect sync | Auto-push when network returns (via `SyncManagerImpl`) |
 | Background sync | `IosBackgroundSyncWorkScheduler` (BGAppRefreshTask via BGTaskScheduler) |
@@ -47,7 +53,8 @@ registry(EntityRegistry.of(taskHandler))
 cursorStore(myStore)                    // custom SyncCursorStore
 networkMonitor(myMonitor)               // custom NetworkMonitor
 persistence(customPersistence)          // custom SyncForgePersistence
-transport(customTransport)
+httpClient(appHttpClient)               // app-owned Ktor HttpClient (see Transport below)
+transport(customTransport)              // full SyncTransport override (GraphQL, etc.)
 scope(customScope)
 conflicts { entity("tasks") { lastWriteWins() } }
 customize { maxRetries = 10 }           // SyncForgeBuilder escape hatch
@@ -99,6 +106,23 @@ SyncForge.ios {
 ```
 
 `SyncStatus.Offline` is emitted when `requireNetwork = true` and the device has no connectivity.
+
+---
+
+## Transport
+
+Default REST transport lives in `syncforge-network-ktor` (not compiled into core on Apple targets).
+
+| Setup | What to do |
+|-------|------------|
+| **Default** | Depend on `syncforge-network-ktor`, call `ensureSyncForgeNetworkKtorLoaded()` before `SyncForge.ios { }` |
+| **Injectable client** | `httpClient(buildSyncForgeHttpClient(...))` — see [Recipes → Inject HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
+| **Explicit** | `transport(KtorSyncTransport(baseUrl, auth))` — skips default wiring |
+| **Custom wire format** | `transport(MySyncTransport)` — implement `SyncTransport` |
+
+SyncForge uses the client only for `/sync/push` and `/sync/pull`. Bearer headers on injected
+clients must be configured on the `HttpClient` (e.g. `buildSyncForgeHttpClient`); `authToken { }`
+still enables 401 refresh at the transport layer.
 
 ---
 

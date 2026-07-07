@@ -408,8 +408,8 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 
 ```markdown
 ## 1.1.0 — Wire-up
-- [ ] SyncHttpClient + RestSyncTransport (backward compatible KtorSyncTransport)
-- [ ] httpClient { } DSL + documented injectable HttpClient sample
+- [x] SyncHttpClient + RestSyncTransport (backward compatible KtorSyncTransport)
+- [x] httpClient { } DSL + documented injectable HttpClient sample
 - [ ] EntityStore + @SyncForgeStore KSP (+ Room adapter module)
 - [ ] Non-Room path documented (in-memory store test or recipe)
 - [ ] Encrypted TokenStore + CharArray auth overloads
@@ -424,8 +424,8 @@ Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate:
 
 ### 1.1.0 acceptance criteria
 
-- [ ] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
-- [ ] Injectable Ktor `HttpClient` documented with sample using app-owned client (interceptors, shared engine)
+- [x] `SyncHttpClient` + `RestSyncTransport` published; `KtorSyncTransport` delegates through them (backward compatible)
+- [x] Injectable Ktor `HttpClient` documented with sample using app-owned client (interceptors, shared engine)
 - [ ] `EntityStore` published in `commonMain`; `EntitySyncHandler` delegates through it
 - [ ] KSP generates handlers from `@SyncForgeStore` and existing `@SyncForgeDao`
 - [ ] At least one non-Room path documented (Realm recipe or in-memory `EntityStore` test module)

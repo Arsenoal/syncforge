@@ -77,6 +77,7 @@ dependencies {
 | `studio.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
 | `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
 | `studio.syncforge:syncforge-ksp` | No | Added by `studio.syncforge.android` plugin |
+| `studio.syncforge:syncforge-network-ktor` | No | Added by `studio.syncforge.android` plugin (default REST transport) |
 | Room / WorkManager / serialization | No | Transitive on Android via `syncforge` |
 
 Your app still adds **your** Room database (`room-runtime` for `@Database` / `@Dao` only if not
@@ -90,6 +91,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("studio.syncforge:syncforge:1.0.0")
+            implementation("studio.syncforge:syncforge-network-ktor:1.0.0")  // default Ktor REST transport
         }
     }
 }
@@ -103,6 +105,7 @@ in the same project). Link the iOS framework in Xcode — see [IOS_SETUP.md](IOS
 ```kotlin
 dependencies {
     implementation("studio.syncforge:syncforge:1.0.0")
+    implementation("studio.syncforge:syncforge-network-ktor:1.0.0")  // default Ktor REST transport
 }
 ```
 
@@ -229,6 +232,39 @@ import com.example.tasks.SyncForgeHandlers   // KSP-generated in your package
 
 **That's the entire SyncForge setup.** No duplicated `entityTypes`, no manual outbox factory,
 no transport wiring unless you want to customize.
+
+### HTTP client — default vs injectable
+
+By default, `SyncForge.android { }` uses `KtorSyncTransport` from `syncforge-network-ktor`
+(OkHttp on Android). SyncForge calls your backend at **`POST /sync/push`** and
+**`GET /sync/pull`** only — see [REST API](REST_API.md).
+
+| Approach | When to use |
+|----------|-------------|
+| **Omit `httpClient()`** | Quick start, sample apps, no existing Ktor stack |
+| **`httpClient(appHttpClient)`** | You already have a Ktor `HttpClient` (logging, shared engine, app interceptors) |
+
+```kotlin
+// Reuse an app-owned client (logging, shared OkHttp engine, etc.)
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    httpClient(appHttpClient)
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+**Important:** SyncForge uses your client as-is. Bearer tokens and JSON negotiation must already
+be configured on `appHttpClient` (or use `buildSyncForgeHttpClient` from `syncforge-network-ktor`).
+`authToken { }` / `auth { }` still wire 401 refresh at the transport layer, but injected clients
+do not get automatic `Authorization` headers unless you add them. See
+[Recipes → Inject app-owned Ktor HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient).
+
+**iOS:** add `syncforge-network-ktor`, call `ensureSyncForgeNetworkKtorLoaded()` once at startup
+before `SyncForge.ios { }`, or pass `httpClient()` / `transport(KtorSyncTransport(...))` explicitly.
+Details: [IOS_SETUP.md → Transport](IOS_SETUP.md#transport).
+
+**Advanced:** implement `SyncTransport` yourself (GraphQL, Firebase, etc.) and pass
+`transport(customTransport)` — no Ktor required.
 
 ---
 
@@ -366,7 +402,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 |---------|---------|
 | Outbox storage | SQLDelight (`syncforge.db`) |
 | Pull cursor | SharedPreferences |
-| Transport | `KtorSyncTransport` |
+| Transport | `KtorSyncTransport` via `syncforge-network-ktor` (override with `httpClient()` or `transport()`) |
 | Push retry | Exponential backoff, max 5 attempts |
 | Network reconnect | Auto-push when connectivity returns |
 | Conflict default | Last-write-wins (override per entity) |
@@ -390,6 +426,7 @@ When you use `SyncForge.android { }`, these are configured automatically:
 
 | Topic | Guide |
 |-------|-------|
+| Injectable Ktor `HttpClient` | [Recipes → Inject app-owned HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
 | Custom field merges | [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) |
 | User-driven conflict UI | [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose) |
 | In-app debug console | [Recipes → Debug console](RECIPES.md#use-the-in-app-debug-console) |

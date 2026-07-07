@@ -322,6 +322,152 @@ Status label already includes conflict count when using `toUiModel()`:
 
 ---
 
+## Inject app-owned Ktor HttpClient
+
+Use when your app already runs Ktor — shared OkHttp/Darwin engine, request logging, tracing,
+or custom interceptors. SyncForge uses the client **only** for `/sync/push` and `/sync/pull`;
+all other API traffic can share the same engine.
+
+### Default (no injection)
+
+Android apps using `id("studio.syncforge.android")` get `syncforge-network-ktor` automatically.
+Omit `httpClient()` and SyncForge creates a platform client (OkHttp on Android, Darwin on iOS).
+
+### Basic injection (Android)
+
+```kotlin
+import dev.syncforge.network.KtorSyncTransport
+import dev.syncforge.network.buildSyncForgeHttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+
+class MyApplication : Application() {
+
+    private val syncHttpClient by lazy {
+        buildSyncForgeHttpClient(
+            engine = OkHttp.create(),
+            auth = null,  // set SyncAuthProvider when using authToken { } — see below
+            json = KtorSyncTransport.defaultJson,
+        )
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        syncManager = SyncForge.android(this) {
+            baseUrl("https://api.example.com")
+            httpClient(syncHttpClient)
+            registry(SyncForgeHandlers.registry(taskDao))
+        }
+    }
+}
+```
+
+`buildSyncForgeHttpClient` adds JSON negotiation, non-2xx → `SyncTransportException`, and optional
+bearer `defaultRequest` when you pass a `SyncAuthProvider`.
+
+### Shared engine with your other APIs
+
+```kotlin
+// One engine — sync + REST API share connection pool / TLS config
+private val httpEngine = OkHttp.create()
+
+val syncClient = buildSyncForgeHttpClient(httpEngine, authProvider, KtorSyncTransport.defaultJson)
+
+val apiClient = HttpClient(httpEngine) {
+    install(ContentNegotiation) { json(KtorSyncTransport.defaultJson) }
+    // your app-specific plugins (cookies, tracing, etc.)
+}
+
+SyncForge.android(this) {
+    baseUrl(BuildConfig.SYNC_BASE_URL)
+    httpClient(syncClient)
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+### Request logging (optional)
+
+Add Ktor's logging plugin to **your** client build (not a SyncForge dependency):
+
+```kotlin
+// build.gradle.kts — app module
+dependencies {
+    implementation("io.ktor:ktor-client-logging:$ktorVersion")
+}
+```
+
+```kotlin
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+
+val syncClient = HttpClient(OkHttp.create()) {
+    install(ContentNegotiation) { json(KtorSyncTransport.defaultJson) }
+    install(Logging) {
+        level = LogLevel.HEADERS  // BODY in debug only — may log tokens
+    }
+    // Mirror buildSyncForgeHttpClient: HttpResponseValidator + defaultRequest for auth
+}
+```
+
+Prefer `HEADERS` or a redacting interceptor in production — sync payloads may contain entity data.
+
+### Bearer auth with an injected client
+
+`authToken { }` and `auth(SyncAuthProvider…)` configure transport-level 401 refresh, but the
+**injected** `HttpClient` must attach the bearer header itself:
+
+```kotlin
+val tokenStore = TokenStore()
+val authProvider = SyncAuthProvider.bearer { tokenStore.accessToken }
+
+val syncClient = buildSyncForgeHttpClient(
+    engine = OkHttp.create(),
+    auth = authProvider,
+    json = KtorSyncTransport.defaultJson,
+)
+
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    httpClient(syncClient)
+    auth(authProvider)  // enables 401 refresh retry on sync transport
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+Built-in `auth { }` (register/login) uses a **separate** auth HTTP client for `/auth/*` routes;
+sync push/pull still go through `httpClient()` above.
+
+### iOS / desktop
+
+```kotlin
+import dev.syncforge.network.ensureSyncForgeNetworkKtorLoaded
+
+// Call once before SyncForge.ios { } when using default transport (no explicit transport())
+ensureSyncForgeNetworkKtorLoaded()
+
+SyncForge.ios {
+    baseUrl("https://api.example.com")
+    httpClient(iosSyncHttpClient)  // optional — Darwin engine via buildSyncForgeHttpClient
+    registry(handlers)
+}
+```
+
+`SyncForge.desktop { httpClient(...) }` follows the same pattern. Requires
+`studio.syncforge:syncforge-network-ktor` on the classpath.
+
+### Escape hatch — custom transport
+
+Non-REST backends skip `httpClient()` entirely:
+
+```kotlin
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")  // still used by built-in auth { } if configured
+    transport(MyGraphqlSyncTransport(...))
+    registry(handlers)
+}
+```
+
+---
+
 ## Bearer token auth
 
 ```kotlin
@@ -365,6 +511,10 @@ Requirements:
 - Each request is retried at most **once** after refresh.
 
 Works on all platforms (`SyncForge.android`, `SyncForge.ios`, `SyncForge.desktop`).
+
+When using an injected `HttpClient`, pass the same `SyncAuthProvider` into
+`buildSyncForgeHttpClient` **and** `auth(…)` so headers and 401 refresh stay aligned —
+see [Inject app-owned Ktor HttpClient](#inject-app-owned-ktor-httpclient).
 
 ---
 

@@ -14,7 +14,7 @@ syncManager = SyncForge.android(this) {
 }
 ```
 
-**Defaults:** SQLDelight outbox + conflicts (`syncforge.db`), automatic Room → SQLDelight migration on upgrade, SharedPreferences cursor, ConnectivityManager, Ktor/OkHttp, WorkManager.
+**Defaults:** SQLDelight outbox + conflicts (`syncforge.db`), automatic Room → SQLDelight migration on upgrade, SharedPreferences cursor, ConnectivityManager, Ktor/OkHttp (`syncforge-network-ktor`, added by the Gradle plugin), WorkManager.
 
 ---
 
@@ -132,6 +132,8 @@ Full walkthrough with sequence diagram: [AUTH_API.md → Android auth flow](AUTH
 |--------|-------------|
 | `auth { }` | Built-in register/login/refresh — see [AUTH_API.md](AUTH_API.md) |
 | `authToken { }` / `auth(provider)` | Manual bearer or custom `SyncAuthProvider` |
+| `httpClient(client)` | App-owned Ktor `HttpClient` for `/sync/push` and `/sync/pull` — see [Recipes](RECIPES.md#inject-app-owned-ktor-httpclient) |
+| `transport(transport)` | Full `SyncTransport` override (non-REST backends) |
 | `databaseName(name)` | SQLDelight database file name (default `syncforge.db`) |
 | `persistence(SyncForgePersistence)` | Inject a custom persistence instance |
 | `customize { }` | Override `outbox` / `conflictStore` manually |
