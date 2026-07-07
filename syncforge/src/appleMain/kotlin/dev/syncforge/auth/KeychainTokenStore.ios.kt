@@ -7,11 +7,12 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
 import platform.CoreFoundation.CFDictionaryRef
 import platform.CoreFoundation.kCFBooleanTrue
+import platform.Foundation.CFBridgingRelease
 import platform.Foundation.NSData
 import platform.Foundation.NSString
 import platform.Foundation.NSUTF8StringEncoding
@@ -118,7 +119,7 @@ private object KeychainStorage {
         val result = alloc<CFTypeRefVar>()
         val status: OSStatus = SecItemCopyMatching(query as CFDictionaryRef, result.ptr)
         if (status != errSecSuccess) return@memScoped null
-        val data = result.pointed.value as? NSData ?: return@memScoped null
+        val data = CFBridgingRelease(result.value) as? NSData ?: return@memScoped null
         data.toUtf8String()
     }
 
