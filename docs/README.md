@@ -23,8 +23,8 @@ docs/
 ├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
 ├── ROADMAP.md                ← Phases, limitations, future work
 ├── ROADMAP_1_0_TO_2_0.md     ← Detailed plan: 1.0.0 through 2.0.0
-├── SyncForge-Roadmap-1.0-to-2.0.docx  ← Word export (regenerate: scripts/generate-roadmap-docx.py)
-├── SyncForge-1.1-Issues.docx        ← 1.1.0 GitHub issues breakdown (scripts/generate-1.1-docx.py)
+├── SyncForge-Roadmap-1.0-to-2.0.docx  ← Word export of the full roadmap
+├── SyncForge-1.1-Issues.docx        ← 1.1.0 GitHub issues breakdown
 ├── SyncForge-1.0-P0.docx     ← Post-1.0 P1 / community checklist
 ├── SyncForge-GitHub-Launch-Playbook.docx  ← 1.0 soak, Maven Central, GitHub growth playbook
 └── images/                   ← README demo GIF (+ recording guide)

@@ -20,13 +20,9 @@ docs/*.docx
 !docs/SyncForge-Roadmap-1.0-to-2.0.docx
 docs/images/*-raw.mp4
 .~lock.*
-scripts/*.py
-!scripts/generate-p0-docx.py
-!scripts/generate-1.1-docx.py
-!scripts/generate-roadmap-docx.py
+scripts/
 *.sh
 !.github/scripts/*.sh
-!scripts/record-demo-gif.sh
 *.log
 
 # Android

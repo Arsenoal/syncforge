@@ -43,14 +43,6 @@ Use the in-app **Server edit** button (calls `POST /dev/simulate-edit`) — no c
 
 Use `auto_demo` so the sequence runs in code. **Do not** use `adb shell input tap` — it can open the launcher, calendar, or keyboard chrome.
 
-**One command** (builds, starts mock-server, records, encodes MP4 + GIF):
-
-```bash
-./scripts/record-demo-gif.sh
-```
-
-Manual equivalent:
-
 ```bash
 curl -s -X POST http://127.0.0.1:8080/dev/reset
 adb shell settings put system accelerometer_rotation 0

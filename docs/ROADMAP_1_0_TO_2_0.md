@@ -418,7 +418,7 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 - [x] BOM optional artifacts listed; no 1.0 API breaks
 ```
 
-Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx) (regenerate: `scripts/generate-1.1-docx.py`).
+Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx).
 
 ---
 
@@ -974,5 +974,4 @@ When a version ships, update [CHANGELOG.md](../CHANGELOG.md), mark jobs done her
 | [CONFLICT_RESOLUTION.md](CONFLICT_RESOLUTION.md)                              | Strategy guide (CRDT section planned 1.2) |
 | [SyncForge-1.0-P0.docx](SyncForge-1.0-P0.docx)                                | Short 1.0 blocker checklist (Word)        |
 | [SyncForge-Roadmap-1.0-to-2.0.docx](SyncForge-Roadmap-1.0-to-2.0.docx)        | This roadmap as Word                      |
-| [scripts/generate-roadmap-docx.py](../scripts/generate-roadmap-docx.py)       | Regenerate both Word roadmaps             |
-| [scripts/generate-1.0-roadmap-pdf.py](../scripts/generate-1.0-roadmap-pdf.py) | PDF generator for pre-1.0 roadmap         |
+| [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx)                          | 1.1.0 GitHub issues breakdown (Word)      |
