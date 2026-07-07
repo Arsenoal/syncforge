@@ -17,7 +17,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 1.1.x  Integration DX  — EntityStore abstraction, DI modules, auth graduation, cursor polish
 1.2.x  Smart conflicts — CRDT primitives, crdt { } strategy, KSP field-merge
 1.3.x  Platform parity — Desktop sample, iOS SPM/XCFramework, CMP debug UI
-1.4.x  Ecosystem       — Supabase/Spring starters, multi-device E2E, version catalog
+1.4.x  Ecosystem       — Spring/GraphQL/Supabase transports, multi-device E2E, version catalog
 1.5.x  Production ops — OpenTelemetry, SyncHealth dashboard, hierarchical sync recipes
 2.0.0  Major evolution — Optional CRDT/op-log channel, stable KMP DSLs, REST v2 (if needed)
 ```
@@ -33,7 +33,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **App entity store**      | Room-first DX (KSP)     | **`EntityStore` abstraction** + adapters | Any store via handler; Room not required     |
 | **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Legacy Room internals removed at 1.0         |
 | **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
-| **Backend contract**      | REST v1 frozen          | Adapters (Supabase, Spring)            | REST v2 only if op-log needs it              |
+| **Backend / transport**   | REST v1 frozen (`KtorSyncTransport`) | Optional adapters (GraphQL, Supabase, Spring) | REST v2 only if op-log needs it; wire format pluggable via `SyncTransport` |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
 
 ---
@@ -46,7 +46,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **1.1.0** | *Wire-up*     | Q4 2026       | EntityStore abstraction, DI, auth stable, DataStore cursor |
 | **1.2.0** | *Merge-smart* | Q1 2027       | CRDT primitives + `crdt { }` strategy (experimental)   |
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
-| **1.4.0** | *Ecosystem*   | Q3 2027       | Backend starters, Supabase transport, multi-device E2E |
+| **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
 | **1.5.0** | *Operate*     | Q4 2027       | Tracing, metrics dashboard, hierarchical recipes       |
 | **2.0.0** | *Converge*    | 2028          | Major API + optional sync modes                        |
 
@@ -107,7 +107,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 - **`EntityStore` abstraction** — formal contract + KSP beyond Room DAOs (see 1.1.x)
 - DataStore KMP cursor
 - CRDT / DI integration artifacts
-- Supabase / Spring starters
+- GraphQL / Supabase / Spring transport adapters
 - iOS SPM binary distribution
 - Shake-to-open debug console
 
@@ -132,6 +132,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 - Built-in `auth { }` DSL and `SyncManager.register`/`login`/`logout`
 - `SyncManager.debug`, `conflictHistory`, `SyncDebug*`
 - `SyncForgePersistence` custom wiring extensions
+- Custom `SyncTransport` (e.g. GraphQL) — implement `push`/`pull`; wire via `transport { }` on platform DSLs
 
 ---
 
@@ -284,7 +285,7 @@ iOS and desktop are **first-class documented paths**, not compile-only targets. 
 
 ### Goal
 
-Meet teams where their backend already lives; prove concurrent multi-device behavior.
+Meet teams where their backend already lives — REST, GraphQL, or hosted BaaS — without changing the sync engine. Prove concurrent multi-device behavior.
 
 ### Features
 
@@ -296,13 +297,40 @@ Meet teams where their backend already lives; prove concurrent multi-device beha
 | 1.4-04 | **Multi-device E2E** — two emulators, concurrent edit | P1       | Conflict + CRDT validation                         |
 | 1.4-05 | **Backend contract test kit**                         | P2       | Shared test harness for custom servers             |
 | 1.4-06 | **Firebase / custom webhook transport spike**         | P3       | Evaluate demand before committing                  |
+| 1.4-07 | **`syncforge-transport-graphql`** client adapter      | P1       | `SyncTransport` over Apollo/Ktor GraphQL; maps push/pull mutations + cursor query |
+| 1.4-08 | **GraphQL schema + resolver recipes**                 | P1       | Sample `syncPush` / `syncPull` operations; RECIPES.md + optional `:backend-starter-graphql` |
+| 1.4-09 | **Custom `SyncTransport` guide**                      | P2       | Document hand-written GraphQL/REST/gRPC path (works at 1.0 via `transport { }`) |
+
+### Transport architecture (1.4)
+
+The sync **contract** (batch push, cursor pull, pagination, tombstones) is separate from the **wire format**. `SyncTransport` is the extension point:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  :syncforge — SyncManager, outbox, conflicts (unchanged)     │
+└────────────────────────────┬─────────────────────────────────┘
+                             │ SyncTransport.push / .pull
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+  KtorSyncTransport   GraphQlSyncTransport   SupabaseTransport …
+  (REST, 1.0 default)  (:syncforge-transport-graphql, 1.4)
+        │                    │                    │
+   POST /sync/push      mutation syncPush     hosted adapter
+   GET  /sync/pull      query    syncPull
+```
+
+**GraphQL (target 1.4):** server exposes operations with the same semantics as [REST_API.md](REST_API.md) — not generic CRUD. Client adapter converts `OutboxEntry` batches and pull cursors to GraphQL variables and maps responses to `PushResult` / `PullResult`.
+
+**Today (1.0):** any GraphQL backend can integrate by implementing `SyncTransport` manually and passing it to `SyncForge.android { transport(myTransport) }`. No GraphQL dependency in `:syncforge` core.
 
 ### 1.4.0 acceptance criteria
 
 - [ ] Spring starter documented with docker-compose quickstart
+- [ ] `syncforge-transport-graphql` published (optional BOM entry); sample push/pull against `:mock-server` GraphQL facade or standalone schema
+- [ ] RECIPES.md: custom `SyncTransport` + GraphQL schema snippet
 - [ ] Version catalog published to Maven Central
 - [ ] Multi-device E2E green in nightly CI
-- [ ] REST_API.md documents adapter expectations (transport implements same contract)
+- [ ] REST_API.md documents transport adapter expectations (same push/pull semantics; wire format may differ)
 
 ---
 
@@ -394,7 +422,7 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 | Library version | REST contract             | Notes                                                            |
 |-----------------|---------------------------|------------------------------------------------------------------|
 | 1.0.x           | **v1 frozen**             | `POST /sync/push`, `GET /sync/pull` per REST_API.md              |
-| 1.x             | v1 + optional auth routes | `/auth/*` stable with built-in auth                              |
+| 1.x             | v1 + optional auth routes | `/auth/*` stable with built-in auth; **GraphQL** via `SyncTransport` adapter (1.4) — same semantics, different wire format |
 | 2.0             | v1 + optional **v2**      | v2 only if op-log/CRDT channel needs it; document in REST_API.md |
 
 Backend implementers should pin to a library major version in their compatibility matrix.
@@ -424,6 +452,7 @@ Backend implementers should pin to a library major version in their compatibilit
 | REST v2 splits ecosystem              | High     | Defer to 2.0; v1 long support window; adapters implement v1 only in 1.x        |
 | Multi-device E2E flakiness            | Medium   | Nightly only initially; mock-server health gate                                |
 | Scope creep into “full backend”       | Medium   | Starters are reference kits; `:syncforge-server` stays minimal                 |
+| GraphQL schema drift vs REST contract | Medium   | Document canonical push/pull semantics; adapter tests share contract test kit  |
 
 ---
 
