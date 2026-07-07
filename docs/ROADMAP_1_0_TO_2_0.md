@@ -84,7 +84,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 | 1.0-P0-01 | **API graduation** — remove `@ExperimentalSyncForgeApi` from `SyncForge.android`, core `SyncManager` (`status`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`), `ConflictPolicy` / `ConflictStrategies`, Compose status + conflict UI | API ✅  |
 | 1.0-P0-02 | **Remove `useRoomPersistence()`** — legacy Room opt-in deleted (migration path documented in upgrade guide)                                                                                                                                                   | Android ✅ |
 | 1.0-P0-03 | **Publish `1.0.0` to Maven Central** — all artifacts: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin                                                                                                                  | Dist    |
-| 1.0-P0-04 | **1.0 sign-off matrix** — run full acceptance checklist (Section 8); tag `v1.0.0`                                                                                                                                                                             | QA      |
+| 1.0-P0-04 | **1.0 sign-off matrix** — run full acceptance checklist (Section 8); tag `v1.0.0`                                                                                                                                                                             | QA ✅ soak |
 | 1.0-P0-05 | **macOS tag publish** — iOS/macOS frameworks from CI without manual steps                                                                                                                                                                                     | CI      |
 | 1.0-P0-06 | **Docs freeze** — CHANGELOG, MODULES, GETTING_STARTED match 1.0 APIs exactly                                                                                                                                                                                  | Docs ✅ |
 
@@ -399,16 +399,29 @@ Adjust based on contributor capacity and dogfood feedback after 1.0.
 
 ### 1.0.0 sign-off checklist
 
-1. All 1.0-P0 jobs completed and verified.
-2. Sample App Proof: two+ entities, two+ DAOs, two+ screens, shared `SyncManager` — E2E green.
-3. No `@ExperimentalSyncForgeApi` on `SyncForge.android`, core `SyncManager`, `ConflictPolicy`, Compose status UI.
-4. Deprecated APIs removed (`ConflictResolver` family, `useSqlDelightPersistence`, `useRoomPersistence`).
-5. Maven Central: `syncforge`, `annotations`, `ksp`, `persistence`, `bom`, `android-deps`, Gradle plugin — all at `1.0.0`.
-6. CI green: compile (Android+JVM), `jvmTest`, `testDebugUnitTest`, `androidE2e` (nightly minimum), `iosE2e` on macOS runner.
-7. macOS tag publish produces iOS/macOS frameworks without manual steps.
-8. CHANGELOG, MODULES, GETTING_STARTED reflect 1.0 APIs accurately.
-9. Migration tested: 0.4 Room → 0.6 SQLDelight → 1.0 on sample upgrade path.
-10. At least one external dogfood or documented third-party integration attempt.
+Run automated checks locally:
+
+```bash
+./gradlew verifySignOffMatrix          # verifyReleaseSignOff + verifyConsumerSmokeMavenCentral
+# or: .github/scripts/run-sign-off-matrix.sh
+```
+
+E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
+
+| # | Criterion | Verification | Status (0.9.0-rc.5 soak, July 2026) |
+|---|-----------|--------------|--------------------------------------|
+| 1 | All 1.0-P0 jobs complete | P0 table above | ⬜ P0-03 (`1.0.0` publish), P0-05 (re-verify tag publish on `v1.0.0`) |
+| 2 | Sample App Proof — 2+ entities/DAOs/screens, shared `SyncManager` | `androidE2e`, `iosE2e` | ✅ CI ([run #102](https://github.com/Arsenoal/syncforge/actions/runs/28838303714)) |
+| 3 | No `@ExperimentalSyncForgeApi` on stable surfaces | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest` | ✅ in `verifyReleaseSignOff` |
+| 4 | Deprecated APIs removed | grep + compile | ✅ `ConflictResolver`, `useSqlDelightPersistence`, `useRoomPersistence` gone |
+| 5 | Maven Central all artifacts at release version | `verifyConsumerSmokeMavenCentralArtifacts` | ✅ `0.9.0-rc.5` — ⬜ re-pin to `1.0.0` at tag |
+| 6 | CI green | `verifyReleaseSignOff`, `androidE2e`, `iosE2e`, `verifyConsumerSmokeMavenCentral` | ✅ [CI run #102](https://github.com/Arsenoal/syncforge/actions/runs/28838303714) all jobs green |
+| 7 | macOS tag publish (iOS/macOS KMP targets) | `publish-release.yml` on tag | ✅ `v0.9.0-rc.5` — ⬜ confirm on `v1.0.0` |
+| 8 | Docs freeze | `CHANGELOG`, `MODULES`, `GETTING_STARTED` | ✅ P0-06 |
+| 9 | Room → SQLDelight migration | `SyncForgeAndroidMigrationTest`, `RoomMigrationInstrumentedTest` | ✅ in `androidE2e` |
+| 10 | External dogfood / third-party integration | Community | ⬜ deferred (P1-07) |
+
+**Pre-tag soak verdict:** automated + CI criteria **pass** on `0.9.0-rc.5`. Tag `v1.0.0` when rows 1, 5, 7 are re-verified at `1.0.0` (row 10 optional).
 
 ### 2.0.0 sign-off checklist
 

@@ -38,12 +38,10 @@ SECTIONS = [
         ],
     ),
     (
-        "Release sign-off gate (1.0-P0-04)",
+        "Release gate (post-soak)",
         [
-            "All work items above complete and verified",
-            "Full 1.0 sign-off matrix passed — see docs/ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off",
-            "CI green: verifyReleaseSignOff + androidE2e + iosE2e + verifyConsumerSmokeMavenCentral",
-            "Integration tests (P1-04): SyncEngineIntegrationTest — retry exhaustion, multi-page pull, offline queue",
+            "Re-run sign-off matrix at v1.0.0 — ./gradlew verifySignOffMatrix + CI E2E + publish-release.yml on tag",
+            "Bump consumer-smoke Maven Central pins to 1.0.0 after Central sync",
             "Tag v1.0.0",
         ],
     ),

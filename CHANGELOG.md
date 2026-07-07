@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`verifySignOffMatrix`** Gradle task — runs `verifyReleaseSignOff` + `verifyConsumerSmokeMavenCentral` (1.0-P0-04 automated soak checks)
+- **`.github/scripts/run-sign-off-matrix.sh`** — local runner with CI E2E reminder
 - **`SyncEngineIntegrationTest`** (P1-04) — retry exhaustion, multi-page pull, and offline queue scenarios in `commonTest` (runs on JVM + Android unit test targets)
 - **Docs freeze** (P0-06) — `CHANGELOG.md`, `docs/MODULES.md`, and `docs/GETTING_STARTED.md` aligned with 1.0 stable API boundaries (`StableApiSurfaceTest` / `StableAndroidApiSurfaceTest`)
 

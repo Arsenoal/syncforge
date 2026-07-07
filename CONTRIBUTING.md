@@ -17,14 +17,15 @@ Requirements: JDK 17, Android SDK (for Android modules), Gradle wrapper in repo.
 ```bash
 git clone https://github.com/Arsenoal/syncforge.git
 cd syncforge
-./gradlew verifyReleaseSignOff
+./gradlew verifySignOffMatrix
 ```
 
 Useful tasks:
 
 | Task | Purpose |
 |------|---------|
-| `./gradlew verifyReleaseSignOff` | JVM + Android tests, consumer smoke (mavenLocal) |
+| `./gradlew verifySignOffMatrix` | Pre-tag sign-off: `verifyReleaseSignOff` + `verifyConsumerSmokeMavenCentral` |
+| `./gradlew verifyReleaseSignOff` | JVM + Android tests, consumer smoke (mavenLocal) only |
 | `./gradlew verifyConsumerSmokeMavenCentral` | Consumer app from Maven Central only |
 | `./gradlew androidE2e` | Emulator E2E (Linux CI) |
 | `./gradlew publishAllToMavenLocal` | Local Maven publish for integration |
