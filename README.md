@@ -28,9 +28,9 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                                   |
 | **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                                   |
 | **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                                     |
-| **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md) · [Word](docs/SyncForge-Roadmap-1.0-to-2.0.docx) |
-| **Track 1.0 release blockers (P0)**            | [SyncForge-1.0-P0.docx](docs/SyncForge-1.0-P0.docx)                                            |
-| **Launch playbook (1.0 soak, GitHub growth)**  | [SyncForge-GitHub-Launch-Playbook.docx](docs/SyncForge-GitHub-Launch-Playbook.docx)            |
+| **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md)                                                  |
+| **Track 1.0 release blockers (P0)**            | [Roadmap 1.0–2.0 § 1.0.0](docs/ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist)                   |
+| **Launch / publish workflow**                  | [Maven Publish](docs/MAVEN_PUBLISH.md)                                                         |
 | **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                                 |
 | **Track release changes**                      | [Changelog](CHANGELOG.md)                                                                      |
 

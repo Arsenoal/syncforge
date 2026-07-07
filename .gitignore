@@ -14,15 +14,11 @@ captures/
 .venv-docgen/
 .docx-gen/
 docs/*.docx
-!docs/SyncForge-GitHub-Launch-Playbook.docx
-!docs/SyncForge-1.0-P0.docx
-!docs/SyncForge-1.1-Issues.docx
-!docs/SyncForge-Roadmap-1.0-to-2.0.docx
 docs/images/*-raw.mp4
 .~lock.*
 scripts/
 *.sh
-!.github/scripts/*.sh
+!gradlew
 *.log
 
 # Android

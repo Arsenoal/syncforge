@@ -103,7 +103,7 @@ git push origin v1.1.0
 
    To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v1.1.0`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
 
-4. CI runs `.github/scripts/finalize-maven-central-staging.sh` so uploads appear under **Deployments**
+4. CI runs `./gradlew finalizeMavenCentralStaging` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
 5. In Sonatype Central Portal → **Deployments**: **Publish every VALIDATED deployment**.
    KMP macOS/iOS targets often create a **second** deployment (~11 components) alongside the main set (~39).
@@ -181,10 +181,10 @@ git push origin v1.0.0
 # After Central sync: Actions → Verify Maven Central Release (version 1.0.0)
 # Or locally:
 ./gradlew verifyReleaseSignOff
-bash .github/scripts/verify-maven-central-artifacts.sh 1.0.0
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.0.0
 ./gradlew verifyConsumerSmokeMavenCentral
 ```
-| Sign-off | P0 checklist in `SyncForge-1.0-P0.docx` |
+| Sign-off | [ROADMAP_1_0_TO_2_0.md § 1.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist) |
 
 ---
 
@@ -203,7 +203,7 @@ bash .github/scripts/verify-maven-central-artifacts.sh 1.0.0
 git tag v1.1.0
 git push origin v1.1.0
 # After Central sync:
-bash .github/scripts/verify-maven-central-artifacts.sh 1.1.0
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.1.0
 ./gradlew verifyConsumerSmokeMavenCentral
 ```
 
@@ -219,7 +219,7 @@ bash .github/scripts/verify-maven-central-artifacts.sh 1.1.0
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
 | Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
 | Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
-| Artifact missing after publish | Wait for Central sync (`verify-maven-central-artifacts.sh`), or check Sonatype **Component Coordinates** before clicking **Publish** |
+| Artifact missing after publish | Wait for Central sync (`verifyMavenCentralArtifacts`), or check Sonatype **Component Coordinates** before clicking **Publish** |
 | Deployment **FAILED** with "already exists" | Maven Central does not allow re-uploading the same version — bump `syncforge.version`, tag a new release, and run **Publish Release** again |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes all artifacts, and runs the OSSRH finalize script automatically |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |

@@ -24,13 +24,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
       - name: Verify required artifacts
         env:
           MAVEN_CENTRAL_VERIFY_RETRIES: "30"
           MAVEN_CENTRAL_VERIFY_SLEEP_SEC: "60"
-        run: |
-          chmod +x .github/scripts/verify-maven-central-artifacts.sh
-          bash .github/scripts/verify-maven-central-artifacts.sh "${{ inputs.version }}"
+        run: ./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=${{ inputs.version }} --no-daemon
 
   consumer-smoke:
     name: Consumer smoke (Maven Central only)

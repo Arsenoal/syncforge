@@ -12,6 +12,7 @@ plugins {
 }
 
 apply(from = "gradle/publish-convention.gradle.kts")
+apply(from = "gradle/maven-central.gradle.kts")
 apply(from = "gradle/e2e.gradle.kts")
 apply(from = "gradle/ios-xcode.gradle.kts")
 
@@ -89,16 +90,6 @@ tasks.register<Exec>("verifyConsumerSmoke") {
     )
 }
 
-tasks.register<Exec>("verifyConsumerSmokeMavenCentralArtifacts") {
-    group = "verification"
-    description =
-        "Fails unless required SyncForge POMs resolve on repo1.maven.org for the consumer-smoke Maven Central pin."
-    commandLine(
-        rootProject.file(".github/scripts/verify-maven-central-artifacts.sh").absolutePath,
-        consumerSmokeMavenCentralVersion(),
-    )
-}
-
 tasks.register<Exec>("verifyConsumerSmokeMavenCentral") {
     group = "verification"
     description =
@@ -120,24 +111,6 @@ tasks.register("verifySignOffMatrix") {
             "via Actions → Verify Maven Central Release or verifyConsumerSmokeMavenCentral locally."
     dependsOn("verifyReleaseSignOff")
 }
-
-/** Required Maven Central coordinates for a complete consumer-facing release. */
-val mavenCentralRequiredArtifacts = listOf(
-    "syncforge",
-    "syncforge-android",
-    "syncforge-jvm",
-    "syncforge-annotations",
-    "syncforge-persistence",
-    "syncforge-android-deps",
-    "syncforge-network-ktor",
-    "syncforge-store-room",
-    "syncforge-store-inmemory",
-    "syncforge-integration-koin",
-    "syncforge-integration-hilt",
-    "syncforge-bom",
-    "syncforge-ksp",
-    "syncforge-gradle-plugin",
-)
 
 tasks.register("publishAllToMavenCentral") {
     group = "publishing"
@@ -172,16 +145,6 @@ tasks.register("verifyPublishSigning") {
     doLast {
         verifySigningConfigured()
     }
-}
-
-tasks.register<Exec>("verifyMavenCentralArtifacts") {
-    group = "verification"
-    description =
-        "Fails unless required SyncForge POMs resolve on repo1.maven.org for syncforge.version."
-    commandLine(
-        rootProject.file(".github/scripts/verify-maven-central-artifacts.sh").absolutePath,
-        syncforgeLibraryVersion(),
-    )
 }
 
 fun verifySigningConfigured() {

@@ -418,8 +418,6 @@ Week 6     D2/D3 (if time) · F1 · acceptance + F2 → F3
 - [x] BOM optional artifacts listed; no 1.0 API breaks
 ```
 
-Word export: [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx).
-
 ---
 
 ### 1.1.0 acceptance criteria
@@ -893,7 +891,7 @@ Run automated checks locally:
 ./gradlew verifySignOffMatrix          # verifyReleaseSignOff (pre-tag)
 # After portal Publish + Central sync:
 #   Actions → Verify Maven Central Release (manual)
-# or locally: verify-maven-central-artifacts.sh + verifyConsumerSmokeMavenCentral
+# or locally: verifyMavenCentralArtifacts + verifyConsumerSmokeMavenCentral
 ```
 
 E2E runs in CI only (`androidE2e` on Linux emulator, `iosE2e` on `macos-14`).
@@ -921,7 +919,7 @@ Run automated checks locally:
 ./gradlew verifySignOffMatrix          # verifyReleaseSignOff (pre-tag)
 # After portal Publish + Central sync:
 #   Actions → Verify Maven Central Release (manual, version 1.1.0)
-# or locally: verify-maven-central-artifacts.sh 1.1.0 + verifyConsumerSmokeMavenCentral
+# or locally: verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.1.0 + verifyConsumerSmokeMavenCentral
 ```
 
 | # | Criterion | Verification | Status (1.1.0 GA, July 2026) |
@@ -932,7 +930,7 @@ Run automated checks locally:
 | 4 | BOM lists optional 1.1 artifacts | `:syncforge-bom:verifyBomConstraints` | ✅ in `verifyReleaseSignOff` |
 | 5 | Optional modules publish to Maven Central | `publishAllToMavenCentral` + portal Publish (both deployments) | ✅ |
 | 6 | CI green | Publish Release workflow + `verifyReleaseSignOff` | ✅ |
-| 7 | Maven Central all artifacts at `1.1.0` | `verify-maven-central-artifacts.sh 1.1.0` + `verifyConsumerSmokeMavenCentral` | ✅ |
+| 7 | Maven Central all artifacts at `1.1.0` | `verifyMavenCentralArtifacts` + `verifyConsumerSmokeMavenCentral` | ✅ |
 | 8 | Docs freeze | `CHANGELOG [1.1.0]`, `MODULES`, `GETTING_STARTED` | ✅ |
 | 9 | Encrypted tokens + cursor migration | `TokenStoreTest`, `SyncCursorStoreTest` | ✅ in `verifyReleaseSignOff` |
 
@@ -972,6 +970,4 @@ When a version ships, update [CHANGELOG.md](../CHANGELOG.md), mark jobs done her
 | [MODULES.md](MODULES.md)                                                      | API stability by area                     |
 | [REST_API.md](REST_API.md)                                                    | Backend contract + versioning             |
 | [CONFLICT_RESOLUTION.md](CONFLICT_RESOLUTION.md)                              | Strategy guide (CRDT section planned 1.2) |
-| [SyncForge-1.0-P0.docx](SyncForge-1.0-P0.docx)                                | Short 1.0 blocker checklist (Word)        |
-| [SyncForge-Roadmap-1.0-to-2.0.docx](SyncForge-Roadmap-1.0-to-2.0.docx)        | This roadmap as Word                      |
-| [SyncForge-1.1-Issues.docx](SyncForge-1.1-Issues.docx)                          | 1.1.0 GitHub issues breakdown (Word)      |
+| [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md)                                          | Maven Central publish + verify workflow   |

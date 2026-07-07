@@ -117,4 +117,4 @@ git push
 
 - [README demo section](../../README.md#see-it-in-action)
 - [Getting Started — conflict demo](../GETTING_STARTED.md#try-the-conflict-demo-optional)
-- [Launch playbook](../SyncForge-GitHub-Launch-Playbook.docx) §9 Launch content kit
+- [Maven publish workflow](../MAVEN_PUBLISH.md) — release and verification steps
