@@ -73,9 +73,8 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
         waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
 
         resolveConflictAcceptRemote()
-        composeTestRule.waitUntil(timeoutMillis = 30_000) {
-            composeTestRule.onAllNodesWithText(taskTitle).fetchSemanticsNodes().isEmpty()
-        }
+        waitForTextGone("Conflict — tap Resolve", timeoutMillis = 30_000)
+        waitForTaskRemoved(taskTitle)
     }
 
     @Test

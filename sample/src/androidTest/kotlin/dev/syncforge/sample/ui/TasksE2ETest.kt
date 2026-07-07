@@ -42,8 +42,7 @@ class TasksE2ETest : SampleE2ETestBase() {
         tapText("Sync")
         waitForTextContains("Conflict", timeoutMillis = 30_000)
 
-        tapText("Resolve")
-        tapText("Keep mine")
+        resolveConflictKeepLocal()
 
         waitForTextGone("Conflict — tap Resolve")
     }

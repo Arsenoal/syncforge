@@ -86,8 +86,8 @@ class TasksViewModel(
     }
 
     fun showConflictSheet(conflict: ConflictSummary) {
+        _activeConflict.value = conflict
         viewModelScope.launch {
-            _activeConflict.value = conflict
             val record = syncManager.findOpenConflict(conflict.entityType, conflict.entityId)
             _remotePreview.value = record?.remoteJson?.let { json.decodeFromString<TaskEntity>(it) }
             _remoteIsDeleted.value = record != null && record.remoteJson == null

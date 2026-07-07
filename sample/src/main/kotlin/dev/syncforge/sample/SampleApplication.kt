@@ -87,6 +87,8 @@ class SampleApplication : Application(), Configuration.Provider {
     @OptIn(ExperimentalSyncForgeApi::class)
     fun resetForE2eTests() {
         runBlocking {
+            syncManager.cancelScheduledSync()
+            DemoActivityLog.clear()
             database.clearAllTables()
             syncManager.debug.clearOutbox()
             syncManager.debug.clearEventLog()

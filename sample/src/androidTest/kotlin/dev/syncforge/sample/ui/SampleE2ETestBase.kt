@@ -153,13 +153,28 @@ abstract class SampleE2ETestBase {
     }
 
     protected fun resolveConflictKeepLocal() {
-        tapText("Resolve")
-        tapText("Keep mine")
+        openConflictSheet()
+        tapTag("conflict_keep_local")
+        composeTestRule.waitForIdle()
     }
 
     protected fun resolveConflictAcceptRemote() {
+        openConflictSheet()
+        tapTag("conflict_accept_remote")
+        composeTestRule.waitForIdle()
+    }
+
+    private fun openConflictSheet() {
         tapText("Resolve")
-        tapText("Use server")
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag("conflict_accept_remote")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    protected fun tapTag(tag: String) {
+        composeTestRule.onNodeWithTag(tag).performClick()
     }
 
     protected fun tapText(text: String) {
@@ -225,6 +240,14 @@ abstract class SampleE2ETestBase {
     protected fun waitForTextGone(text: String, timeoutMillis: Long = 15_000) {
         composeTestRule.waitUntil(timeoutMillis) {
             composeTestRule.onAllNodesWithText(text, substring = true)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+    }
+
+    protected fun waitForTaskRemoved(taskTitle: String, timeoutMillis: Long = 30_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            composeTestRule.onAllNodesWithTag("task_checkbox_$taskTitle")
                 .fetchSemanticsNodes()
                 .isEmpty()
         }

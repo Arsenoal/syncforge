@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.syncforge.conflict.ConflictSummary
 
@@ -91,13 +92,17 @@ fun SyncConflictResolutionSheet(
             ) {
                 OutlinedButton(
                     onClick = onKeepLocal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("conflict_keep_local"),
                 ) {
                     Text("Keep mine")
                 }
                 Button(
                     onClick = onAcceptRemote,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("conflict_accept_remote"),
                 ) {
                     Text("Use server")
                 }

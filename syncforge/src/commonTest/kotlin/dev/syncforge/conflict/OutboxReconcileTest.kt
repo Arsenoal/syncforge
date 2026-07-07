@@ -65,6 +65,26 @@ class OutboxReconcileTest {
     }
 
     @Test
+    fun resolveConflict_acceptRemoteOnTombstone_deletesLocal() {
+        runBlocking {
+            val fixture = reconcileFixture(deferPolicy())
+            fixture.seedOutbox(localTitle = "local edit")
+            fixture.seedDeferredDeleteConflict(localTitle = "local edit")
+            assertEquals(1, fixture.outbox.countAwaitingPush())
+
+            fixture.resolutionService.resolve(
+                entityType = "tasks",
+                entityId = "1",
+                choice = ConflictChoice.AcceptRemote,
+            )
+
+            assertEquals(0, fixture.outbox.countAwaitingPush())
+            assertEquals(null, runCatching { fixture.handler.require("1") }.getOrNull())
+            assertEquals(0, fixture.conflictStore.countOpen())
+        }
+    }
+
+    @Test
     fun resolveConflict_customMerged_replacesOutboxWithUpdate() {
         runBlocking {
             val fixture = reconcileFixture(deferPolicy())
@@ -190,7 +210,7 @@ class OutboxReconcileTest {
 
     private class ReconcileFixture(
         val outbox: InMemoryOutboxRepository,
-        private val conflictStore: InMemoryConflictStore,
+        val conflictStore: InMemoryConflictStore,
         val handler: TaskHandler,
         val pullApplier: ConflictPullApplier,
         val resolutionService: ConflictResolutionService,
@@ -211,6 +231,20 @@ class OutboxReconcileTest {
                 entityId = "1",
                 localJson = handler.encode(Task("1", title = localTitle)),
                 remoteJson = handler.encode(Task("1", title = remoteTitle)),
+                localUpdatedAtMillis = 100,
+                remoteServerVersion = 3,
+                remoteUpdatedAtMillis = 200,
+                detectedAtMillis = 150,
+            )
+            handler.put(Task("1", title = localTitle, syncState = SyncState.CONFLICT))
+        }
+
+        suspend fun seedDeferredDeleteConflict(localTitle: String) {
+            conflictStore.recordDeferred(
+                entityType = "tasks",
+                entityId = "1",
+                localJson = handler.encode(Task("1", title = localTitle)),
+                remoteJson = null,
                 localUpdatedAtMillis = 100,
                 remoteServerVersion = 3,
                 remoteUpdatedAtMillis = 200,
