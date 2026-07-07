@@ -1,6 +1,6 @@
 # SyncForge roadmap
 
-**Current version:** `1.0.0` (release prep — tag `v1.0.0` to publish to Maven Central)
+**Current version:** `1.0.0` (stable — [Maven Central](https://central.sonatype.com/namespace/studio.syncforge), tag `v1.0.0`)
 
 ---
 
@@ -159,15 +159,16 @@
 
 ## 1.0.0 status
 
-Pre-1.0 P0 work is complete. Release prep bumps repo to `1.0.0`; remaining step is **tag and publish**:
+**GA (July 2026).** First semver-stable release on Maven Central under `studio.syncforge`.
 
-| Blocker | Status |
-|---------|--------|
+| Milestone | Status |
+|-----------|--------|
 | API graduation (`@ExperimentalSyncForgeApi` removal on stable surfaces) | ✅ |
 | Remove `useRoomPersistence()` | ✅ |
 | Docs freeze (`CHANGELOG`, `MODULES`, `GETTING_STARTED`) | ✅ |
-| Version bump + `CHANGELOG` `[1.0.0]` | ✅ release prep |
-| Publish `1.0.0` to Maven Central | ⬜ tag `v1.0.0` + CI publish |
-| 1.0 sign-off matrix | ✅ soak complete — re-run after `1.0.0` Central sync |
+| Version bump + `CHANGELOG` `[1.0.0]` | ✅ |
+| Publish `1.0.0` to Maven Central | ✅ ([verify run #1](https://github.com/Arsenoal/syncforge/actions/runs/28852404760)) |
+| Git tag `v1.0.0` | ✅ |
+| 1.0 sign-off matrix | ✅ |
 
-See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for the full checklist and post-1.0 milestones.
+See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-release) for post-1.0 milestones (1.1 → 2.0).

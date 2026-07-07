@@ -167,7 +167,7 @@ Restore `mavenLocal()` for day-to-day local publish testing.
 |------|--------|
 | Soak | ✅ `0.9.0-rc.5` complete (shipped as `1.0.0`) |
 | Release prep | ✅ Repo bumped to `1.0.0`; `CHANGELOG` updated |
-| Stable | Tag `v1.0.0`, push, CI publish + verification |
+| Stable | ✅ Maven Central `1.0.0` published; tag `v1.0.0`; [verify run #1](https://github.com/Arsenoal/syncforge/actions/runs/28852404760) |
 
 ```bash
 git tag v1.0.0
