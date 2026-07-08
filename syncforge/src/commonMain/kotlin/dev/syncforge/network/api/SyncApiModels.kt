@@ -67,6 +67,17 @@ fun OutboxEntry.toDto(): OutboxEntryDto =
         createdAtMillis = createdAtMillis,
     )
 
+fun OutboxEntryDto.toOutboxEntry(): OutboxEntry =
+    OutboxEntry(
+        id = id,
+        entityType = entityType,
+        entityId = entityId,
+        changeType = changeType,
+        payloadJson = payloadJson,
+        localVersion = localVersion,
+        createdAtMillis = createdAtMillis,
+    )
+
 fun PushResponse.toPushResult(): PushResult =
     PushResult(
         acknowledgedIds = acknowledgedIds,
