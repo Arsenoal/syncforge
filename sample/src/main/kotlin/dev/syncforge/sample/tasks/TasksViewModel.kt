@@ -77,6 +77,12 @@ class TasksViewModel(
         viewModelScope.launch { repository.toggleCompleted(task) }
     }
 
+    fun applyLocalTitleEdit(task: TaskEntity) {
+        viewModelScope.launch {
+            repository.updateTitle(task, taskLocalEditTitle(task.title))
+        }
+    }
+
     fun deleteTask(task: TaskEntity) {
         viewModelScope.launch { repository.deleteTask(task) }
     }

@@ -18,6 +18,7 @@ import dev.syncforge.sample.SampleApplication
 import dev.syncforge.sample.tags.tagLocalEditLabel
 import dev.syncforge.sample.tags.tagServerEditLabel
 import dev.syncforge.sample.tasks.DevSyncClient
+import dev.syncforge.sample.tasks.taskLocalEditTitle
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume
@@ -293,6 +294,14 @@ abstract class SampleE2ETestBase {
     protected fun tagLocalLabel(baseLabel: String): String = tagLocalEditLabel(baseLabel)
 
     protected fun tagServerLabel(baseLabel: String): String = tagServerEditLabel(baseLabel)
+
+    protected fun taskLocalTitle(baseTitle: String): String = taskLocalEditTitle(baseTitle)
+
+    protected fun tapTaskLocalEdit(baseTitle: String) {
+        navigateToTasks()
+        tapTag("local_edit_$baseTitle")
+        composeTestRule.waitForIdle()
+    }
 
     protected fun tapTagLocalEdit(baseLabel: String) {
         navigateToTags()

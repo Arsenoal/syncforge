@@ -53,4 +53,67 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         // LWW KeepLocal — newer local timestamp wins but the row stays pending (push still OCC-stale).
         waitForRowSyncState(localLabel, "Pending", timeoutMillis = 45_000)
     }
+
+    @Test
+    fun tasks_gitLike_unmergeableTitleClash_defersToUser() {
+        val baseTitle = uniqueTitle("E2E Git Defer")
+        val localTitle = taskLocalTitle(baseTitle)
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+    }
+
+    @Test
+    fun tasks_gitLike_unmergeableTitleClash_resolveAcceptRemote() {
+        val baseTitle = uniqueTitle("E2E Git Remote")
+        val localTitle = taskLocalTitle(baseTitle)
+        val serverTitle = serverEditedTitle(baseTitle)
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+
+        resolveConflictAcceptRemote()
+        waitForRowSyncState(serverTitle, "Synced", timeoutMillis = 45_000)
+        waitForTextGone("Conflict — tap Resolve", timeoutMillis = 15_000)
+    }
+
+    @Test
+    fun tasks_gitLike_unmergeableTitleClash_resolveKeepLocal() {
+        val baseTitle = uniqueTitle("E2E Git Local")
+        val localTitle = taskLocalTitle(baseTitle)
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+
+        resolveConflictKeepLocal()
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 45_000)
+        waitForTextGone("Conflict — tap Resolve", timeoutMillis = 15_000)
+    }
 }

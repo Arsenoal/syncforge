@@ -145,6 +145,7 @@ private fun TasksScreenBody(
                     TaskRow(
                         task = task,
                         onToggle = { viewModel.toggleTask(task) },
+                        onLocalTitleEdit = { viewModel.applyLocalTitleEdit(task) },
                         onDelete = { viewModel.deleteTask(task) },
                         onSimulateServerEdit = { viewModel.simulateServerEdit(task) },
                         onSimulateServerDelete = { viewModel.simulateServerDelete(task) },
@@ -199,6 +200,7 @@ private fun TaskPreview(
 private fun TaskRow(
     task: TaskEntity,
     onToggle: () -> Unit,
+    onLocalTitleEdit: () -> Unit,
     onDelete: () -> Unit,
     onSimulateServerEdit: () -> Unit,
     onSimulateServerDelete: () -> Unit,
@@ -243,6 +245,10 @@ private fun TaskRow(
                     modifier = Modifier.testTag("resolve_${task.id}"),
                 ) { Text("Resolve") }
             } else if (task.syncState == SyncState.SYNCED) {
+                TextButton(
+                    onClick = onLocalTitleEdit,
+                    modifier = Modifier.testTag("local_edit_${task.title}"),
+                ) { Text("Local edit") }
                 TextButton(
                     onClick = onSimulateServerEdit,
                     modifier = Modifier.testTag("server_edit_${task.id}"),

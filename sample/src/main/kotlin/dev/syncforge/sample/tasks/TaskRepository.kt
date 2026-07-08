@@ -40,6 +40,21 @@ class TaskRepository(
         logRoomTaskMutation("UPDATE", updated.title)
     }
 
+    suspend fun updateTitle(
+        task: TaskEntity,
+        newTitle: String,
+        updatedAtMillis: Long = System.currentTimeMillis(),
+    ) {
+        val updated = task.copy(
+            title = newTitle.trim(),
+            localVersion = task.localVersion + 1,
+            updatedAtMillis = updatedAtMillis,
+            syncState = SyncState.PENDING,
+        )
+        syncManager.enqueueChange(Change.update(TaskEntity.ENTITY_TYPE, updated))
+        logRoomTaskMutation("UPDATE", updated.title)
+    }
+
     suspend fun deleteTask(task: TaskEntity) {
         syncManager.enqueueChange(
             Change.delete<TaskEntity>(
