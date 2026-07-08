@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 internal class SyncDebugImpl(
     private val outbox: OutboxRepository,
@@ -18,11 +19,20 @@ internal class SyncDebugImpl(
     private val networkMonitor: NetworkMonitor,
     private val config: SyncConfig,
     private val eventLog: SyncEventLog,
+    private val metrics: SyncMetricsCollector,
     private val status: StateFlow<SyncStatus>,
     private val pullCursor: StateFlow<Long>,
     private val onResetPullCursor: suspend () -> Unit,
     scope: CoroutineScope,
 ) : SyncDebug {
+
+    init {
+        scope.launch {
+            outbox.observeAll().collect { entries ->
+                metrics.recordOutboxDepth(entries.size)
+            }
+        }
+    }
 
     override val health: StateFlow<SyncHealth> =
         combine(
@@ -41,36 +51,37 @@ internal class SyncDebugImpl(
                     openConflictCount = openConflicts.size,
                 )
             },
+            metrics.snapshot,
             networkMonitor.observeOnline(),
-        ) { inputs, isOnline ->
-            val failed = inputs.allEntries.count { it.isPermanentlyFailed(config.maxRetries) }
-            val lastSynced = when (inputs.status) {
-                is SyncStatus.LastSynced -> inputs.status.timestampMillis
-                else -> inputs.cursor.takeIf { it > 0 }
+        ) { inputs, metricsSnapshot, isOnline ->
+            val enriched = inputs.copy(metrics = metricsSnapshot)
+            val failed = enriched.allEntries.count { it.isPermanentlyFailed(config.maxRetries) }
+            val lastSynced = when (enriched.status) {
+                is SyncStatus.LastSynced -> enriched.status.timestampMillis
+                else -> enriched.cursor.takeIf { it > 0 }
             }
+            val outboxDepth = enriched.allEntries.size
             SyncHealth(
-                status = inputs.status,
+                status = enriched.status,
                 isOnline = isOnline,
-                pendingOutboxCount = inputs.pendingCount,
+                pendingOutboxCount = enriched.pendingCount,
                 failedOutboxCount = failed,
-                openConflictCount = inputs.openConflictCount,
+                openConflictCount = enriched.openConflictCount,
                 lastSyncedAtMillis = lastSynced,
-                pullCursorMillis = inputs.cursor,
+                pullCursorMillis = enriched.cursor,
                 maxRetries = config.maxRetries,
+                outboxDepth = outboxDepth,
+                maxOutboxDepth = maxOf(enriched.metrics.maxOutboxDepth, outboxDepth),
+                syncLatency = enriched.metrics.syncLatency,
+                pushLatency = enriched.metrics.pushLatency,
+                pullLatency = enriched.metrics.pullLatency,
+                conflictRate = enriched.metrics.conflictRate,
+                pullOperationsSampled = enriched.metrics.pullOperationsSampled,
             )
         }.stateIn(
             scope,
             SharingStarted.WhileSubscribed(5_000),
-            SyncHealth(
-                status = SyncStatus.Idle,
-                isOnline = true,
-                pendingOutboxCount = 0,
-                failedOutboxCount = 0,
-                openConflictCount = 0,
-                lastSyncedAtMillis = null,
-                pullCursorMillis = 0,
-                maxRetries = config.maxRetries,
-            ),
+            defaultSyncHealth(config.maxRetries),
         )
 
     override val outboxItems: StateFlow<List<dev.syncforge.model.OutboxEntry>> =
@@ -100,28 +111,50 @@ internal class SyncDebugImpl(
         onResetPullCursor()
     }
 
-    suspend fun recordSyncResult(type: SyncEventType, result: SyncResult) {
+    suspend fun recordSyncResult(
+        type: SyncEventType,
+        result: SyncResult,
+        durationMillis: Long,
+    ) {
+        metrics.recordOperation(type, durationMillis, result)
         when (result) {
             is SyncResult.Success -> eventLog.record(
                 type = type,
                 success = true,
                 summary = result.toDebugSummary(),
+                durationMillis = durationMillis,
             )
             is SyncResult.Partial -> eventLog.record(
                 type = type,
                 success = false,
                 summary = "${result.success.toDebugSummary()} · ${result.errors.size} error(s)",
                 errorCode = result.errors.firstOrNull()?.code,
+                durationMillis = durationMillis,
             )
             is SyncResult.Failure -> eventLog.record(
                 type = type,
                 success = false,
                 summary = result.error.message,
                 errorCode = result.error.code,
+                durationMillis = durationMillis,
             )
         }
     }
 }
+
+private fun defaultSyncHealth(maxRetries: Int): SyncHealth =
+    SyncHealth(
+        status = SyncStatus.Idle,
+        isOnline = true,
+        pendingOutboxCount = 0,
+        failedOutboxCount = 0,
+        openConflictCount = 0,
+        lastSyncedAtMillis = null,
+        pullCursorMillis = 0,
+        maxRetries = maxRetries,
+        outboxDepth = 0,
+        maxOutboxDepth = 0,
+    )
 
 private data class HealthInputs(
     val status: SyncStatus,
@@ -129,6 +162,14 @@ private data class HealthInputs(
     val pendingCount: Int,
     val allEntries: List<dev.syncforge.model.OutboxEntry>,
     val openConflictCount: Int,
+    val metrics: SyncMetricsSnapshot = SyncMetricsSnapshot(
+        syncLatency = SyncLatencyPercentiles.Empty,
+        pushLatency = SyncLatencyPercentiles.Empty,
+        pullLatency = SyncLatencyPercentiles.Empty,
+        conflictRate = null,
+        pullOperationsSampled = 0,
+        maxOutboxDepth = 0,
+    ),
 )
 
 private fun SyncResult.Success.toDebugSummary(): String = buildString {

@@ -16,6 +16,19 @@ data class SyncHealth(
     val lastSyncedAtMillis: Long?,
     val pullCursorMillis: Long,
     val maxRetries: Int,
+    /** Total outbox rows (pending, retrying, and permanently failed). */
+    val outboxDepth: Int,
+    /** Peak [outboxDepth] observed since process start. */
+    val maxOutboxDepth: Int,
+    val syncLatency: SyncLatencyPercentiles = SyncLatencyPercentiles.Empty,
+    val pushLatency: SyncLatencyPercentiles = SyncLatencyPercentiles.Empty,
+    val pullLatency: SyncLatencyPercentiles = SyncLatencyPercentiles.Empty,
+    /**
+     * Average conflicts resolved per pull in the metrics window.
+     * `null` when no pull/full-sync samples exist yet.
+     */
+    val conflictRate: Double? = null,
+    val pullOperationsSampled: Int = 0,
 ) {
     val isSyncing: Boolean get() = status is SyncStatus.Syncing
 }

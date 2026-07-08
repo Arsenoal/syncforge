@@ -41,6 +41,7 @@ import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictRecord
 import dev.syncforge.debug.SyncEvent
 import dev.syncforge.debug.SyncHealth
+import dev.syncforge.debug.SyncLatencyPercentiles
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncStatus
 import dev.syncforge.sync.SyncManager
@@ -168,14 +169,38 @@ private fun OverviewTab(health: SyncHealth) {
         HealthCard(title = "Network", value = if (health.isOnline) "Online" else "Offline")
         HealthCard(title = "Sync status", value = health.status.toDebugLabel())
         HealthCard(title = "Pending outbox", value = health.pendingOutboxCount.toString())
+        HealthCard(title = "Outbox depth", value = "${health.outboxDepth} (peak ${health.maxOutboxDepth})")
         HealthCard(title = "Failed entries", value = health.failedOutboxCount.toString())
         HealthCard(title = "Open conflicts", value = health.openConflictCount.toString())
+        HealthCard(
+            title = "Conflict rate",
+            value = health.conflictRate?.let { "%.2f per pull".format(it) }
+                ?: "No pull samples",
+        )
+        LatencyCard(title = "Sync latency", percentiles = health.syncLatency)
+        LatencyCard(title = "Push latency", percentiles = health.pushLatency)
+        LatencyCard(title = "Pull latency", percentiles = health.pullLatency)
         HealthCard(
             title = "Last synced",
             value = health.lastSyncedAtMillis?.toString() ?: "Never",
         )
         HealthCard(title = "Pull cursor", value = health.pullCursorMillis.toString())
     }
+}
+
+@Composable
+private fun LatencyCard(title: String, percentiles: SyncLatencyPercentiles) {
+    val value = if (percentiles.sampleCount == 0) {
+        "No samples"
+    } else {
+        buildString {
+            percentiles.p50Millis?.let { append("p50 ${it}ms") }
+            percentiles.p95Millis?.let { append(" · p95 ${it}ms") }
+            percentiles.p99Millis?.let { append(" · p99 ${it}ms") }
+            append(" · n=${percentiles.sampleCount}")
+        }
+    }
+    HealthCard(title = title, value = value)
 }
 
 @Composable
@@ -347,7 +372,10 @@ private fun EventRow(event: SyncEvent) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    text = event.timestampMillis.toString(),
+                    text = buildString {
+                        append(event.timestampMillis)
+                        event.durationMillis?.let { append(" · ${it}ms") }
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

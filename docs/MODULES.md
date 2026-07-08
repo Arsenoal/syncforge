@@ -640,7 +640,10 @@ Cursor advances from `PullResult.serverTimestampMillis` on successful pull/sync.
 ### `SyncHealth`
 
 Snapshot fields: `status`, `isOnline`, `pendingOutboxCount`, `failedOutboxCount`,
-`openConflictCount`, `lastSyncedAtMillis`, `pullCursorMillis`, `maxRetries`.
+`openConflictCount`, `lastSyncedAtMillis`, `pullCursorMillis`, `maxRetries`,
+`outboxDepth`, `maxOutboxDepth`, `syncLatency` / `pushLatency` / `pullLatency`
+([SyncLatencyPercentiles](../syncforge/src/commonMain/kotlin/dev/syncforge/debug/SyncLatencyPercentiles.kt)),
+`conflictRate`, `pullOperationsSampled`.
 
 Events are logged automatically in `SyncManagerImpl` for sync, push, pull, enqueue, and conflicts.
 

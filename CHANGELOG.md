@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`
 - **Structured tracing hooks (1.5-01)** — opt-in `SyncTracer` / `SyncSpan` API (`syncforge.push`, `syncforge.pull`, `syncforge.conflict`, `syncforge.retry`); `tracing()` on Android DSL; `:syncforge-integration-opentelemetry` bridge; [TRACING.md](docs/TRACING.md)
 - **Custom transport guide (1.4-10)** — [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) for BYO `SyncTransport` / `SyncDeltaStore`; REST_API.md transport adapter section (same push/pull semantics, pluggable wire format)
 - **GraphQL schema + resolver recipes (1.4-09)** — `syncforge-server/graphql/syncforge-sync.graphql`, Ktor/Apollo/Spring resolver guides, `:backend-starter-graphql`, RECIPES.md sections for GraphQL transport, BYO `SyncDeltaStore`, and custom `SyncTransport`

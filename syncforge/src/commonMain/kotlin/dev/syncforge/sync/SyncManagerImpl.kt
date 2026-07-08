@@ -100,6 +100,7 @@ internal class SyncManagerImpl(
         conflictApplier = conflictPullApplier,
     )
     private val eventLog = SyncEventLog(clock = ::currentTimeMillis)
+    private val syncMetrics = dev.syncforge.debug.SyncMetricsCollector()
 
     private val mutex = Mutex()
     private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
@@ -167,6 +168,7 @@ internal class SyncManagerImpl(
         networkMonitor = networkMonitor,
         config = config,
         eventLog = eventLog,
+        metrics = syncMetrics,
         status = status,
         pullCursor = _pullCursor,
         onResetPullCursor = { resetPullCursorToOrigin() },
@@ -333,9 +335,10 @@ internal class SyncManagerImpl(
     ): SyncResult {
         val runBlock: suspend () -> SyncResult = {
             mutex.withLock {
+            val startedAt = currentTimeMillis()
             authService?.requireAuthenticated()?.let { authFailure ->
                 val failure = authFailure.toSyncFailure()
-                syncDebugImpl.recordSyncResult(eventType, failure)
+                syncDebugImpl.recordSyncResult(eventType, failure, currentTimeMillis() - startedAt)
                 refreshStatus()
                 return@withLock failure
             }
@@ -348,7 +351,7 @@ internal class SyncManagerImpl(
                         message = "No network connection",
                     ),
                 )
-                syncDebugImpl.recordSyncResult(eventType, failure)
+                syncDebugImpl.recordSyncResult(eventType, failure, currentTimeMillis() - startedAt)
                 return@withLock failure
             }
 
@@ -371,7 +374,7 @@ internal class SyncManagerImpl(
                 )
             }
 
-            syncDebugImpl.recordSyncResult(eventType, result)
+            syncDebugImpl.recordSyncResult(eventType, result, currentTimeMillis() - startedAt)
             refreshStatus()
             scheduleRetryIfNeeded()
             result

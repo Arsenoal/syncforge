@@ -21,6 +21,7 @@ internal class SyncEventLog(
         success: Boolean,
         summary: String,
         errorCode: dev.syncforge.model.SyncError.Code? = null,
+        durationMillis: Long? = null,
     ) = mutex.withLock {
         val event = SyncEvent(
             id = nextId++,
@@ -29,6 +30,7 @@ internal class SyncEventLog(
             success = success,
             summary = summary,
             errorCode = errorCode,
+            durationMillis = durationMillis,
         )
         _events.value = (listOf(event) + _events.value).take(maxEvents)
     }

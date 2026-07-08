@@ -247,7 +247,7 @@ Tap the floating **SF** button to open the panel.
 
 | Tab | What you see |
 |-----|--------------|
-| **Overview** | `SyncHealth` — online status, pending/failed counts, open conflicts, cursor |
+| **Overview** | `SyncHealth` — online status, outbox depth, latency percentiles, conflict rate, cursor |
 | **Outbox** | Every outbox row with entity type, change type, retry count |
 | **Conflicts** | Open and resolved conflict records with JSON snapshots |
 | **History** | Ring buffer of last 100 sync events (push, pull, enqueue, errors) |

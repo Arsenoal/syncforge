@@ -22,4 +22,5 @@ data class SyncEvent(
     val success: Boolean,
     val summary: String,
     val errorCode: SyncError.Code? = null,
+    val durationMillis: Long? = null,
 )
