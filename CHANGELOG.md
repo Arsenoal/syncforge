@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Full SyncHealth dashboard UI (1.5-03)** — `SyncHealthDashboard` with status banner, metric tiles, latency bars, error breakdown; `SyncHealthDiagnosticScreen` for read-only release/support; `SyncDebugPanelMode.DIAGNOSTIC`
 - **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`
 - **Structured tracing hooks (1.5-01)** — opt-in `SyncTracer` / `SyncSpan` API (`syncforge.push`, `syncforge.pull`, `syncforge.conflict`, `syncforge.retry`); `tracing()` on Android DSL; `:syncforge-integration-opentelemetry` bridge; [TRACING.md](docs/TRACING.md)
 - **Custom transport guide (1.4-10)** — [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) for BYO `SyncTransport` / `SyncDeltaStore`; REST_API.md transport adapter section (same push/pull semantics, pluggable wire format)

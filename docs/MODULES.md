@@ -643,7 +643,7 @@ Snapshot fields: `status`, `isOnline`, `pendingOutboxCount`, `failedOutboxCount`
 `openConflictCount`, `lastSyncedAtMillis`, `pullCursorMillis`, `maxRetries`,
 `outboxDepth`, `maxOutboxDepth`, `syncLatency` / `pushLatency` / `pullLatency`
 ([SyncLatencyPercentiles](../syncforge/src/commonMain/kotlin/dev/syncforge/debug/SyncLatencyPercentiles.kt)),
-`conflictRate`, `pullOperationsSampled`.
+`conflictRate`, `pullOperationsSampled`, `errorBreakdown`.
 
 Events are logged automatically in `SyncManagerImpl` for sync, push, pull, enqueue, and conflicts.
 
@@ -703,6 +703,8 @@ fun MyScreen(syncManager: SyncManager) {
 |------------|-------------|
 | `SyncDebugLauncher` | Floating **SF** overlay button; wraps your app content |
 | `SyncDebugPanel` | Bottom sheet with Overview \| Outbox \| Conflicts \| History tabs |
+| `SyncHealthDashboard` | Structured health dashboard (metrics, latency, error breakdown) |
+| `SyncHealthDiagnosticScreen` | Read-only full-screen diagnostics for release/support builds |
 
 ```kotlin
 SyncDebugLauncher(

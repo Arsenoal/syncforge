@@ -1,6 +1,7 @@
 package dev.syncforge.compose
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -10,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -40,12 +39,19 @@ import androidx.compose.ui.unit.dp
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictRecord
 import dev.syncforge.debug.SyncEvent
-import dev.syncforge.debug.SyncHealth
-import dev.syncforge.debug.SyncLatencyPercentiles
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncStatus
 import dev.syncforge.sync.SyncManager
 import kotlinx.coroutines.launch
+
+/**
+ * Debug panel mode — [FULL] exposes all tabs and actions; [DIAGNOSTIC] is read-only overview.
+ */
+@ExperimentalSyncForgeApi
+enum class SyncDebugPanelMode {
+    FULL,
+    DIAGNOSTIC,
+}
 
 private enum class DebugTab(val label: String) {
     OVERVIEW("Overview"),
@@ -63,6 +69,7 @@ private enum class DebugTab(val label: String) {
 fun SyncDebugPanel(
     syncManager: SyncManager,
     onDismiss: () -> Unit,
+    mode: SyncDebugPanelMode = SyncDebugPanelMode.FULL,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val scope = rememberCoroutineScope()
@@ -73,6 +80,11 @@ fun SyncDebugPanel(
     val outboxItems by syncManager.debug.outboxItems.collectAsState()
     val conflictRecords by syncManager.debug.conflictRecords.collectAsState()
     val events by syncManager.debug.events.collectAsState()
+
+    val tabs = when (mode) {
+        SyncDebugPanelMode.FULL -> DebugTab.entries
+        SyncDebugPanelMode.DIAGNOSTIC -> listOf(DebugTab.OVERVIEW)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -89,42 +101,55 @@ fun SyncDebugPanel(
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(text = "SyncForge Debug", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = if (mode == SyncDebugPanelMode.FULL) "SyncForge Debug" else "Sync diagnostics",
+                    style = MaterialTheme.typography.titleLarge,
+                )
                 TextButton(onClick = onDismiss) { Text("Close") }
             }
 
-            TabRow(selectedTabIndex = selectedTab) {
-                DebugTab.entries.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(tab.label) },
+            if (tabs.size > 1) {
+                TabRow(selectedTabIndex = selectedTab) {
+                    tabs.forEachIndexed { index, tab ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(tab.label) },
+                        )
+                    }
+                }
+            }
+
+            Box(modifier = Modifier.weight(1f)) {
+                when (tabs.getOrElse(selectedTab) { DebugTab.OVERVIEW }) {
+                    DebugTab.OVERVIEW -> SyncHealthDashboard(
+                        health = health,
+                        recentErrors = events.filter { !it.success && it.errorCode != null }.take(5),
+                    )
+                    DebugTab.OUTBOX -> OutboxTab(items = outboxItems, maxRetries = health.maxRetries)
+                    DebugTab.CONFLICTS -> ConflictsTab(records = conflictRecords)
+                    DebugTab.HISTORY -> HistoryTab(
+                        events = events,
+                        onClearHistory = { scope.launch { syncManager.debug.clearEventLog() } },
+                        readOnly = false,
                     )
                 }
             }
 
-            when (DebugTab.entries[selectedTab]) {
-                DebugTab.OVERVIEW -> OverviewTab(health = health)
-                DebugTab.OUTBOX -> OutboxTab(items = outboxItems, maxRetries = health.maxRetries)
-                DebugTab.CONFLICTS -> ConflictsTab(records = conflictRecords)
-                DebugTab.HISTORY -> HistoryTab(
-                    events = events,
-                    onClearHistory = { scope.launch { syncManager.debug.clearEventLog() } },
-                )
-            }
+            if (mode == SyncDebugPanelMode.FULL) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Button(onClick = { scope.launch { syncManager.sync() } }) { Text("Sync") }
-                OutlinedButton(onClick = { scope.launch { syncManager.push() } }) { Text("Push") }
-                OutlinedButton(onClick = { scope.launch { syncManager.pull() } }) { Text("Pull") }
-                OutlinedButton(onClick = { showClearOutboxConfirm = true }) { Text("Clear outbox") }
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(onClick = { scope.launch { syncManager.sync() } }) { Text("Sync") }
+                    OutlinedButton(onClick = { scope.launch { syncManager.push() } }) { Text("Push") }
+                    OutlinedButton(onClick = { scope.launch { syncManager.pull() } }) { Text("Pull") }
+                    OutlinedButton(onClick = { showClearOutboxConfirm = true }) { Text("Clear outbox") }
+                }
             }
         }
     }
@@ -154,62 +179,6 @@ fun SyncDebugPanel(
                 }
             },
         )
-    }
-}
-
-@Composable
-private fun OverviewTab(health: SyncHealth) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        HealthCard(title = "Network", value = if (health.isOnline) "Online" else "Offline")
-        HealthCard(title = "Sync status", value = health.status.toDebugLabel())
-        HealthCard(title = "Pending outbox", value = health.pendingOutboxCount.toString())
-        HealthCard(title = "Outbox depth", value = "${health.outboxDepth} (peak ${health.maxOutboxDepth})")
-        HealthCard(title = "Failed entries", value = health.failedOutboxCount.toString())
-        HealthCard(title = "Open conflicts", value = health.openConflictCount.toString())
-        HealthCard(
-            title = "Conflict rate",
-            value = health.conflictRate?.let { "%.2f per pull".format(it) }
-                ?: "No pull samples",
-        )
-        LatencyCard(title = "Sync latency", percentiles = health.syncLatency)
-        LatencyCard(title = "Push latency", percentiles = health.pushLatency)
-        LatencyCard(title = "Pull latency", percentiles = health.pullLatency)
-        HealthCard(
-            title = "Last synced",
-            value = health.lastSyncedAtMillis?.toString() ?: "Never",
-        )
-        HealthCard(title = "Pull cursor", value = health.pullCursorMillis.toString())
-    }
-}
-
-@Composable
-private fun LatencyCard(title: String, percentiles: SyncLatencyPercentiles) {
-    val value = if (percentiles.sampleCount == 0) {
-        "No samples"
-    } else {
-        buildString {
-            percentiles.p50Millis?.let { append("p50 ${it}ms") }
-            percentiles.p95Millis?.let { append(" · p95 ${it}ms") }
-            percentiles.p99Millis?.let { append(" · p99 ${it}ms") }
-            append(" · n=${percentiles.sampleCount}")
-        }
-    }
-    HealthCard(title = title, value = value)
-}
-
-@Composable
-private fun HealthCard(title: String, value: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = title, style = MaterialTheme.typography.labelMedium)
-            Text(text = value, style = MaterialTheme.typography.bodyLarge)
-        }
     }
 }
 
@@ -329,14 +298,17 @@ private fun ConflictRecordRow(record: ConflictRecord) {
 private fun HistoryTab(
     events: List<SyncEvent>,
     onClearHistory: () -> Unit,
+    readOnly: Boolean,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.End,
-    ) {
-        TextButton(onClick = onClearHistory) { Text("Clear history") }
+    if (!readOnly) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            TextButton(onClick = onClearHistory) { Text("Clear history") }
+        }
     }
     if (events.isEmpty()) {
         EmptyTabMessage("No sync events yet")
@@ -361,11 +333,14 @@ private fun EventRow(event: SyncEvent) {
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = icon, color = if (event.success) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.error
-            })
+            Text(
+                text = icon,
+                color = if (event.success) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+            )
             Column {
                 Text(
                     text = "${event.type.name} · ${event.summary}",
@@ -375,6 +350,7 @@ private fun EventRow(event: SyncEvent) {
                     text = buildString {
                         append(event.timestampMillis)
                         event.durationMillis?.let { append(" · ${it}ms") }
+                        event.errorCode?.let { append(" · $it") }
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -394,13 +370,4 @@ private fun EmptyTabMessage(message: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-private fun SyncStatus.toDebugLabel(): String = when (this) {
-    SyncStatus.Idle -> "Idle"
-    is SyncStatus.Syncing -> "Syncing (${phase.name})"
-    is SyncStatus.Pending -> "Pending (outbox=$outboxCount, conflicts=$conflictCount)"
-    is SyncStatus.Offline -> "Offline (queued=$outboxCount)"
-    is SyncStatus.LastSynced -> "Last synced @ $timestampMillis"
-    is SyncStatus.Error -> "Error: $message"
 }

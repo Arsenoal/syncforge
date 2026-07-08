@@ -29,6 +29,7 @@ data class SyncHealth(
      */
     val conflictRate: Double? = null,
     val pullOperationsSampled: Int = 0,
+    val errorBreakdown: SyncErrorBreakdown = SyncErrorBreakdown.Empty,
 ) {
     val isSyncing: Boolean get() = status is SyncStatus.Syncing
 }

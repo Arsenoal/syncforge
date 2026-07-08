@@ -53,7 +53,8 @@ internal class SyncDebugImpl(
             },
             metrics.snapshot,
             networkMonitor.observeOnline(),
-        ) { inputs, metricsSnapshot, isOnline ->
+            eventLog.events,
+        ) { inputs, metricsSnapshot, isOnline, events ->
             val enriched = inputs.copy(metrics = metricsSnapshot)
             val failed = enriched.allEntries.count { it.isPermanentlyFailed(config.maxRetries) }
             val lastSynced = when (enriched.status) {
@@ -77,6 +78,7 @@ internal class SyncDebugImpl(
                 pullLatency = enriched.metrics.pullLatency,
                 conflictRate = enriched.metrics.conflictRate,
                 pullOperationsSampled = enriched.metrics.pullOperationsSampled,
+                errorBreakdown = events.toErrorBreakdown(),
             )
         }.stateIn(
             scope,

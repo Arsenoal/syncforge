@@ -26,6 +26,9 @@ import dev.syncforge.sync.SyncManager
  *     MyApp()
  * }
  * ```
+ *
+ * Use [panelMode] = [SyncDebugPanelMode.DIAGNOSTIC] for a read-only release/support view, or
+ * [useFullScreenDiagnostic] for [SyncHealthDiagnosticScreen].
  */
 @ExperimentalSyncForgeApi
 @Composable
@@ -33,6 +36,8 @@ fun SyncDebugLauncher(
     syncManager: SyncManager,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    panelMode: SyncDebugPanelMode = SyncDebugPanelMode.FULL,
+    useFullScreenDiagnostic: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     var showPanel by remember { mutableStateOf(false) }
@@ -55,9 +60,17 @@ fun SyncDebugLauncher(
     }
 
     if (showPanel) {
-        SyncDebugPanel(
-            syncManager = syncManager,
-            onDismiss = { showPanel = false },
-        )
+        if (useFullScreenDiagnostic) {
+            SyncHealthDiagnosticScreen(
+                syncManager = syncManager,
+                onDismiss = { showPanel = false },
+            )
+        } else {
+            SyncDebugPanel(
+                syncManager = syncManager,
+                onDismiss = { showPanel = false },
+                mode = panelMode,
+            )
+        }
     }
 }

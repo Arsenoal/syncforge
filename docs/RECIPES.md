@@ -243,11 +243,32 @@ SyncDebugLauncher(
 
 Tap the floating **SF** button to open the panel.
 
+### Release / support diagnostics (read-only)
+
+For non-debug builds, embed the dashboard without outbox payloads or destructive actions:
+
+```kotlin
+SyncHealthDiagnosticScreen(syncManager = syncManager, onDismiss = { /* pop back */ })
+
+// Or via launcher overlay:
+SyncDebugLauncher(
+    syncManager = syncManager,
+    enabled = BuildConfig.FLAVOR == "internal",
+    useFullScreenDiagnostic = true,
+) { MyApp() }
+
+// Bottom-sheet read-only overview:
+SyncDebugLauncher(
+    syncManager = syncManager,
+    panelMode = SyncDebugPanelMode.DIAGNOSTIC,
+) { MyApp() }
+```
+
 ### Panel tabs
 
 | Tab | What you see |
 |-----|--------------|
-| **Overview** | `SyncHealth` — online status, outbox depth, latency percentiles, conflict rate, cursor |
+| **Overview** | `SyncHealthDashboard` — status banner, outbox/conflict tiles, error breakdown, latency bars |
 | **Outbox** | Every outbox row with entity type, change type, retry count |
 | **Conflicts** | Open and resolved conflict records with JSON snapshots |
 | **History** | Ring buffer of last 100 sync events (push, pull, enqueue, errors) |
