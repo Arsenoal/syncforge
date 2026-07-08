@@ -1,6 +1,30 @@
 import java.net.HttpURLConnection
 import java.net.URL
 
+data class GradleNodeToolchain(
+    val binDir: String,
+    val node: String,
+    val npm: String,
+)
+
+fun Project.gradleNodeToolchain(): GradleNodeToolchain {
+    val gradleHome = System.getenv("GRADLE_USER_HOME")?.takeIf { it.isNotBlank() }
+        ?: "${System.getProperty("user.home")}/.gradle"
+    val nodeRoot = File(gradleHome, "nodejs")
+    val nodeDir = nodeRoot.listFiles()
+        ?.filter { it.isDirectory && it.name.startsWith("node-v") }
+        ?.maxByOrNull { it.name }
+    val binDir = nodeDir?.resolve("bin")?.absolutePath
+    if (binDir != null && File(binDir, "node").exists()) {
+        return GradleNodeToolchain(
+            binDir = binDir,
+            node = File(binDir, "node").absolutePath,
+            npm = File(binDir, "npm").absolutePath,
+        )
+    }
+    return GradleNodeToolchain(binDir = "", node = "node", npm = "npm")
+}
+
 fun Project.waitForMockServerHealth(port: Int, logFile: File, attempts: Int = 30) {
     val healthUrl = "http://127.0.0.1:$port/health"
     repeat(attempts) {
@@ -35,6 +59,50 @@ fun Project.startMockServer(port: Int, logFile: File): Process {
         .redirectErrorStream(true)
         .redirectOutput(logFile)
         .start()
+}
+
+tasks.register("webE2e") {
+    group = "verification"
+    description = "Runs :sample-web browser smoke (push + pull) against mock-server."
+    dependsOn(":mock-server:installDist", ":sample-web:jsBrowserProductionWebpack")
+
+    doLast {
+        val port = System.getenv("PORT")?.toIntOrNull() ?: 18080
+        val baseUrl = "http://127.0.0.1:$port"
+        val logFile = File(System.getProperty("java.io.tmpdir"), "syncforge-mock-server-web.log")
+        val process = startMockServer(port, logFile)
+        try {
+            waitForMockServerHealth(port, logFile)
+            resetMockServerState(port)
+            val sampleWebDir = rootProject.file("sample-web")
+            val nodeToolchain = gradleNodeToolchain()
+            val pathEnv = if (nodeToolchain.binDir.isNotEmpty()) {
+                "${nodeToolchain.binDir}:${System.getenv("PATH") ?: ""}"
+            } else {
+                System.getenv("PATH")
+            }
+            if (!sampleWebDir.resolve("node_modules/puppeteer-core").exists()) {
+                logger.lifecycle("Installing puppeteer-core in sample-web (first run)...")
+                exec {
+                    workingDir(sampleWebDir)
+                    environment("PATH", pathEnv)
+                    commandLine(nodeToolchain.npm, "install", "--no-save", "puppeteer-core")
+                }
+            }
+            logger.lifecycle("Running web sample smoke (headless browser)...")
+            exec {
+                workingDir(sampleWebDir)
+                environment("PATH", pathEnv)
+                environment("MOCK_SERVER_BASE_URL", baseUrl)
+                environment("CHROME_PATH", "/usr/bin/google-chrome")
+                environment("NODE_PATH", sampleWebDir.resolve("node_modules").absolutePath)
+                commandLine(nodeToolchain.node, "e2e/web-smoke-runner.mjs")
+            }
+        } finally {
+            process.destroy()
+            process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
+        }
+    }
 }
 
 tasks.register("desktopE2e") {

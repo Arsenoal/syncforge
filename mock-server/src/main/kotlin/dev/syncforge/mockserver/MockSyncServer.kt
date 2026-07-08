@@ -1,6 +1,7 @@
 package dev.syncforge.mockserver
 
 import dev.syncforge.server.InMemorySyncStore
+import dev.syncforge.server.installSyncServerDevCors
 import dev.syncforge.server.installSyncServerPlugins
 import dev.syncforge.server.graphqlRoutes
 import dev.syncforge.server.syncRoutes
@@ -23,6 +24,7 @@ fun Application.mockSyncModule() {
     val store = InMemorySyncStore()
     val e2eSessions = E2eSessionStore()
     installSyncServerPlugins()
+    installSyncServerDevCors()
 
     routing {
         syncRoutes(store)

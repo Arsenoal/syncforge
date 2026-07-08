@@ -43,6 +43,7 @@ include(
     ":sample",
     ":sample-ios-shared",
     ":sample-desktop",
+    ":sample-web",
     ":web-spike",
     ":web-spike-wasm",
 )

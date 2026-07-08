@@ -811,7 +811,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 | 1.6-01 | **KMP `js` and/or `wasmJs` targets** on `:syncforge` + persistence | P0       | `webMain` source set; experimental `@ExperimentalSyncForgeApi` ✅ |
 | 1.6-02 | **`SyncForge.web { }` DSL** — browser persistence + cursor + transport | P0    | IndexedDB/SQLDelight-web or documented in-memory + localStorage cursor fallback ✅ |
 | 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine ✅ |
-| 1.6-04 | **`:sample-web`** — minimal Compose/Web or Kotlin/JS page           | P1       | Push + pull against `:mock-server` (same acceptance as `:sample-desktop`) |
+| 1.6-04 | **`:sample-web`** — minimal Compose/Web or Kotlin/JS page           | P1       | Push + pull against `:mock-server` (same acceptance as `:sample-desktop`) ✅ |
 | 1.6-05 | **`WEB_SETUP.md`** + MODULES.md stability row                       | P1       | Gradle consumer snippet; CORS notes for dev mock-server |
 | 1.6-06 | **`webE2e` CI** — headless browser smoke (Playwright or Karma)      | P2       | Nightly; optional gate for 1.6.0 tag |
 | 1.6-07 | **Conflict/debug UI on web** — share 1.3-05 CMP components          | P2       | Defer if 1.3-05 not yet on Wasm |
@@ -819,7 +819,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 ### 1.6.0 acceptance criteria (add-on release)
 
 - [x] `SyncForge.web { }` documented and compiles on at least one browser target (Wasm or JS)
-- [ ] `:sample-web` runs push + pull against `:mock-server` locally
+- [x] `:sample-web` runs push + pull against `:mock-server` locally
 - [ ] Published as **optional** BOM artifacts (e.g. `syncforge-web` or platform-specific variants) — not required for Android-primary consumers
 - [ ] BEST_PRACTICES.md FAQ row updated from “not in scope” to “1.6 add-on”
 - [ ] Explicit limitations documented: no background sync guarantee, storage quotas, CORS/dev-server setup

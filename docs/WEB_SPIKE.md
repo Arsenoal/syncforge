@@ -69,8 +69,8 @@ Verify locally:
 
 | Risk | Mitigation |
 |------|------------|
-| Webpack + SQL.js worker bundling | Copy spike `devNpm` setup into `:syncforge`; document in `WEB_SETUP.md` |
-| CORS against `:mock-server` | Dev proxy / mock-server CORS headers in 1.6-05 |
+| Webpack + SQL.js worker bundling | `:sample-web` copies `sql-wasm.wasm` + Node polyfills — see `sample-web/webpack.config.d/` |
+| CORS against `:mock-server` | `installSyncServerDevCors()` on `:mock-server` (1.6-04); production notes in 1.6-05 |
 | SQLDelight async queries | All web DB access via `awaitAs*` extensions |
 | Larger wasm bundle | Prefer `js` for first shippable add-on |
 | No background sync guarantee | Document in BEST_PRACTICES + 1.6 limitations |

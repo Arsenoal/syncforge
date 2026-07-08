@@ -63,6 +63,7 @@ kotlin {
             implementation(libs.sqldelight.async.extensions)
             implementation(devNpm("copy-webpack-plugin", "9.1.0"))
             implementation(devNpm("@cashapp/sqldelight-sqljs-worker", "2.0.2"))
+            implementation(npm("sql.js", "1.12.0"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

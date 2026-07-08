@@ -100,6 +100,7 @@ tasks.register("verifyReleaseSignOff") {
         ":backend-starter-spring:test",
         ":mock-server:compileKotlin",
         ":sample-desktop:compileKotlin",
+        ":sample-web:compileKotlinJs",
         ":sample:compileDebugKotlin",
         ":sample:compileDebugAndroidTestKotlin",
         ":syncforge-bom:verifyBomConstraints",

@@ -62,7 +62,7 @@ suspend fun main() {
 ## Limitations (1.6.x)
 
 - **Storage:** Outbox/conflicts live in SQL.js **in-memory** inside a worker — data is lost on full page reload. IndexedDB-backed persistence is future work.
-- **CORS:** Browser `fetch` to `:mock-server` requires CORS headers or a dev proxy — see **1.6-05** `WEB_SETUP.md`.
+- **CORS:** `:mock-server` enables dev CORS via `installSyncServerDevCors()`; production backends need explicit origins — see **1.6-05** `WEB_SETUP.md`.
 - **BOM:** Web artifacts are experimental; not required for Android-primary consumers.
 - **Wasm:** Full persistence on `wasmJs` blocked until SQLDelight ≥2.1 — see [WEB_SPIKE.md](WEB_SPIKE.md).
 
@@ -72,7 +72,15 @@ suspend fun main() {
 ./gradlew verifyWebCompile
 ```
 
-Runtime browser smoke (`:sample-web`, Playwright) lands in **1.6-04** / **1.6-06**.
+## Sample app (`:sample-web`)
+
+```bash
+./gradlew :mock-server:run
+./gradlew :sample-web:jsBrowserDevelopmentRun   # open app, append ?smoke=1 for push + pull
+./gradlew webE2e                                 # headless smoke (default mock-server port 18080)
+```
+
+Runtime browser smoke: [`:sample-web`](../sample-web) (`?smoke=1` or `./gradlew webE2e`); Playwright CI gate in **1.6-06**.
 
 ## Explicit transport (optional)
 
