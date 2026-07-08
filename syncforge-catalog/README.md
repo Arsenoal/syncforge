@@ -42,6 +42,7 @@ dependencies {
 | `transport-core` | `studio.syncforge:syncforge-transport-core` |
 | `transport-supabase` | `studio.syncforge:syncforge-transport-supabase` |
 | `transport-firebase` | `studio.syncforge:syncforge-transport-firebase` |
+| `transport-graphql` | `studio.syncforge:syncforge-transport-graphql` |
 | `store-room` | `studio.syncforge:syncforge-store-room` |
 | `store-inmemory` | `studio.syncforge:syncforge-store-inmemory` |
 | `integration-koin` | `studio.syncforge:syncforge-integration-koin` |

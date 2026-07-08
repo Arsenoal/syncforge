@@ -2,6 +2,7 @@ package dev.syncforge.mockserver
 
 import dev.syncforge.server.InMemorySyncStore
 import dev.syncforge.server.installSyncServerPlugins
+import dev.syncforge.server.graphqlRoutes
 import dev.syncforge.server.syncRoutes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -25,6 +26,7 @@ fun Application.mockSyncModule() {
 
     routing {
         syncRoutes(store)
+        graphqlRoutes(store)
 
         /**
          * Dev-only: simulates a concurrent server edit for conflict demos.

@@ -18,6 +18,7 @@ val catalogLibraries = listOf(
     "transport-core" to "syncforge-transport-core",
     "transport-supabase" to "syncforge-transport-supabase",
     "transport-firebase" to "syncforge-transport-firebase",
+    "transport-graphql" to "syncforge-transport-graphql",
     "store-room" to "syncforge-store-room",
     "store-inmemory" to "syncforge-store-inmemory",
     "integration-koin" to "syncforge-integration-koin",

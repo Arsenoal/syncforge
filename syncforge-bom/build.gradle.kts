@@ -23,6 +23,7 @@ dependencies {
         api("${project.group}:syncforge-transport-core:$libraryVersion")
         api("${project.group}:syncforge-transport-supabase:$libraryVersion")
         api("${project.group}:syncforge-transport-firebase:$libraryVersion")
+        api("${project.group}:syncforge-transport-graphql:$libraryVersion")
         api("${project.group}:syncforge-store-room:$libraryVersion")
         api("${project.group}:syncforge-store-inmemory:$libraryVersion")
         api("${project.group}:syncforge-integration-koin:$libraryVersion")
@@ -54,6 +55,7 @@ tasks.register("verifyBomConstraints") {
             "syncforge-transport-core",
             "syncforge-transport-supabase",
             "syncforge-transport-firebase",
+            "syncforge-transport-graphql",
             "syncforge-store-room",
             "syncforge-store-inmemory",
             "syncforge-integration-koin",

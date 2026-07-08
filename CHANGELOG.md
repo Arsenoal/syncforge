@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:syncforge-transport-graphql` (1.4-08)** — `GraphQlSyncTransport` over GraphQL-over-HTTP (`syncPush` / `syncPull`); `:mock-server` and `:syncforge-server` `/graphql` facade for local push/pull
 - **Multi-device Android E2E (1.4-06)** — two-emulator phase tests (`MultiDeviceE2ETest`) with mock-server session coordination; task gitLike conflict + tag LWW scenarios; `androidMultiDeviceE2e` Gradle task + nightly CI workflow
 - **Backend contract test kit (1.4-07)** — `SyncPushPullContract` (REST DTO) + `SyncDeltaStoreContract` with `InMemorySyncBackend`; Supabase + Firebase + JDBC `SyncStore` run shared scenarios
 - **`:syncforge-catalog` (1.4-05)** — published Gradle version catalog pinning all SyncForge library artifacts and `studio.syncforge.android`; BOM-free consumer setup in GETTING_STARTED + consumer-smoke
