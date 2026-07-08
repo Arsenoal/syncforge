@@ -31,7 +31,12 @@ internal class ConflictResolutionService(
             deserialize = typedHandler::decodePayload,
         )
 
-        conflictApplier.applyResolution(typedHandler, entityId, resolution)
+        conflictApplier.applyResolution(
+            handler = typedHandler,
+            entityId = entityId,
+            resolution = resolution,
+            remoteServerVersion = record.remoteServerVersion,
+        )
         conflictStore.markUserResolved(record.id, resolution.toKind())
     }
 }

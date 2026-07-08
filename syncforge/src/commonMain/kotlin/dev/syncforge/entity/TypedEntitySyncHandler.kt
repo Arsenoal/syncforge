@@ -30,6 +30,9 @@ abstract class TypedEntitySyncHandler<T : SyncedEntity> : EntitySyncHandler {
 
     internal fun encodePayload(entity: T): String = toJson(entity)
 
+    internal fun withLocalVersion(entity: T, localVersion: Long): T =
+        fromJson(SyncEntityJson.withLocalVersion(toJson(entity), localVersion))
+
     internal fun encodePayloadForMergeBase(entity: SyncedEntity): String {
         @Suppress("UNCHECKED_CAST")
         return encodePayload(entity as T)

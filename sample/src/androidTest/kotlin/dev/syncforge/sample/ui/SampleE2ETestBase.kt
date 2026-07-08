@@ -281,7 +281,15 @@ abstract class SampleE2ETestBase {
 
     protected fun tapNoteLocalEdit(noteTitle: String) {
         navigateToNotes()
-        tapTag("local_edit_$noteTitle")
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag("local_edit_$noteTitle")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule
+            .onNodeWithTag("local_edit_$noteTitle")
+            .scrollToIfPossible()
+            .performClick()
         composeTestRule.waitForIdle()
     }
 

@@ -147,6 +147,7 @@ class OutboxReconcileTest {
             val payload = json.decodeFromString<Task>(pending.single().payloadJson!!)
             assertEquals("remote", payload.title)
             assertEquals(true, payload.completed)
+            assertEquals(4L, payload.localVersion)
             assertEquals(SyncState.PENDING, fixture.handler.require("1").syncState)
         }
     }

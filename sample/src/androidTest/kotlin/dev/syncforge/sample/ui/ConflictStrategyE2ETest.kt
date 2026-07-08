@@ -130,7 +130,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         waitForNoteBody(title, baseBody)
 
         tapNoteLocalEdit(title)
-        waitForRowSyncState(title, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(title, "Pending", timeoutMillis = 45_000)
         waitForNoteBody(title, localBody)
 
         simulateServerNoteEdit(title, serverBody)

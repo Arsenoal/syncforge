@@ -37,7 +37,10 @@ internal class ConflictPullApplier(
         if (local == null) {
             if (delta.isDeleted) return PullApplyOutcome.SKIPPED
             val remote = delta.payloadJson?.let { handler.decodePayload(it) } ?: return PullApplyOutcome.SKIPPED
-            val synced = handler.withSyncState(remote, SyncState.SYNCED)
+            val synced = handler.withSyncState(
+                handler.withLocalVersion(remote, delta.serverVersion),
+                SyncState.SYNCED,
+            )
             handler.persistEntity(synced, insert = true)
             mergeBaseRecorder.recordFromHandler(handler, synced, serverVersion = delta.serverVersion)
             return PullApplyOutcome.INSERTED
@@ -100,7 +103,12 @@ internal class ConflictPullApplier(
                     detectedAtMillis = now,
                     resolutionKind = outcome.resolution.toKind(),
                 )
-                applyResolution(handler, delta.entityId, outcome.resolution)
+                applyResolution(
+                    handler = handler,
+                    entityId = delta.entityId,
+                    resolution = outcome.resolution,
+                    remoteServerVersion = remoteMeta.serverVersion,
+                )
             }
         }
     }
@@ -118,7 +126,10 @@ internal class ConflictPullApplier(
             return PullApplyOutcome.DELETED
         }
         val remote = remotePayload ?: return PullApplyOutcome.SKIPPED
-        val synced = handler.withSyncState(remote, SyncState.SYNCED)
+        val synced = handler.withSyncState(
+            handler.withLocalVersion(remote, remoteMeta.serverVersion),
+            SyncState.SYNCED,
+        )
         handler.persistEntity(synced, insert = false)
         mergeBaseRecorder.recordFromHandler(handler, synced, serverVersion = remoteMeta.serverVersion)
         return PullApplyOutcome.UPDATED
@@ -128,8 +139,14 @@ internal class ConflictPullApplier(
         handler: TypedEntitySyncHandler<T>,
         entityId: String,
         resolution: ConflictResolution<T>,
+        remoteServerVersion: Long? = null,
     ): PullApplyOutcome {
-        val outcome = when (resolution) {
+        val reconciledResolution = alignResolutionVersions(
+            handler = handler,
+            resolution = resolution,
+            remoteServerVersion = remoteServerVersion,
+        )
+        val outcome = when (reconciledResolution) {
             ConflictResolution.DeleteLocal -> {
                 handler.deleteLocal(entityId)
                 mergeBaseRecorder.remove(handler.entityType, entityId)
@@ -138,27 +155,62 @@ internal class ConflictPullApplier(
 
             is ConflictResolution.KeepLocal -> {
                 handler.persistEntity(
-                    handler.withSyncState(resolution.entity, SyncState.PENDING),
+                    handler.withSyncState(reconciledResolution.entity, SyncState.PENDING),
                     insert = false,
                 )
                 PullApplyOutcome.CONFLICT_RESOLVED
             }
 
             is ConflictResolution.AcceptRemote -> {
-                val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
+                val synced = handler.withSyncState(reconciledResolution.entity, SyncState.SYNCED)
                 handler.persistEntity(synced, insert = false)
-                mergeBaseRecorder.recordFromHandler(handler, synced)
+                mergeBaseRecorder.recordFromHandler(
+                    handler,
+                    synced,
+                    serverVersion = remoteServerVersion,
+                )
                 PullApplyOutcome.CONFLICT_RESOLVED
             }
 
             is ConflictResolution.Merged -> {
-                val synced = handler.withSyncState(resolution.entity, SyncState.SYNCED)
+                val synced = handler.withSyncState(reconciledResolution.entity, SyncState.SYNCED)
                 handler.persistEntity(synced, insert = false)
-                mergeBaseRecorder.recordFromHandler(handler, synced)
+                mergeBaseRecorder.recordFromHandler(
+                    handler,
+                    synced,
+                    serverVersion = remoteServerVersion,
+                )
                 PullApplyOutcome.CONFLICT_RESOLVED
             }
         }
-        outboxReconciler?.reconcile(handler.entityType, entityId, resolution)
+        outboxReconciler?.reconcile(handler.entityType, entityId, reconciledResolution)
         return outcome
+    }
+
+    private fun <T : dev.syncforge.entity.SyncedEntity> alignResolutionVersions(
+        handler: TypedEntitySyncHandler<T>,
+        resolution: ConflictResolution<T>,
+        remoteServerVersion: Long?,
+    ): ConflictResolution<T> {
+        val serverVersion = remoteServerVersion ?: return resolution
+        return when (resolution) {
+            is ConflictResolution.AcceptRemote ->
+                ConflictResolution.AcceptRemote(
+                    handler.withLocalVersion(resolution.entity, serverVersion),
+                )
+
+            is ConflictResolution.Merged -> {
+                val alignedVersion = if (outboxReconciler != null) {
+                    serverVersion + 1L
+                } else {
+                    serverVersion
+                }
+                ConflictResolution.Merged(
+                    handler.withLocalVersion(resolution.entity, alignedVersion),
+                )
+            }
+
+            else -> resolution
+        }
     }
 }

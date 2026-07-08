@@ -59,7 +59,14 @@ internal class SyncEngine(
         }
 
         val pullResult = runPull(lastSyncCursor)
-        return combine(pushResult, pullResult)
+        if (pullResult is SyncResult.Failure) return pullResult
+
+        val trailingPushResult = if (outbox.peek(config.pushBatchSize, clock()).isEmpty()) {
+            SyncResult.Success()
+        } else {
+            runPush()
+        }
+        return combine(combine(pushResult, pullResult), trailingPushResult)
     }
 
     suspend fun runPush(): SyncResult {
