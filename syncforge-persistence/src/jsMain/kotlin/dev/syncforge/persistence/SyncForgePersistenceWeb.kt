@@ -1,21 +1,22 @@
 package dev.syncforge.persistence
 
 import app.cash.sqldelight.async.coroutines.awaitCreate
-import app.cash.sqldelight.driver.worker.WebWorkerDriver
 import dev.syncforge.api.ExperimentalSyncForgeApi
-import org.w3c.dom.Worker
 
 /**
- * Suspend browser persistence factory — prefer this over [createDefaultSyncForgePersistence] on JS
- * so SQLDelight schema creation runs before the first query (1.6-02+).
+ * Creates browser [SyncForgePersistence] with SQLDelight schema ready before first query.
+ *
+ * SQL.js storage is **in-memory** in the web-worker for 1.6.x (survives SPA navigation within
+ * the same tab session; cleared on full page reload). IndexedDB-backed persistence is deferred.
+ *
+ * @param databaseName Reserved for per-app storage namespacing (cursor key); worker DB is
+ * in-memory until IndexedDB lands.
  */
 @ExperimentalSyncForgeApi
 suspend fun createWebSyncForgePersistence(databaseName: String = "syncforge.db"): SyncForgePersistence {
-    val driver = WebWorkerDriver(
-        Worker(
-            js("""new URL("@cashapp/sqldelight-sqljs-worker/sqljs.worker.js", import.meta.url)"""),
-        ),
-    )
+    @Suppress("UNUSED_PARAMETER")
+    val ignored = databaseName
+    val driver = createWebSqlDelightDriver()
     SyncForgePersistenceDatabase.Schema.awaitCreate(driver)
     return SyncForgePersistence.create(driver)
 }

@@ -3,7 +3,7 @@ package dev.syncforge.sync
 import kotlinx.browser.localStorage
 
 /**
- * Persists the pull cursor in [localStorage] (1.6-01 web default; IndexedDB fallback in 1.6-02).
+ * Persists the pull cursor in [localStorage] — default for [SyncForge.web][dev.syncforge.web].
  */
 internal class LocalStorageSyncCursorStore(
     private val storageKey: String = DEFAULT_KEY,

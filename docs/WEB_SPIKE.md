@@ -36,7 +36,7 @@ Verify locally:
 | **Shared sync code** | ✅ Compiles | `:syncforge` + `:syncforge-persistence` + `:syncforge-network-ktor` `js` targets wired (1.6-01); `verifyWebCompile` |
 | **Compose Web** | ⏸️ Deferred | Not in spike; evaluate in 1.6-04 (`:sample-web`) |
 
-**Implications for 1.6-02 `SyncForge.web { }`:**
+**`SyncForge.web { }` (1.6-02 — see [WEB_DSL.md](WEB_DSL.md)):**
 
 - Outbox/conflicts: SQLDelight web-worker driver in a dedicated worker (browser-only).
 - Cursor: `localStorage` / IndexedDB fallback documented in 1.6-02 if SQLDelight web storage is heavy.
@@ -78,7 +78,7 @@ Verify locally:
 ## Next jobs
 
 1. ~~**1.6-01**~~ — `js` + `webMain` on `:syncforge` / `:syncforge-persistence` (experimental API) ✅
-2. **1.6-02** — `SyncForge.web { }` DSL (persistence + cursor + transport)
+2. ~~**1.6-02**~~ — `SyncForge.web { }` DSL (persistence + cursor + transport) ✅ — [WEB_DSL.md](WEB_DSL.md)
 3. **1.6-03** — `createKtorSyncTransport` browser factory (extract from spike)
 4. **1.6-04** — `:sample-web` push/pull against `:mock-server`
 
