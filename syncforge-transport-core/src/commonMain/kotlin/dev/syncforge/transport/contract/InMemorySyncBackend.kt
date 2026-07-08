@@ -168,7 +168,7 @@ class InMemorySyncBackend {
 
     private fun decodeCursor(cursor: String?): Int {
         if (cursor.isNullOrBlank()) return 0
-        return String(Base64.UrlSafe.decode(cursor)).toIntOrNull() ?: 0
+        return Base64.UrlSafe.decode(cursor).decodeToString().toIntOrNull() ?: 0
     }
 
     private fun recordKey(entityType: String, entityId: String): String = "$entityType:$entityId"
