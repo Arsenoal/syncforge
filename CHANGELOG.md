@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-08
+
+**Conflict resolution** minor release — merge-base snapshots, `gitLike { }` three-way merge,
+experimental `crdt { }`, strategy catalog, outbox reconciliation, and a `:sample` per-entity
+policy matrix with instrumented E2E coverage. No breaking changes to 1.0 / 1.1 stable APIs.
+
+**Upgrade from `1.1.0`:** bump coordinates to `1.2.0`. Opt in to new strategies with
+`@OptIn(ExperimentalSyncForgeApi::class)` for `gitLike { }` and `crdt { }`. Existing
+`conflicts { }` wiring (LWW, `alwaysRemote`, `merge { }`, `deferToUser()`) is unchanged.
+
+### Added
+
+- **`MergeBaseStore` / `MergeBaseRecorder`** — last-synced JSON per `(entityType, entityId)` on push ack and pull apply; feeds `gitLike` three-way merge (1.2-07)
+- **`gitLike { }` strategy** — `threeWayMerge { base, local, remote -> … }` with `onUnmergeable { }` and `onRemoteDelete { }` fallbacks (1.2-08, `@ExperimentalSyncForgeApi`)
+- **CRDT primitives** — `LwwRegister<T>`, `OrSet<T>`, `GCounter` in `commonMain` (1.2-01)
+- **`crdt { }` strategy** — per-field CRDT merge for `@Serializable` entities (1.2-02, `@ExperimentalSyncForgeApi`)
+- **`ConflictStrategyKind` catalog** — enum + `ConflictStrategies.fromKind()` + `conflictPolicyFromKinds()` for static and runtime per-entity assignment (1.2-09)
+- **`SyncManager.updateConflictPolicy()`** — replace conflict policy at runtime via `MutableConflictPolicy` (1.2-10)
+- **`OutboxReconciler`** — align outbox with resolution outcomes (`AcceptRemote` clears stale rows; `Merged` replaces with reconciled `UPDATE`; `KeepLocal` retains entries) (1.2-11)
+- **KSP field-merge codegen** — `@LastWriteWins`, `@ObservedRemoveSet`, `@GrowOnlyCounter` on entity properties generate `*FieldMerge` helpers (1.2-03)
+- **Tombstone-aware merge recipes** — `MergeEntityBuilder.onRemoteDelete { }` and docs for delete vs update conflicts (1.2-04)
+- **`SyncEntityJson`** — patch `localVersion` in serialized entity JSON when kotlinx.serialization omits default fields
+- **Trailing push in `SyncEngine.runFullSync()`** — second push when pull reconciliation enqueues new outbox work (e.g. git-like auto-merge)
+- **`:sample` conflict matrix** — `sampleEntityConflicts()`: notes `alwaysRemote()`, tags `lastWriteWins()`, tasks `gitLike` (`SampleConflictPolicies.kt`)
+- **`ConflictStrategyE2ETest`** — 11 instrumented tests (per-strategy + multi-entity isolation) via `./gradlew androidE2e` (28 tests total; 1.2-05)
+- **`CONFLICT_RESOLUTION.md` v2** — per-entity matrix, git-like flow, catalog, outbox reconcile, E2E map (1.2-06)
+- **Unit / integration tests** — `GitLikeMergeStrategyTest`, `CrdtMergeStrategyTest`, `ConflictStrategyPullApplierE2ETest`, `OutboxReconcileTest`, `MergeBasePullApplierTest`, `UpdateConflictPolicyTest`, CRDT primitive tests
+
+### Changed
+
+- **`ConflictPullApplier`** — aligns `localVersion` to pulled `serverVersion` on `AcceptRemote`; uses `serverVersion + 1` when a reconciled `Merged` row must be pushed
+- **`ConflictResolutionService`** — passes `remoteServerVersion` into outbox reconciliation on user resolve
+
+### Fixed
+
+- **Auto-merge sync state** — git-like merge + outbox reconcile no longer leaves rows stuck `Pending` when OCC expected a newer `localVersion` after mock-server simulate-edit
+- **Delete-conflict E2E** — stabilized Accept Remote resolution flow in `SampleScenariosE2ETest`
+- **Multi-entity E2E** — `row_sync_state_*` test tags and timeouts for independent note/tag sync under task conflicts
+
+### Distribution
+
+- **Git tag `v1.2.0`** — triggers [Publish Release](.github/workflows/publish-release.yml) to Maven Central (`studio.syncforge`); version taken from tag
+
 ## [1.1.0] - 2026-07-07
 
 **Wire-up** minor release — pluggable entity stores, injectable Ktor `HttpClient`, optional DI modules, encrypted token storage, DataStore pull cursor. No breaking changes to 1.0 stable APIs.
