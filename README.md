@@ -31,6 +31,7 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md)                                                  |
 | **Track 1.0 release blockers (P0)**            | [Roadmap 1.0–2.0 § 1.0.0](docs/ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist)                   |
 | **Swift / SKIE interop (iOS)**                 | [Swift interop](docs/SWIFT_INTEROP.md)                                                       |
+| **Compose conflict UI (CMP)**                  | [Compose UI](docs/COMPOSE_UI.md)                                                             |
 | **Cut a release (manual)**                     | [Release process](docs/RELEASE.md)                                                           |
 | **Maven Central publish (2.0+)**               | [Maven Publish](docs/MAVEN_PUBLISH.md)                                                         |
 | **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                                 |

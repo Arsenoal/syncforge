@@ -334,7 +334,7 @@ independently — not built-in tree or cascade semantics.
 | Component | Purpose |
 |-----------|---------|
 | `SyncConflictChip` | Toolbar badge showing open conflict count |
-| `SyncConflictResolutionSheet` | Side-by-side local vs remote with action buttons |
+| `SyncConflictResolutionSheet` | Side-by-side local vs remote with action buttons ([COMPOSE_UI.md](COMPOSE_UI.md) — CMP on Android/JVM/Apple) |
 | `SyncDebugLauncher` | Debug panel (outbox, conflicts, event log) |
 
 Full wiring: [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose).  

@@ -639,8 +639,8 @@ fun MyScreen(syncManager: SyncManager) {
 
 | Composable | Description |
 |------------|-------------|
-| `SyncConflictChip` | Inline chip indicating a row has an open conflict |
-| `SyncConflictResolutionSheet` | Bottom sheet for keep-local / accept-remote choice |
+| `SyncConflictChip` | Inline chip indicating a row has an open conflict (**CMP** — `composeMain`) |
+| `SyncConflictResolutionSheet` | Cross-platform dialog for keep-local / accept-remote (**CMP** — see [COMPOSE_UI.md](COMPOSE_UI.md)) |
 
 ### Debug UI (androidMain, Experimental)
 

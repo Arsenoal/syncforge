@@ -51,6 +51,14 @@ Minimal JVM app proving `SyncForge.desktop { }` against `:mock-server` (push + p
 ./gradlew :mock-server:run
 # another terminal:
 ./gradlew :sample-desktop:run --args="--smoke"
+
+Compose conflict UI demo (1.3-05):
+
+```bash
+./gradlew :sample-desktop:runComposeConflictDemo
+```
+
+See [COMPOSE_UI.md](COMPOSE_UI.md).
 ```
 
 Full CI-style check (starts mock-server automatically):

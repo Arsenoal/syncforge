@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.skie)
     `maven-publish`
     signing
@@ -62,14 +63,28 @@ kotlin {
             dependsOn(commonMain.get())
         }
 
+        val composeMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         androidMain {
             dependsOn(syncPersistenceMain)
+            dependsOn(composeMain)
         }
         appleMain {
             dependsOn(syncPersistenceMain)
+            dependsOn(composeMain)
         }
         jvmMain {
             dependsOn(syncPersistenceMain)
+            dependsOn(composeMain)
+        }
+
+        composeMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.ui)
+            implementation(compose.material3)
         }
 
         commonMain.dependencies {
@@ -113,8 +128,6 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-            // Satisfy Compose compiler on JVM (androidMain uses androidx; desktop does not use Compose UI).
-            compileOnly(libs.jetbrains.compose.runtime)
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
@@ -126,8 +139,6 @@ kotlin {
         appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.skie.configuration.annotations)
-            // Satisfy Compose compiler on Kotlin/Native (Compose UI is androidMain-only).
-            implementation(libs.jetbrains.compose.runtime)
         }
     }
 }

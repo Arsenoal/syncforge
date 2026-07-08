@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinCompose) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.skie) apply false
+    alias(libs.plugins.composeMultiplatform) apply false
 }
 
 apply(from = "gradle/publish-convention.gradle.kts")
