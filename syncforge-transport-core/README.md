@@ -2,6 +2,8 @@
 
 `SyncDeltaStore` port and `DeltaStoreSyncTransport` adapter for BaaS backends.
 
+Implementation guide: [docs/CUSTOM_TRANSPORT.md](../docs/CUSTOM_TRANSPORT.md).
+
 ## Contract test kit (1.4-07)
 
 Shared push/pull scenarios live in:

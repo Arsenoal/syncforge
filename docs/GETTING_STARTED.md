@@ -573,7 +573,8 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | Koin / Hilt wiring | [Recipes → Dependency injection](RECIPES.md#dependency-injection-koin--hilt) |
 | Injectable Ktor `HttpClient` | [Recipes → Inject app-owned HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
 | GraphQL transport | [Recipes → GraphQL sync transport](RECIPES.md#graphql-sync-transport-client) |
-| BaaS `SyncDeltaStore` | [Recipes → BYO SyncDeltaStore](RECIPES.md#byo-syncdeltastore-baas--hosted-backend) |
+| BaaS `SyncDeltaStore` | [Custom transport → BYO store](CUSTOM_TRANSPORT.md#byo-syncdeltastore) |
+| Custom wire format | [Custom transport guide](CUSTOM_TRANSPORT.md) |
 | Custom field merges | [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) |
 | User-driven conflict UI | [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose) |
 | In-app debug console | [Recipes → Debug console](RECIPES.md#use-the-in-app-debug-console) |

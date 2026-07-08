@@ -7,6 +7,8 @@ Ready-made [GraphQlSyncTransport](src/commonMain/kotlin/dev/syncforge/transport/
 | `:syncforge-network-ktor` | REST reference transport (`KtorSyncTransport`) |
 | `:syncforge-transport-graphql` | GraphQL transport (this module) |
 
+Custom / BaaS transports: [CUSTOM_TRANSPORT.md](../docs/CUSTOM_TRANSPORT.md).
+
 ## Setup
 
 Point at a GraphQL endpoint that exposes the SyncForge sync operations (same semantics as [REST_API.md](../docs/REST_API.md)). Schema and resolver recipes: [syncforge-server/graphql/README.md](../syncforge-server/graphql/README.md).

@@ -26,6 +26,7 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Understand the KMP migration plan**          | [KMP Migration](docs/KMP_MIGRATION.md)                                                         |
 | **Look up every public type**                  | [Module Reference](docs/MODULES.md)                                                            |
 | **Implement the backend HTTP contract**        | [REST API](docs/REST_API.md)                                                                   |
+| **Custom backend / BaaS transport**            | [Custom transport](docs/CUSTOM_TRANSPORT.md)                                                   |
 | **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                                   |
 | **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                                     |
 | **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md)                                                  |

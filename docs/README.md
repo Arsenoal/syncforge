@@ -15,11 +15,12 @@ docs/
 ├── IOS_SETUP.md              ← iOS DSL, SQLDelight defaults, Swift integration
 ├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL
 ├── RECIPES.md                ← How-to: merge, deferToUser, debug, observe status
+├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore (1.4)
 ├── CONFLICT_RESOLUTION.md    ← Strategies, lifecycle, Compose UI, decision guide
 ├── BEST_PRACTICES.md         ← Entity design, strategy choices, performance
 ├── KMP_MIGRATION.md          ← Room → SQLDelight, iOS targets, expect/actual plan
 ├── MODULES.md                ← Package-by-package API reference
-├── REST_API.md               ← Backend push/pull contract
+├── REST_API.md               ← Backend push/pull contract + transport adapter semantics
 ├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
 ├── ROADMAP.md                ← Phases, limitations, future work
 ├── ROADMAP_1_0_TO_2_0.md     ← Detailed plan: 1.0.0 through 2.0.0 (sign-off checklists)

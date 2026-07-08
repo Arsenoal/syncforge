@@ -830,12 +830,12 @@ SyncForge.ios {
 
 ### Escape hatch — custom transport
 
-Non-REST backends skip `httpClient()` entirely:
+Non-REST backends skip `httpClient()` entirely. See [CUSTOM_TRANSPORT.md](CUSTOM_TRANSPORT.md).
 
 ```kotlin
 SyncForge.android(this) {
     baseUrl("https://api.example.com")  // still used by built-in auth { } if configured
-    transport(MyGraphqlSyncTransport(...))
+    transport(MySyncTransport(...))
     registry(handlers)
 }
 ```
@@ -1033,6 +1033,8 @@ Apollo Server and Spring GraphQL sketches: [syncforge-server/graphql/README.md](
 
 ## BYO `SyncDeltaStore` (BaaS / hosted backend)
 
+Full guide: [CUSTOM_TRANSPORT.md → BYO SyncDeltaStore](CUSTOM_TRANSPORT.md#byo-syncdeltastore).
+
 Use when the client talks to Firebase, Supabase, or a custom RPC/NoSQL store instead of REST or
 GraphQL. Implement the storage port once; `DeltaStoreSyncTransport` maps it to `SyncTransport`.
 
@@ -1095,6 +1097,8 @@ Contract test kit: implement `SyncDeltaStoreContract` scenarios in `commonTest` 
 ---
 
 ## Custom `SyncTransport`
+
+Full guide: [CUSTOM_TRANSPORT.md](CUSTOM_TRANSPORT.md) (decision tree, errors, auth, testing).
 
 Use when the wire format is neither REST (`KtorSyncTransport`) nor a shipped adapter (GraphQL,
 Supabase, Firebase). `SyncManager` only requires `push()` / `pull()`.

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Custom transport guide (1.4-10)** — [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) for BYO `SyncTransport` / `SyncDeltaStore`; REST_API.md transport adapter section (same push/pull semantics, pluggable wire format)
 - **GraphQL schema + resolver recipes (1.4-09)** — `syncforge-server/graphql/syncforge-sync.graphql`, Ktor/Apollo/Spring resolver guides, `:backend-starter-graphql`, RECIPES.md sections for GraphQL transport, BYO `SyncDeltaStore`, and custom `SyncTransport`
 - **`:syncforge-transport-graphql` (1.4-08)** — `GraphQlSyncTransport` over GraphQL-over-HTTP (`syncPush` / `syncPull`); `:mock-server` and `:syncforge-server` `/graphql` facade for local push/pull
 - **Multi-device Android E2E (1.4-06)** — two-emulator phase tests (`MultiDeviceE2ETest`) with mock-server session coordination; task gitLike conflict + tag LWW scenarios; `androidMultiDeviceE2e` Gradle task + nightly CI workflow

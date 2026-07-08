@@ -12,6 +12,49 @@ and server.
 
 ---
 
+## Transport adapters (client)
+
+SyncForge separates **sync semantics** (what `SyncManager` needs) from **wire format** (how
+bytes reach your backend). The stable client boundary is [SyncTransport](../syncforge/src/commonMain/kotlin/dev/syncforge/network/SyncTransport.kt) —
+`push()` and `pull()` returning `PushResult` / `PullResult`. Wire format is pluggable.
+
+### Semantic contract (all adapters)
+
+Regardless of REST, GraphQL, BaaS RPC, or a custom SDK, adapters must preserve the
+**meaning** of the operations documented below:
+
+| Operation | Client input | Client output | Server/store obligation |
+|-----------|--------------|---------------|-------------------------|
+| **Push** | `List<OutboxEntry>` with `changeType`, `payloadJson`, `localVersion` | `acknowledgedIds` + `rejected[]` with `code` / `message` | Idempotent batch apply; per-entry rejection without failing the whole batch |
+| **Pull** | `sinceTimestampMillis`, `entityTypes`, `pageSize`, `pageCursor` | `deltas[]`, `serverTimestampMillis`, optional `hasMore` / `nextPageCursor` | Deltas after cursor; tombstones via `isDeleted`; monotonic `serverVersion` |
+
+`payloadJson` is opaque at the SyncForge layer — entity handlers parse it on the client;
+backends must store and return it unchanged.
+
+Push rejection `code` values and pull pagination fields in this document are the **canonical
+names and semantics**. GraphQL field names (`syncPush`, `syncPull`) and Supabase RPC names
+may differ on the wire but must map to the same shapes. See
+[syncforge-server/graphql/syncforge-sync.graphql](../syncforge-server/graphql/syncforge-sync.graphql).
+
+### Shipped client adapters
+
+| Wire format | Adapter | Module |
+|-------------|---------|--------|
+| REST `POST /sync/push`, `GET /sync/pull` | `KtorSyncTransport` (default) | `:syncforge-network-ktor` |
+| GraphQL `syncPush` / `syncPull` | `GraphQlSyncTransport` | `:syncforge-transport-graphql` |
+| BaaS delta store | `DeltaStoreSyncTransport` + vendor `SyncDeltaStore` | `:syncforge-transport-core` + `:syncforge-transport-supabase` / `:syncforge-transport-firebase` |
+
+### Custom adapters
+
+Implement `SyncTransport` directly, or `SyncDeltaStore` + `DeltaStoreSyncTransport` for hosted
+stores. Full guide: [CUSTOM_TRANSPORT.md](CUSTOM_TRANSPORT.md).
+
+**Non-goals:** SyncForge does not require a specific URL layout, GraphQL schema for your
+domain entities, or HTTP status handling beyond what your adapter maps to `SyncError.Code`.
+Built-in `auth { }` routes (`/auth/*`) are separate from sync transport endpoints.
+
+---
+
 ## API versioning and compatibility
 
 ### Contract version

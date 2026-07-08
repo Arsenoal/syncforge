@@ -423,7 +423,7 @@ Acknowledges all pushes and returns empty pulls. Useful for tests and offline-on
 
 ### `SyncDeltaStore` + `DeltaStoreSyncTransport` (`:syncforge-transport-core`)
 
-BaaS / hosted-backend adapter (1.4). Implement `SyncDeltaStore` once per vendor (Firestore, Supabase, custom RPC); wire with a single `SyncTransport`.
+BaaS / hosted-backend adapter (1.4). Implement `SyncDeltaStore` once per vendor (Firestore, Supabase, custom RPC); wire with a single `SyncTransport`. Full guide: [CUSTOM_TRANSPORT.md](CUSTOM_TRANSPORT.md).
 
 **Contract test kit (1.4-07):** run `SyncDeltaStoreContract` scenarios from `dev.syncforge.transport.contract` in your module's `commonTest` (see [transport-core README](../syncforge-transport-core/README.md)). REST backends use `SyncPushPullContract` in `:syncforge-server` tests.
 
