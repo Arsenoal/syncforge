@@ -1,6 +1,5 @@
 package dev.syncforge.work
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.runBlocking
 import platform.BackgroundTasks.BGAppRefreshTask
@@ -18,7 +17,6 @@ import kotlin.time.Duration.Companion.minutes
  * before returning. Bind the sync lambda via [bind] when [dev.syncforge.sync.SyncManager] is ready
  * (or use [SyncForge.ios] with `schedulePeriodicSyncOnStart()`).
  */
-@ExperimentalSyncForgeApi
 object IosBackgroundSync {
 
     const val DEFAULT_TASK_IDENTIFIER: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER
@@ -93,7 +91,6 @@ object IosBackgroundSync {
 }
 
 /** Registers BGTaskScheduler handlers — Swift: `IosBackgroundSyncKt.registerIosBackgroundSyncTasks(...)`. */
-@ExperimentalSyncForgeApi
 fun registerIosBackgroundSyncTasks(
     taskIdentifier: String = DEFAULT_BACKGROUND_SYNC_TASK_IDENTIFIER,
 ) {

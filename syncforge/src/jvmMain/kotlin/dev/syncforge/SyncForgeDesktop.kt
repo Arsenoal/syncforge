@@ -31,11 +31,9 @@ import kotlin.time.Duration
 /**
  * JVM desktop setup with SQLDelight persistence, file cursor, OkHttp transport, and no background scheduler.
  */
-@ExperimentalSyncForgeApi
 fun SyncForge.desktop(block: DesktopSyncForgeDsl.() -> Unit): SyncManager =
     DesktopSyncForgeDsl().apply(block).build()
 
-@ExperimentalSyncForgeApi
 class DesktopSyncForgeDsl internal constructor() {
     private val builder = SyncForgeBuilder()
     private var baseUrl: String? = null
@@ -44,6 +42,7 @@ class DesktopSyncForgeDsl internal constructor() {
     private var useBuiltInAuth: Boolean = false
     private var persistence: SyncForgePersistence? = null
     private var httpClient: HttpClient? = null
+    private var sqlDelightDatabaseName: String = "syncforge.db"
 
     fun baseUrl(url: String) {
         baseUrl = url
@@ -86,6 +85,15 @@ class DesktopSyncForgeDsl internal constructor() {
         this.httpClient = client
     }
 
+    /**
+     * SQLDelight database file name under `java.io.tmpdir` (default `syncforge.db`).
+     * Ignored when [persistence] is set.
+     */
+    fun databaseName(name: String) {
+        require(name.isNotBlank()) { "databaseName must not be blank" }
+        sqlDelightDatabaseName = name
+    }
+
     @ExperimentalSyncForgeApi
     fun persistence(persistence: SyncForgePersistence) {
         this.persistence = persistence
@@ -107,6 +115,8 @@ class DesktopSyncForgeDsl internal constructor() {
         builder.conflicts(block)
     }
 
+    /** Escape hatch for advanced overrides on the underlying [SyncForgeBuilder]. */
+    @ExperimentalSyncForgeApi
     fun customize(block: SyncForgeBuilder.() -> Unit) {
         builder.apply(block)
     }
@@ -130,7 +140,7 @@ class DesktopSyncForgeDsl internal constructor() {
     internal fun build(): SyncManager {
         builder.enableRetry = true
 
-        val stores = persistence ?: createDefaultSyncForgePersistence()
+        val stores = persistence ?: createDefaultSyncForgePersistence(databaseName = sqlDelightDatabaseName)
         builder.outbox = builder.outbox ?: stores.outboxRepository(maxRetries = builder.maxRetries)
         builder.conflictStore = builder.conflictStore ?: stores.conflictStore()
         builder.mergeBaseStore = builder.mergeBaseStore ?: stores.mergeBaseStore()

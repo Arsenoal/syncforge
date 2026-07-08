@@ -34,4 +34,5 @@ include(
     ":mock-server",
     ":sample",
     ":sample-ios-shared",
+    ":sample-desktop",
 )

@@ -1,6 +1,6 @@
 # Desktop setup guide
 
-Run SyncForge on JVM desktop (Linux, macOS, Windows) via `SyncForge.desktop { }`.
+Run SyncForge on JVM desktop (Linux, macOS, Windows) via `SyncForge.desktop { }` (**stable** since 1.3 — no module-wide `@OptIn` required for the desktop DSL).
 
 **Requirements:** JDK 17+, Kotlin 2.1+
 
@@ -43,11 +43,27 @@ secure storage (OS keychain bindings, encrypted file, etc.). See [AUTH_API.md](A
 
 Use `http://localhost:8080` as `baseUrl`.
 
+### Desktop sample (`:sample-desktop`)
+
+Minimal JVM app proving `SyncForge.desktop { }` against `:mock-server` (push + pull):
+
+```bash
+./gradlew :mock-server:run
+# another terminal:
+./gradlew :sample-desktop:run --args="--smoke"
+```
+
+Full CI-style check (starts mock-server automatically):
+
+```bash
+./gradlew desktopE2e
+```
+
 ---
 
 ## macOS native target
 
-For native macOS apps (not JVM), use `SyncForge.macos { }` — same defaults as iOS:
+For native macOS apps (not JVM), use `SyncForge.macos { }` (**stable** since 1.3) — same defaults as iOS:
 
 ```kotlin
 val syncManager = SyncForge.macos {

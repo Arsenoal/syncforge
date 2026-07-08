@@ -46,7 +46,8 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncForge.android { }`, `SyncForgeAndroid` | **Stable** | Primary Android entry point; SQLDelight outbox by default (0.6.0). |
 | `AndroidSyncForgeDsl.authToken` / `auth(SyncAuthProvider)` | **Stable** | Bearer or custom token provider for `KtorSyncTransport`. |
 | `AndroidSyncForgeDsl.auth { }` (built-in register/login) | **Stable** | Wires `SyncManager.register`/`login`/`logout`; see [AUTH_API.md](AUTH_API.md). |
-| `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }` | **Experimental** | Newer KMP platform DSLs; less production mileage than Android. |
+| `SyncForge.ios { }`, `IosBackgroundSync`, `registerIosBackgroundSyncTasks` | **Stable** | iOS DSL + BGTaskScheduler helpers (1.3-02); SQLDelight outbox, UserDefaults cursor, NWPathMonitor. |
+| `SyncForge.desktop { }`, `SyncForge.macos { }` | **Stable** | JVM desktop + native macOS DSLs (1.3-03); macOS delegates to iOS defaults. |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
 | `SyncManager` — `status`, `authState`, `session`, `register`/`login`/`logout`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync + built-in auth contract (1.1). |
 | `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
@@ -55,7 +56,7 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncDebug`, `SyncHealth`, `SyncEvent` | **Experimental** | Developer observability. |
 | `SyncDebugLauncher`, `SyncDebugPanel` | **Experimental** | Debug Compose UI (Android). |
 | `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict Compose UI | **Stable** | Production UI helpers on Android. |
-| `databaseName()` | **Stable** | SQLDelight database file name on Android (default `syncforge.db` since 0.6.0). |
+| `databaseName()` | **Stable** | SQLDelight database file name on Android (default `syncforge.db` since 0.6.0); JVM desktop uses `java.io.tmpdir` (1.3-03). |
 | `persistence(SyncForgePersistence)`, `outboxRepository()` / `conflictStore()` extensions | **Experimental** | Custom SQLDelight wiring. |
 | `SyncForgePersistenceFactory`, `createSyncForgePersistence`, `createDefaultSyncForgePersistence` (`:syncforge-persistence`) | **Experimental** | Annotated with `@ExperimentalSyncForgeApi`; requires opt-in for direct factory use. |
 | `SyncEngine`, `ConflictPullApplier`, `SyncManagerImpl`, `SqlDelightOutboxRepository`, platform monitors/cursor impls | **Internal** | Orchestration and storage implementations. |
@@ -133,9 +134,10 @@ packages** (folders under `dev.syncforge`) to their responsibility.
 |------|-----------|------|
 | `SyncForge.android(context) { }` | Stable | Android DSL — SQLDelight outbox by default (0.6.0); automatic Room migration |
 | `SyncForgeAndroid` | Stable | `workManagerConfiguration { syncManager }` helper for `Configuration.Provider` |
-| `SyncForge.ios { }` | Experimental | iOS DSL — SQLDelight outbox + conflicts, UserDefaults cursor, NWPathMonitor |
-| `SyncForge.desktop { }` | Experimental | JVM desktop DSL — SQLDelight, file cursor, OkHttp transport |
-| `SyncForge.macos { }` | Experimental | Native macOS DSL — same defaults as iOS (`macosArm64` / `macosX64`) |
+| `SyncForge.ios { }` | Stable | iOS DSL — SQLDelight outbox + conflicts, UserDefaults cursor, NWPathMonitor |
+| `IosBackgroundSync`, `registerIosBackgroundSyncTasks` | Stable | BGTaskScheduler registration + periodic sync (pair with `schedulePeriodicSyncOnStart()`) |
+| `SyncForge.desktop { }` | Stable | JVM desktop DSL — SQLDelight, file cursor, OkHttp transport; `databaseName()` for isolated DB files |
+| `SyncForge.macos { }` | Stable | Native macOS DSL — same defaults as iOS (`macosArm64` / `macosX64`) |
 | `SyncForge.create()` / `createWithRetry()` / `builder { }` | Experimental | Low-level factory and fluent builder |
 | `SyncForgeBuilder` | Experimental | Auto-derives `entityTypes` from handlers |
 
@@ -710,6 +712,9 @@ See [IOS_SETUP.md](IOS_SETUP.md#background-sync-bgtaskscheduler).
 | `commonTest/.../SyncEngineIntegrationTest` | Retry exhaustion, multi-page pull, offline queue (P1-04) |
 | `commonTest/.../SyncForgeBuilderTest` | Builder entity type derivation |
 | `jvmTest/.../StableApiSurfaceTest` | Stable vs experimental API boundary (core SyncManager, conflicts, Compose status) |
+| `jvmTest/.../StableIosApiSurfaceSourceTest` | iOS DSL + BGTask helpers stable (source annotation guard; 1.3-02) |
+| `jvmTest/.../StableDesktopApiSurfaceTest` | JVM desktop DSL stable (reflection + compile guard; 1.3-03) |
+| `jvmTest/.../StableMacosApiSurfaceSourceTest` | macOS DSL stable (source annotation guard; 1.3-03) |
 | `androidUnitTest/.../StableAndroidApiSurfaceTest` | Stable Android DSL + `SyncForgeAndroid` entry points |
 | `androidUnitTest/.../SyncManagerImplTest` | Push cycle with in-memory outbox |
 | `jvmTest/.../SqlDelightOutboxRepositoryTest` | SQLDelight outbox (JDBC in-memory) |

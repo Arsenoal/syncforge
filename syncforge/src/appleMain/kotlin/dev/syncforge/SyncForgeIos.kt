@@ -32,14 +32,12 @@ import kotlin.time.Duration
 /**
  * iOS setup with SQLDelight persistence, UserDefaults cursor, NWPathMonitor, and Darwin Ktor transport.
  */
-@ExperimentalSyncForgeApi
 fun SyncForge.ios(block: IosSyncForgeDsl.() -> Unit): SyncManager =
     IosSyncForgeDsl().apply(block).build()
 
 /**
  * DSL for [SyncForge.ios]. Delegates to [SyncForgeBuilder] with iOS-appropriate defaults.
  */
-@ExperimentalSyncForgeApi
 class IosSyncForgeDsl internal constructor() {
     private val builder = SyncForgeBuilder()
     private var baseUrl: String? = null
@@ -118,7 +116,8 @@ class IosSyncForgeDsl internal constructor() {
         builder.conflicts(block)
     }
 
-    /** Escape hatch for advanced overrides on the underlying builder. */
+    /** Escape hatch for advanced overrides on the underlying [SyncForgeBuilder]. */
+    @ExperimentalSyncForgeApi
     fun customize(block: SyncForgeBuilder.() -> Unit) {
         builder.apply(block)
     }

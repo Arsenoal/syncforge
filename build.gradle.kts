@@ -15,6 +15,7 @@ apply(from = "gradle/publish-convention.gradle.kts")
 apply(from = "gradle/maven-central.gradle.kts")
 apply(from = "gradle/e2e.gradle.kts")
 apply(from = "gradle/ios-xcode.gradle.kts")
+apply(from = "gradle/ios-distribution.gradle.kts")
 
 tasks.register("publishAllToMavenLocal") {
     group = "publishing"
@@ -57,6 +58,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge-ksp:compileKotlin",
         ":backend-starter:compileKotlin",
         ":mock-server:compileKotlin",
+        ":sample-desktop:compileKotlin",
         ":sample:compileDebugKotlin",
         ":sample:compileDebugAndroidTestKotlin",
         ":syncforge-bom:verifyBomConstraints",
@@ -72,6 +74,14 @@ fun readSyncforgeVersion(propertiesFile: java.io.File): String {
 }
 
 fun syncforgeLibraryVersion(): String = readSyncforgeVersion(rootProject.file("gradle.properties"))
+
+/** Maven Central publish is gated to 2.0.0+ unless [allowPre2MavenCentralPublish] is set. */
+fun mavenCentralPublishAllowed(version: String, allowPre2: Boolean): Boolean {
+    if (allowPre2) return true
+    val base = version.substringBefore('-')
+    val major = base.substringBefore('.').toIntOrNull() ?: return false
+    return major >= 2
+}
 
 fun consumerSmokeMavenCentralVersion(): String =
     readSyncforgeVersion(rootProject.file("consumer-smoke/android-minimal/gradle.properties"))
@@ -115,7 +125,7 @@ tasks.register("verifySignOffMatrix") {
 tasks.register("publishAllToMavenCentral") {
     group = "publishing"
     description =
-        "Publishes all SyncForge library modules to Maven Central (set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."
+        "Publishes all SyncForge library modules to Maven Central (2.0.0+ only; set mavenCentralPublishing=true and credentials in ~/.gradle/gradle.properties)."
     dependsOn(
         ":syncforge:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-annotations:publishAllPublicationsToMavenCentralRepository",
@@ -132,7 +142,19 @@ tasks.register("publishAllToMavenCentral") {
             .task(":publishAllPublicationsToMavenCentralRepository"),
     )
     onlyIf {
-        providers.gradleProperty("mavenCentralPublishing").orNull == "true"
+        if (providers.gradleProperty("mavenCentralPublishing").orNull != "true") {
+            return@onlyIf false
+        }
+        val allowPre2 = providers.gradleProperty("allowPre2MavenCentralPublish").orNull == "true"
+        val version = syncforgeLibraryVersion()
+        val allowed = mavenCentralPublishAllowed(version, allowPre2)
+        if (!allowed) {
+            logger.lifecycle(
+                "Skipping publishAllToMavenCentral for $version — Maven Central publish is gated until 2.0.0 " +
+                    "(override with -PallowPre2MavenCentralPublish=true for maintainers only).",
+            )
+        }
+        allowed
     }
 }
 

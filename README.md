@@ -1,6 +1,6 @@
 # SyncForge documentation
 
-**Version:** `1.1.0` · **Status:** stable — [Maven Central](https://central.sonatype.com/namespace/studio.syncforge) (`studio.syncforge`)
+**Version:** `1.2.0` (development on `main`) · **Maven Central:** `1.1.0` latest published — new Central uploads from **`v2.0.0`** ([policy](docs/MAVEN_PUBLISH.md#distribution-policy-1x--20))
 
 SyncForge is an offline-first sync library for Android with Kotlin Multiplatform targets for
 iOS, JVM desktop, and native macOS. Your app entities live in Room (Android) or your own
@@ -30,7 +30,8 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                                     |
 | **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md)                                                  |
 | **Track 1.0 release blockers (P0)**            | [Roadmap 1.0–2.0 § 1.0.0](docs/ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist)                   |
-| **Launch / publish workflow**                  | [Maven Publish](docs/MAVEN_PUBLISH.md)                                                         |
+| **Cut a release (manual)**                     | [Release process](docs/RELEASE.md)                                                           |
+| **Maven Central publish (2.0+)**               | [Maven Publish](docs/MAVEN_PUBLISH.md)                                                         |
 | **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                                 |
 | **Track release changes**                      | [Changelog](CHANGELOG.md)                                                                      |
 

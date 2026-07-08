@@ -37,6 +37,47 @@ fun Project.startMockServer(port: Int, logFile: File): Process {
         .start()
 }
 
+tasks.register("desktopE2e") {
+    group = "verification"
+    description = "Runs :sample-desktop JVM smoke (push + pull) against mock-server."
+    dependsOn(":mock-server:installDist", ":sample-desktop:installDist")
+
+    doLast {
+        val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
+        val baseUrl = "http://127.0.0.1:$port"
+        val logFile = File(System.getProperty("java.io.tmpdir"), "syncforge-mock-server-desktop.log")
+        val process = startMockServer(port, logFile)
+        try {
+            waitForMockServerHealth(port, logFile)
+            resetMockServerState(port)
+            logger.lifecycle("Running desktop sample smoke...")
+            exec {
+                environment("MOCK_SERVER_BASE_URL", baseUrl)
+                commandLine(
+                    rootProject.file("gradlew").absolutePath,
+                    ":sample-desktop:run",
+                    "--args=--smoke",
+                    "--no-daemon",
+                )
+            }
+            logger.lifecycle("Running desktop sample JVM E2E test...")
+            exec {
+                environment("MOCK_SERVER_BASE_URL", baseUrl)
+                commandLine(
+                    rootProject.file("gradlew").absolutePath,
+                    ":sample-desktop:test",
+                    "--tests",
+                    "dev.syncforge.sample.desktop.DesktopSampleE2ETest",
+                    "--no-daemon",
+                )
+            }
+        } finally {
+            process.destroy()
+            process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
+        }
+    }
+}
+
 tasks.register("androidE2e") {
     group = "verification"
     description = "Runs sample connected Android tests against mock-server (requires emulator/device)."

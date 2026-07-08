@@ -19,6 +19,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 1.3.x  Platform parity — Desktop sample, iOS SPM/XCFramework, CMP debug UI
 1.4.x  Ecosystem       — Spring/GraphQL/Supabase transports, multi-device E2E, version catalog
 1.5.x  Production ops — OpenTelemetry, SyncHealth dashboard, hierarchical sync recipes
+1.6.x  Web add-on      — Optional Kotlin/JS or Wasm browser target (`SyncForge.web { }`, `:sample-web`)
 2.0.0  Major evolution — Optional CRDT/op-log channel, stable KMP DSLs, REST v2 (if needed)
 ```
 
@@ -32,7 +33,9 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **Conflict resolution**   | Per-entity `conflicts { }` — LWW, merge, defer, alwaysLocal/Remote | `gitLike { }` three-way merge, strategy catalog, app-selectable per entity | `crdt { }` stable; tombstone-aware sets |
 | **App entity store**      | Room-first DX (KSP)     | **`EntityStore` abstraction** + adapters | Any store via handler; Room not required     |
 | **Android**               | Primary stable target   | DI modules, ProGuard sign-off          | Legacy Room internals removed at 1.0         |
-| **iOS / desktop / macOS** | Experimental DSLs       | Sample parity, SPM binary              | Graduate to stable                           |
+| **iOS**                   | Experimental DSL        | **Stable DSL (1.3-02)**; SPM binary    | Stable                                       |
+| **Desktop / macOS**       | Experimental DSLs       | **Stable DSLs (1.3-03)** + `:sample-desktop` | Stable                                   |
+| **Web (browser)**         | Not in scope            | **Optional 1.6 add-on** — `SyncForge.web { }`, `:sample-web` | Stable or documented experimental exception |
 | **HTTP client (REST)**    | Ktor bundled in `KtorSyncTransport` | Injectable `HttpClient` + `RestSyncTransport` refactor | User supplies Ktor client (interceptors, engines); SyncForge owns push/pull DTOs |
 | **Backend / transport**   | REST v1 frozen (`KtorSyncTransport`); `SyncTransport` plug-in | **`SyncDeltaStore` + `DeltaStoreSyncTransport`** for BaaS; GraphQL/Supabase/Firebase modules | REST v2 only if op-log needs it; wire format pluggable via `SyncTransport` |
 | **Distribution**          | BOM + Gradle plugin     | Version catalog, integration artifacts | SPM + Maven parity                           |
@@ -49,6 +52,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
 | **1.5.0** | *Operate*     | Q4 2027       | Tracing, metrics dashboard, hierarchical recipes       |
+| **1.6.0** | *Web add-on*  | 2028 (opt.)   | Browser target, `SyncForge.web { }`, `:sample-web`     |
 | **2.0.0** | *Converge*    | 2028          | Major API + optional sync modes                        |
 
 Windows are indicative for a small team or part-time maintenance.
@@ -115,6 +119,12 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 - **BOM simplification** — At 1.0 most apps declare only `studio.syncforge:syncforge` (KSP is pinned by `studio.syncforge.android`; runtime modules are transitive). Re-evaluate whether `syncforge-bom` stays published once optional store/transport artifacts land (1.1–1.4). If consumers rarely pull multiple versioned coordinates, deprecate the BOM in favor of the published version catalog (1.4-05) or a single explicit version on `syncforge` only. See [Distribution notes](#distribution-notes-10--20) below.
 
 ### Distribution notes (1.0 → 2.0)
+
+**Maven Central (policy):** **1.x tags do not publish new artifacts to Maven Central.** Development continues on `main` with git tags, `publishAllToMavenLocal`, and optional manual **Publish Release** validation (macOS compile/test). **First Central upload for the 1.x line after 1.1.0 is `v2.0.0`.** Existing Central versions (1.0.0, 1.1.0) remain available. See [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md).
+
+**iOS SPM / XCFramework (policy):** Same **2.0.0+** gate as Maven Central. Until then, iOS consumers integrate via KMP frameworks (`linkIosFrameworksForXcode`, Xcode Run Script). `publishIosSpmArtifacts` is a gated placeholder (1.3-04). See [IOS_SETUP.md](IOS_SETUP.md) and [RELEASE.md](RELEASE.md).
+
+**GitHub Releases:** Created **manually** in the repository UI — tag push does not auto-create releases or trigger publish CI.
 
 **BOM at 1.0:** `syncforge-bom` constrains five library artifacts (`syncforge`, `annotations`, `ksp`, `persistence`, `android-deps`). It is **optional** for the common Android path — `implementation("studio.syncforge:syncforge")` plus the Gradle plugin is enough; GETTING_STARTED already marks the BOM as optional.
 
@@ -586,20 +596,20 @@ iOS and desktop are **first-class documented paths**, not compile-only targets. 
 
 | ID     | Job                                                                           | Priority | Notes                                       |
 |--------|-------------------------------------------------------------------------------|----------|---------------------------------------------|
-| 1.3-01 | **`:sample-desktop`** — minimal CLI or Compose Multiplatform                  | P0       | Proves `SyncForge.desktop { }`              |
-| 1.3-02 | **Graduate iOS DSL** — `SyncForge.ios { }` stable after desktop + device soak | P1       | Requires 1.1 cursor + auth hardening        |
-| 1.3-03 | **Graduate desktop/macos DSLs**                                               | P1       | Pair with desktop sample                    |
-| 1.3-04 | **Swift Package Manager / XCFramework publish**                               | P1       | CI artifact on tag; IOS_SETUP.md update     |
+| 1.3-01 | **`:sample-desktop`** — minimal CLI or Compose Multiplatform                  | P0       | Proves `SyncForge.desktop { }` ✅           |
+| 1.3-02 | **Graduate iOS DSL** — `SyncForge.ios { }` stable after desktop + device soak | P1       | Requires 1.1 cursor + auth hardening ✅     |
+| 1.3-03 | **Graduate desktop/macos DSLs**                                               | P1       | Pair with desktop sample ✅                 |
+| 1.3-04 | **Swift Package Manager / XCFramework publish**                               | P1       | Gated to **2.0.0+** (like Maven); manual Publish Release workflow; IOS_SETUP.md update |
 | 1.3-05 | **Compose Multiplatform conflict/debug UI**                                   | P2       | Share Android conflict sheet on iOS/desktop |
 | 1.3-06 | **Shake-to-open `SyncDebugLauncher`**                                         | P2       | Debug builds only                           |
 | 1.3-07 | **SKIE Swift API review** — document recommended Swift patterns               | P1       | Flow collection, error handling             |
 
 ### 1.3.0 acceptance criteria
 
-- [ ] Desktop sample runs against `:mock-server` with push + pull
+- [x] Desktop sample runs against `:mock-server` with push + pull
 - [ ] iOS consumer can integrate via documented SPM or KMP framework path
-- [ ] Platform stability table in MODULES.md updated (iOS/desktop → Stable)
-- [ ] `iosE2e` + desktop smoke in CI (desktop may be JVM-only nightly)
+- [x] Platform stability table in MODULES.md updated (iOS, desktop, macOS → Stable)
+- [x] `iosE2e` + desktop smoke in CI (desktop may be JVM-only nightly)
 
 ---
 
@@ -776,6 +786,53 @@ Operators and senior developers can **see** sync health in production-like envir
 
 ---
 
+## 1.6.x — Web add-on (optional)
+
+### Goal
+
+Bring SyncForge to **browser clients** as an **optional add-on** after native platform parity (1.3) and ecosystem transports (1.4). Does **not** block **2.0** — teams can ship 2.0 on Android/iOS/desktop without waiting for web.
+
+Web reuses the same sync loop (outbox → push → pull → conflicts) and [REST_API.md](REST_API.md) contract. Entity storage and background sync follow browser constraints (no WorkManager; visibility/online-event driven sync).
+
+### Scope choice (decide in 1.6-00 spike)
+
+| Target | Pros | Cons |
+|--------|------|------|
+| **Kotlin/Wasm (`wasmJs`)** | Shares more KMP code with mobile/desktop; Compose Multiplatform Web path | Tooling + SQLDelight driver maturity; larger wasm bundle |
+| **Kotlin/JS (`js`)** | Mature Ktor JS engine; smaller iteration cost | Fewer shared native APIs; persistence story is weaker |
+
+Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers are viable; fall back to **JS** for transport-only MVP.
+
+### Features
+
+| ID     | Job                                                                 | Priority | Notes |
+|--------|---------------------------------------------------------------------|----------|-------|
+| 1.6-00 | **Web platform spike** — Wasm vs JS, persistence + Ktor engine PoC  | P0       | Go/no-go doc; does not ship in BOM until 1.6-01+ green |
+| 1.6-01 | **KMP `js` and/or `wasmJs` targets** on `:syncforge` + persistence | P0       | `webMain` source set; experimental `@ExperimentalSyncForgeApi` |
+| 1.6-02 | **`SyncForge.web { }` DSL** — browser persistence + cursor + transport | P0    | IndexedDB/SQLDelight-web or documented in-memory + localStorage cursor fallback |
+| 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine |
+| 1.6-04 | **`:sample-web`** — minimal Compose/Web or Kotlin/JS page           | P1       | Push + pull against `:mock-server` (same acceptance as `:sample-desktop`) |
+| 1.6-05 | **`WEB_SETUP.md`** + MODULES.md stability row                       | P1       | Gradle consumer snippet; CORS notes for dev mock-server |
+| 1.6-06 | **`webE2e` CI** — headless browser smoke (Playwright or Karma)      | P2       | Nightly; optional gate for 1.6.0 tag |
+| 1.6-07 | **Conflict/debug UI on web** — share 1.3-05 CMP components          | P2       | Defer if 1.3-05 not yet on Wasm |
+
+### 1.6.0 acceptance criteria (add-on release)
+
+- [ ] `SyncForge.web { }` documented and compiles on at least one browser target (Wasm or JS)
+- [ ] `:sample-web` runs push + pull against `:mock-server` locally
+- [ ] Published as **optional** BOM artifacts (e.g. `syncforge-web` or platform-specific variants) — not required for Android-primary consumers
+- [ ] BEST_PRACTICES.md FAQ row updated from “not in scope” to “1.6 add-on”
+- [ ] Explicit limitations documented: no background sync guarantee, storage quotas, CORS/dev-server setup
+
+### 1.6 explicit non-goals
+
+- Replacing native mobile/desktop samples — web is additive
+- Service Worker–only offline sync without the shared outbox engine
+- Publishing a separate TypeScript/npm SDK (Kotlin/JS/Wasm interop is the path; TS BYO REST remains valid at 1.0)
+- Blocking **2.0.0** on web stability
+
+---
+
 ## 2.0.0 — Major release vision
 
 ### Goal
@@ -830,7 +887,7 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 - [ ] Entity sync mode unchanged for existing consumers (opt-in for new mode)
 - [ ] All 1.x experimental APIs either stable or removed with replacement
 - [ ] REST v1 supported for minimum 12 months after v2 introduction (if v2 ships)
-- [ ] Full CI matrix: Android E2E, iOS E2E, desktop smoke, consumer-smoke, multi-device
+- [ ] Full CI matrix: Android E2E, iOS E2E, desktop smoke, consumer-smoke, multi-device (+ optional `webE2e` from 1.6 add-on)
 
 ---
 

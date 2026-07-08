@@ -15,7 +15,7 @@ Verifies the documented consumer setup:
 
 | Task | Version source | When to bump |
 |------|----------------|--------------|
-| `verifyConsumerSmokeMavenCentral` / CI | `android-minimal/gradle.properties` + `libs.versions.toml` | **After** the release is live on [Maven Central](https://repo1.maven.org/maven2/studio/syncforge/) |
+| `verifyConsumerSmokeMavenCentral` | `android-minimal/gradle.properties` + `libs.versions.toml` | **After** a **2.0.0+** release is live on [Maven Central](https://repo1.maven.org/maven2/studio/syncforge/) (1.x tags do not publish) |
 | `verifyConsumerSmoke` (mavenLocal) | Root `gradle.properties` via `-Psyncforge.version=…` | Automatic — tracks the library version under development |
 
 Do **not** bump the consumer-smoke Maven Central pins when tagging; wait until Central sync completes, then update pins so CI validates coordinates consumers actually resolve.
@@ -47,7 +47,7 @@ Equivalent manual command:
 
 ### CI
 
-On every push to `main`, the **Consumer smoke (Maven Central)** job runs `verifyConsumerSmokeMavenCentral`.
-It fails if the pinned version is not yet on Maven Central.
+`verifyConsumerSmokeMavenCentral` is run manually after a **2.0.0+** Central publish
+(Actions → Verify Maven Central Release), or locally before bumping consumer-smoke pins.
 
-After a release appears on Central, bump `consumer-smoke/android-minimal/gradle.properties` and `gradle/libs.versions.toml`, then push.
+After a 2.0+ release appears on Central, bump `consumer-smoke/android-minimal/gradle.properties` and `gradle/libs.versions.toml`, then push.

@@ -35,6 +35,9 @@ jobs:
       - name: Release sign-off (unit tests + consumer smoke)
         run: ./gradlew verifyReleaseSignOff --no-daemon
 
+      - name: Desktop E2E (mock-server + JVM smoke)
+        run: ./gradlew desktopE2e --no-daemon
+
   android-e2e:
     name: Android E2E (emulator + mock-server)
     if: ${{ github.event_name == 'pull_request' || github.event.head_commit == null || !startsWith(github.event.head_commit.message, 'Release ') }}

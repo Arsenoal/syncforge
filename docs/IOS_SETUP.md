@@ -1,8 +1,17 @@
 # iOS setup guide
 
-Configure SyncForge on Apple platforms using `SyncForge.ios { }`.
+Configure SyncForge on Apple platforms using `SyncForge.ios { }` (**stable** since 1.3 — no module-wide `@OptIn` required for the iOS DSL or BGTask helpers).
 
 **Requirements:** Kotlin 2.1+, Xcode 15+, iOS 14+ deployment target (Network framework).
+
+### Distribution (1.x → 2.0)
+
+| Channel | Status |
+|---------|--------|
+| **KMP frameworks** (Gradle → Xcode) | **Supported now** — Option A/B below |
+| **Swift Package Manager / XCFramework** | **Not published until `v2.0.0`** (roadmap 1.3-04; gated like Maven Central) |
+
+Until SPM ships, build frameworks locally or via the Xcode Run Script. See [RELEASE.md](RELEASE.md) for publish policy.
 
 ---
 

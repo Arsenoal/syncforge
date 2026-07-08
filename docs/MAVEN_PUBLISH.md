@@ -1,10 +1,19 @@
 # Maven Central publish checklist
 
-Step-by-step guide for publishing SyncForge to Maven Central. Current stable release: **1.1.0**.
+Step-by-step guide for publishing SyncForge to Maven Central.
 
 **Repository:** [github.com/Arsenoal/syncforge](https://github.com/Arsenoal/syncforge)  
 **Group ID:** `studio.syncforge` (namespace verified via DNS on `syncforge.studio`)  
-**Workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (runs on `v*` tags)
+**Workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (manual **workflow_dispatch** only — see [RELEASE.md](RELEASE.md))
+
+### Distribution policy (1.x → 2.0)
+
+| Version | Maven Central | iOS SPM / XCFramework | How to integrate |
+|---------|---------------|----------------------|------------------|
+| **1.0.x – 1.x** | **Not published** | **Not published** | Git clone, `publishAllToMavenLocal`, composite/`includeBuild`; iOS via KMP frameworks ([IOS_SETUP.md](IOS_SETUP.md)) |
+| **2.0.0+** | **Published** (full KMP artifact set) | **Published** (1.3-04) | Maven coordinates + Gradle plugin from Central; SPM when pipeline ships |
+
+Last version on Central today: **1.1.0** (published before this policy). New 1.x tags do **not** upload to Sonatype or publish SPM binaries. Create [GitHub Releases manually](RELEASE.md#3-create-github-release-manual) and optionally run **Publish Release** for macOS validation.
 
 ---
 
@@ -86,22 +95,35 @@ Close and release the staging repository in the Sonatype Central Portal UI after
 
 ---
 
-## 5. Publish via tag (CI)
+## 5. Release (manual)
 
-1. Ensure `main` is green (CI runs `verifyConsumerSmoke` on linux).
-2. Create and push a version tag:
+Full maintainer flow: [RELEASE.md](RELEASE.md). Summary:
+
+1. Ensure `main` is green (`verifyReleaseSignOff`, E2E jobs on CI).
+2. Bump `syncforge.version` + `CHANGELOG.md` on `main`, tag, and push:
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-3. Watch **Actions** → **Publish Release** on `macos-latest`:
-   - Compiles Android, JVM, iOS Simulator, macOS targets
-   - Runs `:syncforge:jvmTest` and `:syncforge-persistence:jvmTest`
-   - Publishes **all** library artifacts via `publishAllToMavenCentral`
+3. **Create the GitHub Release manually** in the repository UI (tag push does not create one).
+4. **Actions → Publish Release → Run workflow** — enter the tag (e.g. `v1.2.0` or `v2.0.0`). The job checks out that tag and runs on `macos-latest`:
+   - **All versions:** compiles Android, JVM, iOS Simulator, macOS targets; runs JVM tests
+   - **`< 2.0.0`:** Maven Central and iOS SPM upload **skipped** (policy notice in job log)
+   - **`>= 2.0.0`:** publishes library artifacts via `publishAllToMavenCentral` and `publishIosSpmArtifacts` (when 1.3-04 is implemented)
 
-   To re-run manually (e.g. after a workflow fix): **Actions → Publish Release → Run workflow**, enter the tag (`v1.1.0`). Each run uploads the full artifact set for that version — use a **new version tag** if Central already has that release.
+### 5a. Pre-2.0 tags (1.x)
+
+No Sonatype steps. Integrate unpublished builds locally:
+
+```bash
+./gradlew publishAllToMavenLocal verifyConsumerSmoke
+```
+
+Or point your app at the repo with Gradle `includeBuild("../syncforge")` / composite builds.
+
+### 5b. Maven Central publish (2.0.0+ only)
 
 4. CI runs `./gradlew finalizeMavenCentralStaging` so uploads appear under **Deployments**
    (required for Gradle `maven-publish` — see [OSSRH Staging API](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/)).
@@ -109,8 +131,10 @@ git push origin v1.1.0
    KMP macOS/iOS targets often create a **second** deployment (~11 components) alongside the main set (~39).
    Publish **both** — otherwise native KMP artifacts stay off Maven Central.
 6. Wait for Central sync (~15–60 minutes). CI does **not** poll Maven Central during publish.
-7. **Actions → Verify Maven Central Release → Run workflow** — enter the version (e.g. `1.1.0`).
+7. **Actions → Verify Maven Central Release → Run workflow** — enter the version (e.g. `2.0.0`).
    This checks required POMs on `repo1.maven.org` and runs consumer-smoke from Central only.
+
+**Maintainer override (local only):** `-PallowPre2MavenCentralPublish=true` bypasses the 2.0 gate on `publishAllToMavenCentral` — do not use for routine 1.x releases.
 
 ---
 

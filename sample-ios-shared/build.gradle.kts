@@ -11,6 +11,8 @@ group = providers.gradleProperty("syncforge.group").get()
 version = providers.gradleProperty("syncforge.version").get()
 
 kotlin {
+    jvm()
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -20,10 +22,6 @@ kotlin {
             baseName = "SyncForgeSample"
             isStatic = true
         }
-    }
-
-    sourceSets.all {
-        languageSettings.optIn("dev.syncforge.api.ExperimentalSyncForgeApi")
     }
 
     sourceSets {
@@ -37,6 +35,8 @@ kotlin {
             implementation(libs.skie.configuration.annotations)
         }
     }
+
+    jvmToolchain(17)
 }
 
 skie {

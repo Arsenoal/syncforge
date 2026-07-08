@@ -59,7 +59,7 @@
 
 ### Not yet included
 
-- Packaged desktop sample app (`:sample-desktop`)
+- Browser / web sample (`:sample-web` — optional **1.6 add-on**; see [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md#16x--web-add-on-optional))
 - Standalone iOS distribution (Swift Package Manager / XCFramework — iOS still via KMP today)
 - Shake-to-open debug console
 - Full sync health metrics dashboard (basic `SyncHealth` exists today)

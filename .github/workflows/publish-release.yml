@@ -1,32 +1,27 @@
 name: Publish Release
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to publish (e.g. v1.1.0)"
+        description: "Git tag to validate or publish (e.g. v1.2.0)"
         required: true
-        default: "v1.1.0"
+        default: "v1.2.0"
 
 permissions:
   contents: read
 
 jobs:
   publish-macos:
-    name: Maven Central (all KMP targets)
+    name: Release validation (macOS)
     runs-on: macos-latest
     timeout-minutes: 90
 
     steps:
-      # workflow_dispatch checks out main so publish scripts/workflow fixes are available
-      # even when re-publishing an older tag (e.g. v0.9.0-rc.3). Version comes from the tag input.
-      - name: Checkout
+      - name: Checkout tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
+          ref: refs/tags/${{ inputs.tag }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -38,24 +33,36 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
+      - name: Resolve release version
+        id: release
+        run: |
+          TAG="${{ inputs.tag }}"
+          VERSION="${TAG#v}"
+          MAJOR="${VERSION%%.*}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          if [ "$MAJOR" -ge 2 ] 2>/dev/null; then
+            echo "publish_distribution=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish_distribution=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set release version from tag
         run: |
-          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
-          VERSION="${TAG#v}"
+          VERSION="${{ steps.release.outputs.version }}"
           if grep -q '^syncforge\.version=' gradle.properties; then
             sed -i.bak "s/^syncforge\.version=.*/syncforge.version=${VERSION}/" gradle.properties
           else
             echo "syncforge.version=${VERSION}" >> gradle.properties
           fi
 
-      - name: Drop open staging repositories
-        env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          FINALIZE_CURRENT_IP: "false"
-          DROP_ALL_OPEN_STAGING: "true"
-          DROP_INVALID_ON_FAILURE: "true"
-        run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
+      - name: Distribution publish policy
+        run: |
+          if [ "${{ steps.release.outputs.publish_distribution }}" = "true" ]; then
+            echo "::notice title=2.0+ distribution::Version ${{ steps.release.outputs.version }} — Maven Central upload and iOS SPM/XCFramework publish will run when configured."
+          else
+            echo "::notice title=Pre-2.0 validation::Version ${{ steps.release.outputs.version }} is < 2.0.0 — compile/test only. Maven Central and iOS SPM/XCFramework publish start at v2.0.0 (see docs/RELEASE.md)."
+          fi
 
       - name: Compile all Kotlin targets (incl. iOS / macOS)
         run: |
@@ -79,7 +86,18 @@ jobs:
       - name: Test JVM
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
+      - name: Drop open staging repositories
+        if: steps.release.outputs.publish_distribution == 'true'
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          FINALIZE_CURRENT_IP: "false"
+          DROP_ALL_OPEN_STAGING: "true"
+          DROP_INVALID_ON_FAILURE: "true"
+        run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
+
       - name: Prepare GPG signing key
+        if: steps.release.outputs.publish_distribution == 'true'
         env:
           SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           SIGNING_IN_MEMORY_KEY_B64: ${{ secrets.SIGNING_IN_MEMORY_KEY_B64 }}
@@ -136,6 +154,7 @@ jobs:
           fi
 
       - name: Publish to Maven Central
+        if: steps.release.outputs.publish_distribution == 'true'
         env:
           ORG_GRADLE_PROJECT_mavenCentralPublishing: "true"
           ORG_GRADLE_PROJECT_signAllPublications: "true"
@@ -161,7 +180,13 @@ jobs:
           ./gradlew verifyPublishSigning publishAllToMavenCentral \
             --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
 
+      - name: Publish iOS SPM / XCFramework
+        if: steps.release.outputs.publish_distribution == 'true'
+        run: |
+          ./gradlew publishIosSpmArtifacts -PiosSpmPublishing=true --no-daemon
+
       - name: Transfer staging upload to Central Portal
+        if: steps.release.outputs.publish_distribution == 'true'
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -170,10 +195,19 @@ jobs:
           STRICT: "true"
         run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
 
-      - name: Post-publish steps (manual)
+      - name: Post-publish steps (2.0.0+ only)
+        if: steps.release.outputs.publish_distribution == 'true'
         run: |
-          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
-          VERSION="${TAG#v}"
+          VERSION="${{ steps.release.outputs.version }}"
           echo "::notice title=Maven Central portal::Open Central Portal → Deployments. Publish EVERY deployment in VALIDATED state (usually two: ~39 + ~11 KMP components)."
           echo "::notice title=After Central sync::Actions → Verify Maven Central Release → Run workflow (version ${VERSION})."
+          echo "::notice title=GitHub Release::Create the GitHub Release manually in the repository UI (see docs/RELEASE.md)."
           echo "Do not expect artifacts on repo1.maven.org until portal Publish completes and Central syncs (~15–60 min)."
+
+      - name: Pre-2.0 release complete
+        if: steps.release.outputs.publish_distribution != 'true'
+        run: |
+          echo "Tag ${{ steps.release.outputs.tag }} (${{ steps.release.outputs.version }}) validated on macOS."
+          echo "Maven Central and iOS SPM/XCFramework upload skipped until v2.0.0."
+          echo "Integrate via git + publishAllToMavenLocal or composite build until then."
+          echo "Create the GitHub Release manually when ready (see docs/RELEASE.md)."
