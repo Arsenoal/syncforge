@@ -88,24 +88,29 @@ class InMemoryOutboxRepository : OutboxRepository {
         }
     }
 
-    override suspend fun markFailed(id: Long, error: String, retryable: Boolean, maxRetries: Int) =
-        mutex.withLock {
-            val index = entries.indexOfFirst { it.id == id }
-            if (index < 0) return@withLock
-            val current = entries[index]
-            val newRetryCount = current.retryCount + 1
-            val isPermanent = !retryable || newRetryCount >= maxRetries
-            entries[index] = current.copy(
-                retryCount = if (!retryable) maxRetries else newRetryCount,
-                lastError = error,
-                nextRetryAtMillis = if (isPermanent) {
-                    null
-                } else {
-                    RetryBackoff.nextRetryAtMillis(newRetryCount, nowMillis = nowMillis())
-                },
-            )
-            version.value++
-        }
+    override suspend fun markFailed(
+        id: Long,
+        error: String,
+        retryable: Boolean,
+        maxRetries: Int,
+        retryAtMillis: Long?,
+    ) = mutex.withLock {
+        val index = entries.indexOfFirst { it.id == id }
+        if (index < 0) return@withLock
+        val current = entries[index]
+        val newRetryCount = current.retryCount + 1
+        val isPermanent = !retryable || newRetryCount >= maxRetries
+        entries[index] = current.copy(
+            retryCount = if (!retryable) maxRetries else newRetryCount,
+            lastError = error,
+            nextRetryAtMillis = if (isPermanent) {
+                null
+            } else {
+                retryAtMillis ?: RetryBackoff.nextRetryAtMillis(newRetryCount, nowMillis = nowMillis())
+            },
+        )
+        version.value++
+    }
 
     override suspend fun earliestRetryAtMillis(maxRetries: Int): Long? = mutex.withLock {
         entries.earliestRetryAtMillis(maxRetries)

@@ -210,7 +210,8 @@ are indexed if tables grow large.
 
 ### Transient vs permanent failures
 
-- **Network errors** — retried with exponential backoff; optimistic writes kept
+- **Network errors** — retried with configurable backoff (`SyncBackoffPolicy`); optimistic writes kept
+- **HTTP 429** — treated as retryable; honors `Retry-After` when present ([RATE_LIMITING.md](RATE_LIMITING.md))
 - **Validation / auth errors** — marked permanently failed; user must fix data
 - Don't manually retry permanently failed entries without fixing the underlying issue
 

@@ -113,7 +113,11 @@ fun buildSyncForgeHttpClient(
             if (response.status.value !in 200..299) {
                 val body = response.bodyAsText()
                 throw SyncTransportException(
-                    HttpStatusMapper.toSyncError(response.status, body),
+                    HttpStatusMapper.toSyncError(
+                        status = response.status,
+                        body = body,
+                        retryAfterHeader = response.headers[HttpHeaders.RetryAfter],
+                    ),
                 )
             }
         }

@@ -38,6 +38,8 @@ data class SyncError(
     val cause: Throwable? = null,
     /** Original HTTP status when the error originated from [dev.syncforge.network.KtorSyncTransport]. */
     val httpStatus: Int? = null,
+    /** Server-suggested retry delay from HTTP `Retry-After` (milliseconds). */
+    val retryAfterMillis: Long? = null,
 ) {
     enum class Code {
         NETWORK,

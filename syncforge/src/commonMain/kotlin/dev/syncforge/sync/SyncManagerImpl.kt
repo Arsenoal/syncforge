@@ -187,6 +187,8 @@ internal class SyncManagerImpl(
             .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private var lastSyncCursor: Long = cursorStore.get()
+    private var lastCycleCompletedAtMillis: Long = 0L
+    private var nextAllowedSyncAtMillis: Long = 0L
 
     init {
         _pullCursor.value = lastSyncCursor
@@ -335,7 +337,12 @@ internal class SyncManagerImpl(
     ): SyncResult {
         val runBlock: suspend () -> SyncResult = {
             mutex.withLock {
-            val startedAt = currentTimeMillis()
+            val now = currentTimeMillis()
+            throttleResult(now)?.let { throttled ->
+                return@withLock throttled
+            }
+
+            val startedAt = now
             authService?.requireAuthenticated()?.let { authFailure ->
                 val failure = authFailure.toSyncFailure()
                 syncDebugImpl.recordSyncResult(eventType, failure, currentTimeMillis() - startedAt)
@@ -375,6 +382,8 @@ internal class SyncManagerImpl(
             }
 
             syncDebugImpl.recordSyncResult(eventType, result, currentTimeMillis() - startedAt)
+            applyServerRateLimit(result)
+            lastCycleCompletedAtMillis = currentTimeMillis()
             refreshStatus()
             scheduleRetryIfNeeded()
             result
@@ -391,6 +400,32 @@ internal class SyncManagerImpl(
             }
         } else {
             runBlock()
+        }
+    }
+
+    private fun throttleResult(nowMillis: Long): SyncResult? {
+        if (nowMillis < nextAllowedSyncAtMillis) {
+            return SyncResult.Success()
+        }
+        val minIntervalMs = config.minSyncInterval.inWholeMilliseconds
+        if (minIntervalMs > 0L && lastCycleCompletedAtMillis > 0L) {
+            val elapsed = nowMillis - lastCycleCompletedAtMillis
+            if (elapsed < minIntervalMs) {
+                return SyncResult.Success()
+            }
+        }
+        return null
+    }
+
+    private fun applyServerRateLimit(result: SyncResult) {
+        val retryAfterMillis = when (result) {
+            is SyncResult.Failure -> result.error.retryAfterMillis
+            is SyncResult.Partial -> result.errors.firstNotNullOfOrNull { it.retryAfterMillis }
+            else -> null
+        } ?: return
+        val resumeAt = currentTimeMillis() + retryAfterMillis
+        if (resumeAt > nextAllowedSyncAtMillis) {
+            nextAllowedSyncAtMillis = resumeAt
         }
     }
 

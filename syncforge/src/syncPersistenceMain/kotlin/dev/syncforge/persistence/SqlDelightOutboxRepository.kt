@@ -104,7 +104,13 @@ internal class SqlDelightOutboxRepository(
         }
     }
 
-    override suspend fun markFailed(id: Long, error: String, retryable: Boolean, maxRetries: Int) {
+    override suspend fun markFailed(
+        id: Long,
+        error: String,
+        retryable: Boolean,
+        maxRetries: Int,
+        retryAtMillis: Long?,
+    ) {
         withContext(dispatcher) {
             val current = queries.findById(id).executeAsOneOrNull() ?: return@withContext
             val newRetryCount = current.retryCount + 1
@@ -123,7 +129,7 @@ internal class SqlDelightOutboxRepository(
                 nextRetryAtMillis = if (isPermanent) {
                     null
                 } else {
-                    RetryBackoff.nextRetryAtMillis(newRetryCount.toInt())
+                    retryAtMillis ?: RetryBackoff.nextRetryAtMillis(newRetryCount.toInt())
                 },
             )
         }

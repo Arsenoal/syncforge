@@ -24,6 +24,7 @@ import dev.syncforge.trace.SyncTracer
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import dev.syncforge.sync.SyncBackoffPolicy
 
 /**
  * Fluent builder for [SyncManager]. Entity types are derived from registered handlers —
@@ -47,6 +48,8 @@ class SyncForgeBuilder {
     var pullPageSize: Int = 100
     var maxRetries: Int = 5
     var periodicSyncInterval: Duration = 15.minutes
+    var minSyncInterval: Duration = Duration.ZERO
+    var backoffPolicy: SyncBackoffPolicy = SyncBackoffPolicy.Default
     var requireNetwork: Boolean = true
     var enableOptimisticUpdates: Boolean = true
     var conflictPolicy: ConflictPolicy = ConflictPolicy.Default
@@ -85,6 +88,8 @@ class SyncForgeBuilder {
             pullPageSize = pullPageSize,
             maxRetries = maxRetries,
             periodicSyncInterval = periodicSyncInterval,
+            minSyncInterval = minSyncInterval,
+            backoffPolicy = backoffPolicy,
             requireNetwork = requireNetwork,
             enableOptimisticUpdates = enableOptimisticUpdates,
         )

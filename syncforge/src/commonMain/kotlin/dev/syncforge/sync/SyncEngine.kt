@@ -11,6 +11,7 @@ import dev.syncforge.model.SyncError
 import dev.syncforge.model.SyncResult
 import dev.syncforge.model.SyncStatus
 import dev.syncforge.network.SyncTransport
+import dev.syncforge.network.SyncTransportException
 import dev.syncforge.outbox.OutboxRepository
 import dev.syncforge.trace.SyncSpanName
 import dev.syncforge.trace.SyncTraceAttributes
@@ -125,6 +126,7 @@ internal class SyncEngine(
                     error = rejection.error.message,
                     retryable = retryable,
                     maxRetries = config.maxRetries,
+                    retryAtMillis = computeRetryAtMillis(entry, rejection.error, retryable),
                 )
                 errors += rejection.error
             }
@@ -145,17 +147,15 @@ internal class SyncEngine(
                 else -> SyncResult.Failure(errors.first())
             }.also { span.recordSyncResult(it) }
         } catch (e: Exception) {
-            val error = SyncError(
-                code = SyncError.Code.NETWORK,
-                message = e.message ?: "Push failed",
-                cause = e,
-            )
+            val error = transportErrorFrom(e, defaultMessage = "Push failed")
+            val retryable = SyncErrorPolicy.isRetryable(error.code)
             batch.forEach { entry ->
                 outbox.markFailed(
                     id = entry.id,
                     error = error.message,
-                    retryable = true,
+                    retryable = retryable,
                     maxRetries = config.maxRetries,
+                    retryAtMillis = computeRetryAtMillis(entry, error, retryable),
                 )
             }
             SyncResult.Failure(error).also { span.recordSyncResult(it) }
@@ -211,11 +211,7 @@ internal class SyncEngine(
             }
         } catch (e: Exception) {
             SyncResult.Failure(
-                SyncError(
-                    code = SyncError.Code.NETWORK,
-                    message = e.message ?: "Pull failed",
-                    cause = e,
-                ),
+                transportErrorFrom(e, defaultMessage = "Pull failed"),
             ).also { span.recordSyncResult(it) }
         }
 
@@ -290,6 +286,31 @@ internal class SyncEngine(
 
     private fun isConflictOnlyFailure(result: SyncResult.Failure): Boolean =
         result.error.code == SyncError.Code.CONFLICT
+
+    private fun transportErrorFrom(e: Exception, defaultMessage: String): SyncError =
+        when (e) {
+            is SyncTransportException -> e.error
+            else -> SyncError(
+                code = SyncError.Code.NETWORK,
+                message = e.message ?: defaultMessage,
+                cause = e,
+            )
+        }
+
+    private fun computeRetryAtMillis(
+        entry: dev.syncforge.model.OutboxEntry,
+        error: SyncError,
+        retryable: Boolean,
+    ): Long? {
+        if (!retryable) return null
+        val newRetryCount = entry.retryCount + 1
+        if (newRetryCount >= config.maxRetries) return null
+        return config.backoffPolicy.nextRetryAtMillis(
+            retryCount = newRetryCount,
+            nowMillis = clock(),
+            serverRetryAfterMillis = error.retryAfterMillis,
+        )
+    }
 }
 
 /** Platform clock — actual impl in androidMain / jvmMain. */

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Rate limiting + backoff policies (1.5-05)** — `SyncBackoffPolicy` (exponential/linear/fixed + jitter) on `SyncConfig`; `minSyncInterval` client throttle; HTTP 429 → retryable `SERVER` with `Retry-After` parsing; `SyncError.retryAfterMillis`; [RATE_LIMITING.md](docs/RATE_LIMITING.md)
 - **Hierarchical sync recipes (1.5-04)** — [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md): parent/child patterns, orphan FK policies, server `VALIDATION` + client cleanup; explicit limitations in [BEST_PRACTICES.md](docs/BEST_PRACTICES.md)
 - **Full SyncHealth dashboard UI (1.5-03)** — `SyncHealthDashboard` with status banner, metric tiles, latency bars, error breakdown; `SyncHealthDiagnosticScreen` for read-only release/support; `SyncDebugPanelMode.DIAGNOSTIC`
 - **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`

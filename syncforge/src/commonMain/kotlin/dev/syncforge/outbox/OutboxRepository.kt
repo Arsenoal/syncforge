@@ -41,7 +41,13 @@ interface OutboxRepository {
     /** Removes all outbox rows for an entity — used after [AcceptRemote][dev.syncforge.conflict.ConflictResolution.AcceptRemote]. */
     suspend fun removeForEntity(entityType: String, entityId: String)
 
-    suspend fun markFailed(id: Long, error: String, retryable: Boolean = true, maxRetries: Int)
+    suspend fun markFailed(
+        id: Long,
+        error: String,
+        retryable: Boolean = true,
+        maxRetries: Int,
+        retryAtMillis: Long? = null,
+    )
 
     /** Earliest [OutboxEntry.nextRetryAtMillis] among entries waiting for backoff. */
     suspend fun earliestRetryAtMillis(maxRetries: Int): Long?

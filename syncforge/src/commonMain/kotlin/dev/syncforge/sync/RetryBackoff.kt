@@ -7,6 +7,8 @@ import kotlin.time.Duration.Companion.minutes
 
 /**
  * Exponential backoff for outbox push retries.
+ *
+ * Delegates to [SyncBackoffPolicy.Default]; prefer configuring [SyncConfig.backoffPolicy].
  */
 object RetryBackoff {
 
@@ -14,12 +16,13 @@ object RetryBackoff {
         retryCount: Int,
         base: Duration = 1_000.milliseconds,
         max: Duration = 5.minutes,
-    ): Duration {
-        val multiplier = 1L shl retryCount.coerceAtMost(10)
-        val delayMs = min(base.inWholeMilliseconds * multiplier, max.inWholeMilliseconds)
-        return delayMs.milliseconds
-    }
+    ): Duration =
+        SyncBackoffPolicy(
+            strategy = SyncBackoffPolicy.Strategy.EXPONENTIAL,
+            baseDelay = base,
+            maxDelay = max,
+        ).delayForAttempt(retryCount)
 
     fun nextRetryAtMillis(retryCount: Int, nowMillis: Long = currentTimeMillis()): Long =
-        nowMillis + delayForAttempt(retryCount).inWholeMilliseconds
+        SyncBackoffPolicy.Default.nextRetryAtMillis(retryCount, nowMillis)
 }

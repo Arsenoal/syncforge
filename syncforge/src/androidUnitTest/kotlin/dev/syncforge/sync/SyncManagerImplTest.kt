@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SyncManagerImplTest {
@@ -69,13 +70,47 @@ class SyncManagerImplTest {
         assertEquals(SyncStatus.Idle, manager.status.value)
     }
 
+    @Test
+    fun minSyncInterval_throttlesBackToBackCycles() = runTest(dispatcher) {
+        val outbox = InMemoryOutboxRepository().apply {
+            setMaxRetriesForObservation(maxRetries = 5)
+        }
+        val manager = createManager(
+            outbox = outbox,
+            config = SyncConfig(
+                entityTypes = setOf("tasks"),
+                minSyncInterval = 30.seconds,
+            ),
+        )
+
+        manager.enqueueChange(
+            Change(
+                entityType = "tasks",
+                entityId = "t1",
+                type = ChangeType.CREATE,
+                payload = StubEntity("t1", localVersion = 1, updatedAtMillis = 100L),
+                localVersion = 1,
+                updatedAtMillis = 100L,
+            ),
+        )
+
+        val first = manager.push()
+        assertTrue(first is SyncResult.Success)
+        assertEquals(1, (first as SyncResult.Success).pushed)
+
+        val throttled = manager.push()
+        assertTrue(throttled is SyncResult.Success)
+        assertEquals(0, (throttled as SyncResult.Success).pushed)
+    }
+
     private fun createManager(
         outbox: InMemoryOutboxRepository = InMemoryOutboxRepository().apply {
             setMaxRetriesForObservation(maxRetries = 5)
         },
+        config: SyncConfig = SyncConfig(entityTypes = setOf("tasks")),
     ): SyncManagerImpl =
         SyncManagerImpl(
-            config = SyncConfig(entityTypes = setOf("tasks")),
+            config = config,
             outbox = outbox,
             transport = NoOpSyncTransport,
             registry = registry,
