@@ -602,12 +602,12 @@ iOS and desktop are **first-class documented paths**, not compile-only targets. 
 | 1.3-04 | **Swift Package Manager / XCFramework publish**                               | P1       | Gated to **2.0.0+** (like Maven); manual Publish Release workflow; IOS_SETUP.md update |
 | 1.3-05 | **Compose Multiplatform conflict/debug UI**                                   | P2       | Share Android conflict sheet on iOS/desktop |
 | 1.3-06 | **Shake-to-open `SyncDebugLauncher`**                                         | P2       | Debug builds only                           |
-| 1.3-07 | **SKIE Swift API review** — document recommended Swift patterns               | P1       | Flow collection, error handling             |
+| 1.3-07 | **SKIE Swift API review** — document recommended Swift patterns               | P1       | [SWIFT_INTEROP.md](SWIFT_INTEROP.md) + `ios-sample` Flow demo ✅ |
 
 ### 1.3.0 acceptance criteria
 
 - [x] Desktop sample runs against `:mock-server` with push + pull
-- [ ] iOS consumer can integrate via documented SPM or KMP framework path
+- [x] iOS consumer can integrate via documented KMP framework path ([IOS_SETUP.md](IOS_SETUP.md), [SWIFT_INTEROP.md](SWIFT_INTEROP.md)); SPM deferred to 2.0
 - [x] Platform stability table in MODULES.md updated (iOS, desktop, macOS → Stable)
 - [x] `iosE2e` + desktop smoke in CI (desktop may be JVM-only nightly)
 

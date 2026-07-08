@@ -1,82 +1,55 @@
 # Release process
 
-How maintainers cut semver releases for SyncForge. **Nothing runs automatically on tag push** — GitHub Releases and CI publish are manual.
+How maintainers ship SyncForge. **Development continues on `main`** — there are **no new semver rollouts** (tags, GitHub Releases, Maven Central, or SPM) until **`v2.0.0`**.
 
 **Related docs:** [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md) (Maven Central details), [IOS_SETUP.md](IOS_SETUP.md) (local KMP iOS integration).
 
 ---
 
-## Distribution policy (1.x → 2.0)
+## Distribution policy (now → 2.0)
 
-| Channel | Before `v2.0.0` | From `v2.0.0` |
-|---------|-----------------|---------------|
-| **Maven Central** | Not published (validation only) | Full KMP artifact set |
-| **iOS SPM / XCFramework** | Not published (KMP frameworks locally) | Planned with 1.3-04 |
-| **GitHub Release** | Manual in UI | Manual in UI |
+| Channel | Until `v2.0.0` | From `v2.0.0` |
+|---------|----------------|---------------|
+| **Semver tags / GitHub Releases** | **No new rollouts** — work lands on `main`; [CHANGELOG](../CHANGELOG.md) `[Unreleased]` | First public rollout of the 1.x line |
+| **Maven Central** | No new uploads (1.0.0 / 1.1.0 remain) | Full KMP artifact set |
+| **iOS SPM / XCFramework** | KMP frameworks locally only | Planned with 1.3-04 |
 
-Integrate unpublished 1.x builds via git clone, `publishAllToMavenLocal`, or Gradle composite/`includeBuild`. iOS uses `linkIosFrameworksForXcode` / Xcode Run Script — see [IOS_SETUP.md](IOS_SETUP.md).
-
-Existing Maven Central versions (1.0.0, 1.1.0) remain available.
+Integrate pre-2.0 builds via git clone, `publishAllToMavenLocal`, or Gradle composite/`includeBuild`. iOS uses `linkIosFrameworksForXcode` / Xcode Run Script — see [IOS_SETUP.md](IOS_SETUP.md).
 
 ---
 
-## 1. Pre-release checklist
+## Pre-2.0 development (current mode)
 
-On `main`:
+1. Merge features to `main`.
+2. Keep [CHANGELOG.md](../CHANGELOG.md) under `[Unreleased]`.
+3. Run `./gradlew verifySignOffMatrix` and ensure CI is green (`androidE2e`, `iosE2e`, `desktopE2e`).
+4. Do **not** tag `v1.3.0`, `v1.4.0`, etc. or publish GitHub Releases for interim milestones.
+
+Optional: **Actions → Publish Release → Run workflow** with an **existing** tag (e.g. `v1.2.0`) to validate macOS compile — not required for day-to-day development.
+
+---
+
+## 2.0.0 release checklist
+
+When the 2.0 milestone is ready:
 
 ```bash
 ./gradlew verifySignOffMatrix
 ```
 
-Ensure CI is green (`androidE2e`, `iosE2e`, `desktopE2e` as applicable).
-
-1. Bump `syncforge.version` in [gradle.properties](../gradle.properties).
-2. Move [CHANGELOG.md](../CHANGELOG.md) entries from `[Unreleased]` into a new version section.
-3. Merge to `main`.
-
----
-
-## 2. Tag locally and push
+1. Bump `syncforge.version` to `2.0.0` in [gradle.properties](../gradle.properties).
+2. Move [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]` into `[2.0.0]`.
+3. Merge to `main`, then tag and push:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
-Pushing a tag **does not** trigger CI publish or create a GitHub Release.
+4. **GitHub → Releases → Draft a new release** — choose `v2.0.0`, paste CHANGELOG notes, publish.
+5. **Actions → Publish Release → Run workflow** — tag `v2.0.0` (macOS compile + Maven Central + SPM when 1.3-04 ships).
 
----
-
-## 3. Create GitHub Release (manual)
-
-1. Open **GitHub → Releases → Draft a new release**.
-2. Choose the tag (e.g. `v1.2.0`).
-3. Title: `v1.2.0` (or a short headline).
-4. Paste the matching **CHANGELOG** section as release notes.
-5. Publish the release.
-
-Repeat for every semver milestone when you want a visible release on GitHub.
-
----
-
-## 4. Run Publish Release workflow (optional but recommended)
-
-**Actions → Publish Release → Run workflow**
-
-| Input | Example |
-|-------|---------|
-| Tag | `v1.2.0` |
-
-The workflow checks out **that tag** (not `main`) and runs on `macos-latest`:
-
-| Version | What runs |
-|---------|-----------|
-| **&lt; 2.0.0** | Compile all KMP targets + JVM tests |
-| **≥ 2.0.0** | Above + Maven Central upload + `publishIosSpmArtifacts` (when 1.3-04 is implemented) |
-
-For 2.0+ after a successful run, follow [MAVEN_PUBLISH.md § 5b](MAVEN_PUBLISH.md#5b-maven-central-publish-200-only) (Central Portal → Publish deployments, then **Verify Maven Central Release**).
-
-Re-run the workflow anytime with the same tag (e.g. after fixing publish scripts on a newer commit — note the workflow still builds **the tagged tree**).
+Follow [MAVEN_PUBLISH.md § 5b](MAVEN_PUBLISH.md#5b-maven-central-publish-200-only) (Central Portal → Publish deployments, then **Verify Maven Central Release**).
 
 ---
 

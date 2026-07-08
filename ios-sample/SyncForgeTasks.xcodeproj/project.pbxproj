@@ -13,6 +13,7 @@
 		B10000000000000000000004 /* SampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* SampleViewModel.swift */; };
 		B10000000000000000000005 /* TaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* TaskRowView.swift */; };
 		B10000000000000000000007 /* KotlinInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* KotlinInterop.swift */; };
+		B100000000000000000000B0 /* KotlinFlowInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000000000000000000B1 /* KotlinFlowInterop.swift */; };
 		B10000000000000000000008 /* TaskRowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* TaskRowModel.swift */; };
 		B10000000000000000000009 /* SampleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* SampleConfig.swift */; };
 		B1000000000000000000000A /* NotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* NotesView.swift */; };
@@ -45,6 +46,7 @@
 		B10000000000000000000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10000000000000000000018 /* Frameworks.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Frameworks.xcconfig; sourceTree = "<group>"; };
 		B10000000000000000000019 /* KotlinInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinInterop.swift; sourceTree = "<group>"; };
+		B100000000000000000000B1 /* KotlinFlowInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KotlinFlowInterop.swift; sourceTree = "<group>"; };
 		B1000000000000000000001A /* TaskRowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowModel.swift; sourceTree = "<group>"; };
 		B1000000000000000000001B /* SampleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleConfig.swift; sourceTree = "<group>"; };
 		B1000000000000000000001C /* NotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesView.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 				B10000000000000000000028 /* SampleKotlinBridgeE2eStub.swift */,
 				B10000000000000000000015 /* TaskRowView.swift */,
 				B10000000000000000000019 /* KotlinInterop.swift */,
+				B100000000000000000000B1 /* KotlinFlowInterop.swift */,
 				B1000000000000000000001A /* TaskRowModel.swift */,
 				B1000000000000000000001B /* SampleConfig.swift */,
 				B1000000000000000000001C /* NotesView.swift */,
@@ -286,6 +289,7 @@
 				B100000000000000000000A7 /* SampleKotlinBridgeE2eStub.swift in Sources */,
 				B10000000000000000000005 /* TaskRowView.swift in Sources */,
 				B10000000000000000000007 /* KotlinInterop.swift in Sources */,
+				B100000000000000000000B0 /* KotlinFlowInterop.swift in Sources */,
 				B10000000000000000000008 /* TaskRowModel.swift in Sources */,
 				B10000000000000000000009 /* SampleConfig.swift in Sources */,
 				B1000000000000000000000A /* NotesView.swift in Sources */,

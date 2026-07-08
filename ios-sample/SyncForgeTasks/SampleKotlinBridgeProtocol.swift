@@ -3,7 +3,8 @@ import Foundation
 /// Shared bridge contract — implemented by Kotlin ([SampleKotlinBridge]) or Swift E2E stub.
 @MainActor
 protocol SampleKotlinBridgeProtocol: AnyObject {
-    func setStatusListener(_ listener: @escaping (String) -> Void)
+    /// Long-lived status observation. Cancel the returned task when the owner is deallocated.
+    func startObservingStatusLabels(onUpdate: @escaping (String) -> Void) -> Task<Void, Never>
     func setTasksListener(_ listener: @escaping ([TaskRowModel]) -> Void)
     func setNotesListener(_ listener: @escaping ([NoteRowModel]) -> Void)
     func setTagsListener(_ listener: @escaping ([TagRowModel]) -> Void)

@@ -9,13 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`docs/SWIFT_INTEROP.md`** — SKIE Swift patterns: Flow collection, suspend/async, callbacks, error handling, reference table (1.3-07)
+
+### Fixed
+
+- **`multiEntity_taskConflict_noteStillSyncs` E2E flake** — `waitForRowSyncState` uses passive semantics reads inside `waitUntil` (avoids `performMeasureAndLayout` during layout)
+- **`KotlinFlowInterop.swift`** — reusable SKIE Flow collector; `ios-sample` observes status via `observeStatusLabel()` AsyncSequence
 - **`:sample-desktop`** — JVM CLI sample proving `SyncForge.desktop { }` against `:mock-server`; `desktopE2e` in CI (1.3-01)
 
 ### Changed
 
 - **Manual GitHub releases** — tag push no longer triggers Publish Release CI or creates GitHub Releases; maintainers draft releases in the UI and optionally run **Actions → Publish Release** (`workflow_dispatch`). See [RELEASE.md](docs/RELEASE.md).
 - **Maven Central publish gated to 2.0.0+** — pre-2.0 tags run macOS compile/test only; `publishAllToMavenCentral` skips Sonatype upload for 1.x (override: `-PallowPre2MavenCentralPublish=true` for maintainers). Integrate 1.x via git + `publishAllToMavenLocal`. See [MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
-- **iOS SPM / XCFramework gated to 2.0.0+** — `publishIosSpmArtifacts` placeholder with same version gate as Maven Central; until 2.0 use KMP frameworks per [IOS_SETUP.md](docs/IOS_SETUP.md) (1.3-04).
+- **iOS SPM / XCFramework gated to 2.0.0+** — `publishIosSpmArtifacts` placeholder with same version gate as Maven Central; until 2.0 use KMP frameworks per [IOS_SETUP.md](docs/IOS_SETUP.md) (1.3-04)
+- **No semver rollouts until 2.0.0** — development on `main` only; no new tags/GitHub Releases/Maven/SPM until `v2.0.0` ([RELEASE.md](docs/RELEASE.md))
 - **iOS DSL graduated to stable (1.3-02)** — `SyncForge.ios { }`, `IosBackgroundSync`, and `registerIosBackgroundSyncTasks` no longer require `@OptIn(ExperimentalSyncForgeApi::class)`; `persistence()` and `customize()` remain experimental (parity with Android)
 - **Desktop / macOS DSLs graduated to stable (1.3-03)** — `SyncForge.desktop { }` and `SyncForge.macos { }` no longer require opt-in; stable `databaseName()` on desktop DSL (Android parity); `persistence()` / `customize()` remain experimental
 - **`StableIosApiSurfaceSourceTest`**, **`StableDesktopApiSurfaceTest`**, **`StableMacosApiSurfaceSourceTest`** — CI guards for platform DSL stability

@@ -261,12 +261,11 @@ See [ios-sample/README.md](../ios-sample/README.md).
 
 See [sample-ios-shared/README.md](../sample-ios-shared/README.md) for manual wiring details.
 
-### SKIE (M5)
+### Swift interop (SKIE)
 
-`:syncforge` and `:sample-ios-shared` apply the [SKIE](https://skie.touchlab.co/) plugin when building frameworks. This improves Swift interop for:
+`:syncforge` and `:sample-ios-shared` apply the [SKIE](https://skie.touchlab.co/) plugin when building frameworks (`Flow` → `AsyncSequence`, `suspend` → `async`).
 
-- `Flow` → Swift `AsyncSequence` (e.g. `IosSampleController.observeStatusLabel()`)
-- Suspend functions where exported
+**Full guide:** [SWIFT_INTEROP.md](SWIFT_INTEROP.md) — Flow collection in SwiftUI, callback facades, error handling, and reference code in `ios-sample/`.
 
 Rebuild frameworks after upgrading SKIE or Kotlin:
 
@@ -281,13 +280,13 @@ Rebuild frameworks after upgrading SKIE or Kotlin:
 ```kotlin
 val controller = IosSampleController(baseUrl = IOS_SAMPLE_DEFAULT_BASE_URL)
 
-controller.setStatusListener { label -> /* update UI */ }
+// SwiftUI: prefer observeStatusLabel() Flow — see SWIFT_INTEROP.md
 controller.setTasksListener { tasks -> /* update list */ }
 controller.addTask("Buy milk") { success, error -> /* ... */ }
 controller.sync { success, status -> /* ... */ }
 ```
 
-SwiftUI wrapper: `ios-sample/SyncForgeTasks/SampleViewModel.swift`.
+SwiftUI wrapper: `ios-sample/SyncForgeTasks/SampleViewModel.swift` (status via SKIE Flow; lists via callbacks — see [SWIFT_INTEROP.md](SWIFT_INTEROP.md)).
 
 ---
 

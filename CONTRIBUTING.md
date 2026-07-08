@@ -44,11 +44,10 @@ Pre-1.0 API changes are still possible but should be discussed in an issue first
 
 ## Releases
 
-Maintainers tag `v*` releases for semver milestones on `main`. **GitHub Releases and CI
-publish are manual** — tag push does not create a release or run workflows. **Maven Central
-and iOS SPM/XCFramework upload start at `v2.0.0`**; 1.x tags can be validated via
-**Actions → Publish Release** (compile + JVM tests only). Until 2.0, integrate via
-`publishAllToMavenLocal` or composite build. See [docs/RELEASE.md](docs/RELEASE.md).
+**No new semver rollouts until `v2.0.0`** — features ship on `main` with CHANGELOG
+`[Unreleased]` entries. Maven Central, SPM, GitHub Releases, and new version tags resume at
+2.0. Until then, integrate via `publishAllToMavenLocal` or composite build. See
+[docs/RELEASE.md](docs/RELEASE.md).
 
 ## Code of conduct
 

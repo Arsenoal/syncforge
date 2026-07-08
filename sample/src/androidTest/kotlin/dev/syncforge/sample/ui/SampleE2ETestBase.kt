@@ -1,6 +1,7 @@
 package dev.syncforge.sample.ui
 
-import androidx.compose.ui.test.assert
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -265,15 +266,20 @@ abstract class SampleE2ETestBase {
     }
 
     protected fun waitForRowSyncState(itemTitle: String, stateLabel: String, timeoutMillis: Long = 45_000) {
+        val tag = "row_sync_state_$itemTitle"
         composeTestRule.waitUntil(timeoutMillis) {
-            runCatching {
-                composeTestRule
-                    .onNodeWithTag("row_sync_state_$itemTitle")
-                    .scrollToIfPossible()
-                    .assert(hasText(stateLabel, substring = false))
-            }.isSuccess
+            semanticsTextEquals(tag, stateLabel)
         }
     }
+
+    /** Passive semantics read — safe inside [composeTestRule.waitUntil] (no scroll/assert during layout). */
+    private fun semanticsTextEquals(tag: String, expected: String): Boolean =
+        composeTestRule.onAllNodesWithTag(tag, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .any { node ->
+                node.config.getOrNull(SemanticsProperties.Text)
+                    ?.joinToString(separator = "") { it.text } == expected
+            }
 
     protected fun noteLocalBody(baseBody: String): String = noteLocalEditBody(baseBody)
 
@@ -332,23 +338,13 @@ abstract class SampleE2ETestBase {
     protected fun waitForNoteBody(noteTitle: String, body: String, timeoutMillis: Long = 45_000) {
         navigateToNotes()
         composeTestRule.waitUntil(timeoutMillis) {
-            runCatching {
-                composeTestRule
-                    .onNodeWithTag("note_body_$noteTitle")
-                    .scrollToIfPossible()
-                    .assert(hasText(body, substring = false))
-            }.isSuccess
+            semanticsTextEquals("note_body_$noteTitle", body)
         }
     }
 
     protected fun waitForNoteTagLabel(noteTitle: String, tagLabel: String, timeoutMillis: Long = 45_000) {
         composeTestRule.waitUntil(timeoutMillis) {
-            runCatching {
-                composeTestRule
-                    .onNodeWithTag("note_tag_label_$noteTitle")
-                    .scrollToIfPossible()
-                    .assert(hasText("Tag: $tagLabel", substring = false))
-            }.isSuccess
+            semanticsTextEquals("note_tag_label_$noteTitle", "Tag: $tagLabel")
         }
     }
 

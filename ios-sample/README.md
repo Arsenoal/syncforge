@@ -42,7 +42,9 @@ ios-sample/
 │   ├── NotesView.swift           Note list, title/body fields, delete
 │   ├── TagsView.swift            Tag list, add field, delete
 │   ├── SampleStatusBanner.swift  Shared sync status + Sync button
-│   ├── SampleViewModel.swift     Wraps IosSampleController (ObservableObject)
+│   ├── SampleViewModel.swift     Wraps IosSampleController; SKIE Flow for status
+│   ├── KotlinFlowInterop.swift   Reusable Flow collector for SwiftUI
+│   ├── KotlinInterop.swift       Bool / list / error mapping from Kotlin
 │   ├── TaskRowView.swift         Task row with sync state badge
 │   ├── NoteRowView.swift         Note row with sync state badge
 │   ├── TagRowView.swift          Tag row with sync state badge
@@ -60,7 +62,7 @@ ios-sample/
 
 | Swift | Kotlin |
 |-------|--------|
-| `SampleViewModel` | `IosSampleController` |
+| `SampleViewModel` | `IosSampleController` (status via SKIE Flow — [SWIFT_INTEROP.md](../docs/SWIFT_INTEROP.md)) |
 | `TaskItem` / `NoteItem` / `TagItem` | Swift-friendly row DTOs from `:sample-ios-shared` |
 | `IOS_SAMPLE_DEFAULT_BASE_URL` | top-level constant in `IosSampleController.kt` |
 

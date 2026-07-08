@@ -20,10 +20,8 @@ final class SampleKotlinBridge: SampleKotlinBridgeProtocol {
         controller = IosSampleController(baseUrl: baseUrl, e2eMode: e2eMode)
     }
 
-    func setStatusListener(_ listener: @escaping (String) -> Void) {
-        controller.setStatusListener { label in
-            listener(label)
-        }
+    func startObservingStatusLabels(onUpdate: @escaping (String) -> Void) -> Task<Void, Never> {
+        KotlinFlowInterop.collect(controller.observeStatusLabel(), onUpdate: onUpdate)
     }
 
     func setTasksListener(_ listener: @escaping ([TaskRowModel]) -> Void) {

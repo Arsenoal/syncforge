@@ -39,9 +39,10 @@ final class SampleKotlinBridgeE2eStub: SampleKotlinBridgeProtocol {
         self.baseUrl = baseUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 
-    func setStatusListener(_ listener: @escaping (String) -> Void) {
-        statusListener = listener
-        listener("Idle")
+    func startObservingStatusLabels(onUpdate: @escaping (String) -> Void) -> Task<Void, Never> {
+        statusListener = onUpdate
+        onUpdate("Idle")
+        return Task {}
     }
 
     func setTasksListener(_ listener: @escaping ([TaskRowModel]) -> Void) {

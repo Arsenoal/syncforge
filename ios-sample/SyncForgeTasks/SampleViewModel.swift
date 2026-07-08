@@ -19,6 +19,7 @@ final class SampleViewModel: ObservableObject {
     private let e2eMode: Bool
     private var bridge: SampleKotlinBridgeProtocol?
     private var isPreloadingBridge = false
+    private var statusObservationTask: Task<Void, Never>?
 
     init(baseUrl: String? = nil) {
         resolvedBaseUrl = baseUrl
@@ -51,7 +52,8 @@ final class SampleViewModel: ObservableObject {
         let bridge = makeBridge()
         self.bridge = bridge
 
-        bridge.setStatusListener { [weak self] label in
+        statusObservationTask?.cancel()
+        statusObservationTask = bridge.startObservingStatusLabels { [weak self] label in
             self?.statusLabel = label
             self?.isSyncing = label.localizedCaseInsensitiveContains("syncing")
         }

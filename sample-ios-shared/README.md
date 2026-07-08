@@ -84,10 +84,7 @@ If you embed the frameworks in your own app instead of using `ios-sample/`:
 
    let controller = IosSampleController(baseUrl: IOS_SAMPLE_DEFAULT_BASE_URL)
 
-   controller.setStatusListener { label in
-       print("Sync status: \(label)")
-   }
-
+   // SwiftUI: observeStatusLabel() AsyncSequence — see docs/SWIFT_INTEROP.md
    controller.setTasksListener { tasks in
        print("Tasks: \(tasks.count)")
    }
@@ -109,9 +106,9 @@ Static frameworks — **Do Not Embed**; link via `OTHER_LDFLAGS`.
 | `addTask` / `addNote` / `addTag` | Create entity and enqueue a sync change |
 | `deleteNote` / `deleteTag` | Enqueue delete change |
 | `sync(onComplete)` | Runs full push + pull cycle for all entity types |
-| `setStatusListener(listener)` | Receives status label updates (callback API) |
-| `observeStatusLabel()` | SKIE `Flow` → Swift `AsyncSequence` for status labels |
+| `observeStatusLabel()` | **Recommended** — SKIE `Flow` → Swift `AsyncSequence` for status labels |
+| `setStatusListener(listener)` | Callback API (legacy; prefer Flow in SwiftUI — see [SWIFT_INTEROP.md](../docs/SWIFT_INTEROP.md)) |
 | `setTasksListener` / `setNotesListener` / `setTagsListener` | Entity list updates |
 | `currentStatusLabel()` | Synchronous status snapshot |
 
-See [docs/IOS_SETUP.md](../docs/IOS_SETUP.md) for full iOS configuration options.
+See [docs/IOS_SETUP.md](../docs/IOS_SETUP.md) for full iOS configuration options and [docs/SWIFT_INTEROP.md](../docs/SWIFT_INTEROP.md) for SKIE / Swift patterns.

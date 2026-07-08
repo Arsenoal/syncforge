@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
  *
  * SKIE Flow/Suspend interop is enabled for `dev.syncforge.sample.ios` in
  * `:sample-ios-shared` Gradle config (not via class-level annotations).
+ *
+ * Swift integration patterns: `docs/SWIFT_INTEROP.md` (see also `docs/IOS_SETUP.md`).
  */
 class IosSampleController(
     baseUrl: String = IOS_SAMPLE_DEFAULT_BASE_URL,

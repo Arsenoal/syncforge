@@ -4,6 +4,20 @@ import SyncForgeSample
 
 enum KotlinInterop {
 
+    /// Best-effort message from Kotlin callbacks, `KotlinThrowable`, or `NSError`.
+    static func errorMessage(_ error: Any?) -> String? {
+        if let message = error as? String, !message.isEmpty {
+            return message
+        }
+        if let throwable = error as? KotlinThrowable {
+            return throwable.message ?? String(describing: throwable)
+        }
+        if let nsError = error as? NSError {
+            return nsError.localizedDescription
+        }
+        return nil
+    }
+
     /// Kotlin/Native may export `Boolean` as `Bool` or `KotlinBoolean`.
     static func bool(_ value: Any?) -> Bool {
         if let value = value as? Bool {
