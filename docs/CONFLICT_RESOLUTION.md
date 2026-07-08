@@ -1,84 +1,240 @@
-# Conflict Resolution
+# Conflict Resolution (v2 — 1.2)
 
-SyncForge detects conflicts during **pull** when a remote delta arrives for an entity that
-has local pending changes or divergent state. A **conflict strategy** decides what happens next:
-auto-merge, pick a winner, or defer to the user.
+SyncForge detects conflicts during **pull** when a remote delta arrives for an entity whose local
+row is not aligned with the server. A **conflict strategy** (configured per `entityType`) decides
+what happens next: auto-merge, pick a winner, or defer to the user.
+
+This guide reflects the **1.2** strategy catalog, `:sample` reference wiring, git-like three-way
+merge, outbox reconciliation, and the instrumented E2E matrix validated in CI.
 
 ---
 
 ## When does a conflict happen?
 
-A conflict is detected when **all** of these are true:
+A conflict is detected when a pull delta arrives for an existing local row and **any** of these
+hold ([`ConflictDetector`](../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictDetector.kt)):
 
-1. A remote delta arrives for entity `(type, id)`
-2. The local row exists and is not cleanly synced (e.g. `PENDING`, or versions diverge)
-3. Local and remote payloads are not identical
+| Local state | Condition |
+|-------------|-----------|
+| `PENDING` | Local outbox has unpushed edits |
+| `CONFLICT` | Row already deferred to the user |
+| `SYNCED` | `localVersion != remote.serverVersion` (server advanced since last ack) |
 
-Typical scenario:
+Typical two-device scenario:
 
 ```
 Device A: edits task title  →  PENDING in outbox
-Device B: edits same task   →  server has newer version
-Device A: pulls             →  CONFLICT
+Device B: edits same task   →  server version bumps
+Device A: pulls             →  strategy runs (auto-merge, LWW, defer, …)
 ```
+
+Push rejections with `CONFLICT` are **not** the policy system — they are optimistic-concurrency
+failures on stale `localVersion`. The next pull applies the configured strategy against the
+server delta.
 
 ---
 
-## Strategy overview
+## Strategy catalog
 
-Configure strategies in the `conflicts { }` block inside `SyncForge.android { }`:
+Configure strategies in the `conflicts { }` block inside `SyncForge.android { }` (or
+`SyncForge.ios` / `SyncForge.desktop`):
 
 ```kotlin
-conflicts {
-    // Optional global override (default is last-write-wins)
-    default(ConflictStrategies.lastWriteWins())
+@OptIn(ExperimentalSyncForgeApi::class)
+SyncForge.android(context) {
+    conflicts {
+        default(ConflictStrategies.lastWriteWins())  // optional — this is the default
 
-    entity("tasks") { deferToUser() }
-    entity("notes") {
-        merge<NoteEntity> { local, remote -> /* ... */ }
+        entity("notes") { alwaysRemote() }
+        entity("tags") { lastWriteWins() }
+        entity("tasks") { gitLike<TaskEntity> { /* threeWayMerge + fallbacks */ } }
     }
-    entity("settings") { alwaysRemote() }
 }
 ```
 
-| Strategy | Resolution | User prompt? | Persisted in conflict store? |
-|----------|------------|--------------|------------------------------|
-| `lastWriteWins()` | Newer `updatedAtMillis` wins | No | No — auto-resolved |
-| `alwaysLocal()` | Local row kept, re-pushed | No | No |
-| `alwaysRemote()` | Server row replaces local | No | No |
-| `merge { }` | Custom field-level combine | No | No |
-| `deferToUser()` | Stored until `resolveConflict()` | **Yes** | **Yes** — SQLDelight conflict table |
+### Built-in strategies
 
-**Default:** every entity type uses `lastWriteWins()` unless you override it.
+| DSL / kind | `ConflictStrategyKind` | Resolution | User prompt? | Conflict store? |
+|------------|------------------------|------------|--------------|-----------------|
+| `lastWriteWins()` | `LAST_WRITE_WINS` | Newer `updatedAtMillis` wins | No | Auto-resolved only |
+| `alwaysLocal()` | `ACCEPT_LOCAL` | Keep local, re-push | No | No |
+| `alwaysRemote()` | `ACCEPT_REMOTE` | Server row replaces local | No | No |
+| `merge { }` | `MERGE` | Custom two-way field combine | No | No |
+| `gitLike { }` | `GIT_LIKE` | Three-way merge; fallback on clash | Only if fallback is `deferToUser()` | Only when deferred |
+| `crdt { }` *(experimental)* | `CRDT` | Per-field CRDT merge | No | No |
+| `deferToUser()` | `DEFER_TO_USER` | Stored until `resolveConflict()` | **Yes** | **Yes** |
+
+**Default:** every entity type uses `lastWriteWins()` unless overridden.
+
+**Runtime catalog:** `ConflictStrategies.fromKind(ConflictStrategyKind)` resolves simple kinds.
+`MERGE`, `GIT_LIKE`, and `CRDT` require configured DSL blocks. Use
+`syncManager.updateConflictPolicy()` to swap policies at runtime (see
+[`updateConflictPolicy`](../syncforge/src/commonMain/kotlin/dev/syncforge/sync/SyncManager.kt)).
+
+`gitLike { }` and `crdt { }` are marked `@ExperimentalSyncForgeApi` until 2.0 graduation.
+
+---
+
+## `:sample` per-entity matrix (reference 1.2)
+
+The sample app wires **three entity types on one `SyncManager`** with **different strategies**
+— the canonical 1.2 proof. Copy from
+[`SampleConflictPolicies.kt`](../sample/src/main/kotlin/dev/syncforge/sample/conflicts/SampleConflictPolicies.kt)
+or call `sampleEntityConflicts()` from [`SampleApplication.kt`](../sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt):
+
+| Entity | Strategy | Rationale | Mock-server demo |
+|--------|----------|-----------|------------------|
+| **notes** | `alwaysRemote()` | Server-owned body; device accepts remote on pull | Local body edit + server simulate-edit → server body wins |
+| **tags** | `lastWriteWins()` | Simple label rows; timestamp picks winner | Concurrent local + server label edit |
+| **tasks** | `gitLike { }` | Title and `completed` merge independently; same-field clash or remote delete → defer | Server title edit + local checkbox → auto-merge; server + local title edit → conflict sheet |
+
+```kotlin
+import dev.syncforge.sample.conflicts.sampleEntityConflicts
+
+conflicts {
+    sampleEntityConflicts()
+}
+```
+
+**Tasks `gitLike` policy** (abbreviated — full `threeWayMerge` in `SampleConflictPolicies.kt`):
+
+```kotlin
+entity("tasks") {
+    gitLike<TaskEntity> {
+        threeWayMerge { base, local, remote ->
+            val titleConflict =
+                local.title != base.title && remote.title != base.title && local.title != remote.title
+            val completedConflict =
+                local.completed != base.completed &&
+                    remote.completed != base.completed &&
+                    local.completed != remote.completed
+            if (titleConflict || completedConflict) {
+                ThreeWayMergeResult.Unmergeable
+            } else {
+                ThreeWayMergeResult.Merged(
+                    local.copy(
+                        title = when {
+                            local.title != base.title -> local.title
+                            remote.title != base.title -> remote.title
+                            else -> local.title
+                        },
+                        completed = when {
+                            local.completed != base.completed -> local.completed
+                            remote.completed != base.completed -> remote.completed
+                            else -> local.completed
+                        },
+                        updatedAtMillis = maxOf(local.updatedAtMillis, remote.updatedAtMillis),
+                        syncState = SyncState.SYNCED,
+                    ),
+                )
+            }
+        }
+        onUnmergeable { deferToUser() }
+        onRemoteDelete { deferToUser() }
+    }
+}
+```
+
+More recipes: [RECIPES.md → `:sample` conflict matrix](RECIPES.md#sample-conflict-matrix-12).
+
+---
+
+## `gitLike { }` — three-way merge flow
+
+Git-like merge compares **merge base** (last synced snapshot), **local**, and **remote**:
+
+```
+Last successful sync          Local edit (PENDING)       Remote delta (pull)
+        │                            │                          │
+        ▼                            ▼                          ▼
+   mergeBaseJson              local entity               remote entity
+        │                            │                          │
+        └──────────── threeWayMerge(base, local, remote) ──────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+              auto-merged            unmergeable fields
+              → SYNCED (+ push)        → onUnmergeable { deferToUser() }
+                                       → CONFLICT + resolution sheet
+```
+
+Merge bases are recorded per `(entityType, entityId)` on push ack and non-conflict pull apply
+([`MergeBaseRecorder`](../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/MergeBaseRecorder.kt)).
+
+**`:sample` task demos**
+
+| User action | Result |
+|-------------|--------|
+| **Server edit** + local **checkbox** toggle → Sync | Auto-merge: server title + local `completed`; no sheet |
+| **Server edit** + local **title** edit → Sync | `deferToUser()` → **Conflict — tap Resolve** |
+| **Server delete** + local edit → Sync | `deferToUser()` → delete vs update sheet |
+
+---
+
+## Full sync cycle, `localVersion`, and outbox reconcile
+
+### Sync order
+
+`SyncManager.sync()` runs **push → pull → trailing push** when pull leaves new outbox work
+(e.g. after a git-like auto-merge re-enqueues a merged `UPDATE`).
+
+### Version alignment
+
+| Column | Role |
+|--------|------|
+| `localVersion` | Client counter; must equal `serverVersion` when row is `SYNCED` |
+| `serverVersion` | Server counter on each pull delta |
+
+On conflict resolution, SyncForge aligns `localVersion` to the pulled `serverVersion`
+(`AcceptRemote`) or `serverVersion + 1` when a reconciled merged row must be pushed
+([`ConflictPullApplier`](../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictPullApplier.kt)).
+
+### Outbox reconciliation (1.2-11)
+
+After pull-time resolution, [`OutboxReconciler`](../syncforge/src/commonMain/kotlin/dev/syncforge/sync/OutboxReconciler.kt) keeps the outbox consistent:
+
+| Resolution | Outbox effect |
+|------------|---------------|
+| `AcceptRemote` / `DeleteLocal` | Remove stale entries for `(entityType, entityId)` |
+| `Merged` | Replace stale entries with one `UPDATE` for the merged entity |
+| `KeepLocal` | Retain existing entry; enqueue if none remain |
+
+User resolution via `resolveConflict()` uses the same applier and passes `remoteServerVersion`
+from the open `ConflictRecord`.
+
+`:mock-server` rejects stale `UPDATE` pushes after `POST /dev/simulate-edit` (OCC on
+`localVersion`) so server edits survive until pull. Dev routes bump `updatedAtMillis` using
+payload timestamps to stay deterministic across emulator vs host clock skew.
 
 ---
 
 ## Strategy details
 
-### Last-write-wins (default)
+### Last-write-wins
 
 ```kotlin
-entity("tasks") { lastWriteWins() }  // optional — this is the default
+entity("tags") { lastWriteWins() }
 ```
 
-Compares `updatedAtMillis`. The newer timestamp wins. Server tombstones (`isDeleted = true`)
-always delete locally.
+Compares `updatedAtMillis`. Newer timestamp wins. If local is strictly newer, **KeepLocal**
+applies — the row may stay `PENDING` until a successful push. Server tombstones always delete
+locally.
 
-**Best for:** simple CRUD, low collision probability, timestamp-trusted edits.
+**Best for:** simple rows, low collision risk (sample **tags**).
 
 ### Always local / always remote
 
 ```kotlin
-entity("drafts") { alwaysLocal() }    // device is authoritative
-entity("config") { alwaysRemote() }   // server is authoritative
+entity("drafts") { alwaysLocal() }
+entity("notes") { alwaysRemote() }   // sample notes
 ```
 
-`alwaysLocal()` marks the row `PENDING` and re-queues for push.  
-`alwaysRemote()` overwrites Room silently.
+`alwaysLocal()` keeps the local row and re-queues for push.  
+`alwaysRemote()` overwrites the local row with the server copy and clears stale outbox entries.
 
-**Best for:** device-owned drafts vs server-owned configuration.
+**Best for:** device-owned drafts vs server-owned content (sample **notes**).
 
-### Custom merge
+### Custom `merge { }` (two-way)
 
 ```kotlin
 entity("tasks") {
@@ -93,24 +249,30 @@ entity("tasks") {
 }
 ```
 
-See [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) for full examples.
+See [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--).
 
-**Best for:** independent fields, collaborative content, additive changes.
+**Best for:** independent fields without a stored merge base.
 
-### Defer to user
+### `deferToUser()`
 
 ```kotlin
-entity("tasks") { deferToUser() }
+onUnmergeable { deferToUser() }   // inside gitLike, or standalone per entity
 ```
 
-On conflict:
+On defer:
 
-1. Local row is marked `SyncState.CONFLICT`
-2. A `ConflictRecord` is saved to SyncForge's conflict store (SQLDelight)
-3. `SyncManager.conflicts` emits a `ConflictSummary`
+1. Local row → `SyncState.CONFLICT`
+2. `ConflictRecord` saved (local + remote JSON snapshots)
+3. `SyncManager.conflicts` emits `ConflictSummary`
 4. UI calls `resolveConflict()` when the user decides
 
-**Best for:** high-value data, same-field edits, legal/audit-sensitive records.
+**Best for:** same-field clashes, delete vs update, high-value data.
+
+### `crdt { }` *(experimental)*
+
+Per-field CRDT registers (`LwwRegister`, `OrSet`, `GCounter`) for additive merges. See
+[`CrdtMergeStrategy`](../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/CrdtMergeStrategy.kt)
+and KSP `@Lww` / `@OrSet` / `@GCounter` annotations.
 
 ---
 
@@ -128,27 +290,22 @@ SyncManager.conflicts emits ConflictSummary
         ▼
 UI shows resolution sheet
         │
-        ├── KeepLocal  → resolveConflict(KeepLocal)  → re-push local
-        │
-        └── AcceptRemote → resolveConflict(AcceptRemote) → overwrite Room
+        ├── KeepLocal     → resolveConflict(KeepLocal)     → re-push local
+        ├── AcceptRemote  → resolveConflict(AcceptRemote)  → overwrite / delete local
+        └── Custom(merged)→ resolveConflict(Custom)        → merged entity + outbox UPDATE
         │
         ▼
-ConflictRecord marked resolved; syncState → SYNCED or PENDING
+ConflictRecord marked resolved; outbox reconciled; syncState → SYNCED or PENDING
 ```
 
 ### API reference
 
 ```kotlin
-// Open conflicts awaiting user action
 val conflicts: StateFlow<List<ConflictSummary>>
-
-// Full audit trail (open + resolved) — for debug panels
 val conflictHistory: StateFlow<List<ConflictSummary>>
 
-// Load JSON snapshots for a resolution UI
 suspend fun findOpenConflict(entityType: String, entityId: String): ConflictRecord?
 
-// Apply user's choice
 suspend fun resolveConflict(
     entityType: String,
     entityId: String,
@@ -158,18 +315,30 @@ suspend fun resolveConflict(
 
 ---
 
-## Compose UI
+## Multi-entity isolation
 
-SyncForge ships optional components (Android):
+SyncForge resolves conflicts **per `(entityType, entityId)`**. One entity in `CONFLICT` or
+`PENDING` does not block sync for other types on the same `SyncManager`.
+
+The sample proves this with notes (`alwaysRemote`), tags (`lastWriteWins`), and tasks
+(`gitLike`) on shared outbox + cursor. A task stuck in **Conflict — tap Resolve** does not
+prevent a new note or tag from reaching **Synced** in the same sync session.
+
+The `:sample` app links notes to tags by `tagId` to demonstrate related rows syncing
+independently — not built-in tree or cascade semantics.
+
+---
+
+## Compose UI
 
 | Component | Purpose |
 |-----------|---------|
 | `SyncConflictChip` | Toolbar badge showing open conflict count |
 | `SyncConflictResolutionSheet` | Side-by-side local vs remote with action buttons |
+| `SyncDebugLauncher` | Debug panel (outbox, conflicts, event log) |
 
-Full wiring example: [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose).
-
-The sample app (`TasksScreen` + `TasksViewModel`) is the canonical reference.
+Full wiring: [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose).  
+Canonical implementation: `TasksScreen` + `TasksViewModel`.
 
 ---
 
@@ -177,15 +346,16 @@ The sample app (`TasksScreen` + `TasksViewModel`) is the canonical reference.
 
 | Entity type | Recommended strategy | Why |
 |-------------|---------------------|-----|
-| User profile | `merge { }` or `deferToUser()` | Different fields edited on different devices |
-| Shopping cart | `merge { }` with sum/max | Additive changes compose naturally |
-| Todo title | `deferToUser()` | Same field edited offline on two phones |
+| Server-owned content (sample **notes**) | `alwaysRemote()` | Device accepts server copy on pull |
+| Simple labels / metadata (sample **tags**) | `lastWriteWins()` | Timestamp picks winner; no UI |
+| Independent fields (sample **tasks**) | `gitLike { }` or `merge { }` | Title vs checkbox-style fields compose |
+| Same-field collaborative edit | `deferToUser()` or `gitLike` + `onUnmergeable { deferToUser() }` | Human picks winner |
 | App config / feature flags | `alwaysRemote()` | Server is source of truth |
-| Local drafts | `alwaysLocal()` | Device owns the draft until explicit publish |
-| Low-stakes notes | `lastWriteWins()` | Simplest; acceptable data loss risk |
-| Audit logs | `alwaysRemote()` | Append-only server data |
+| Local drafts | `alwaysLocal()` | Device owns until publish |
+| Additive sets / counters | `crdt { }` | OR-set / G-counter merge |
+| Legal / audit-sensitive | `deferToUser()` | Explicit user consent |
 
-See [Best Practices → Choosing a strategy](BEST_PRACTICES.md#choosing-a-conflict-strategy) for more detail.
+See [Best Practices → Choosing a strategy](BEST_PRACTICES.md#choosing-a-conflict-strategy).
 
 ---
 
@@ -194,77 +364,116 @@ See [Best Practices → Choosing a strategy](BEST_PRACTICES.md#choosing-a-confli
 Deletes are **tombstones** on the wire (`isDeleted: true` in pull deltas; `ChangeType.DELETE`
 on push). See [REST API → tombstones](REST_API.md#push-semantics).
 
-### Local pending update + remote delete
+| Local state | Remote delta | `lastWriteWins()` | `deferToUser()` / `gitLike` + `onRemoteDelete` |
+|-------------|--------------|-------------------|-----------------------------------------------|
+| `PENDING` update | Tombstone | Newer `updatedAtMillis` usually wins | **Conflict** — user picks keep local or accept delete |
+| `SYNCED` | Tombstone | Row deleted locally | Row deleted locally |
 
-Typical scenario: you edit a row offline while another device (or admin) deletes it on the server.
+**Sample delete-conflict flow:** sync task → edit locally → **Server delete** → **Sync** →
+resolve in sheet. When remote is a tombstone, `ConflictRecord.remoteJson` is `null` — show
+**“Deleted on server”**; `AcceptRemote` removes the local row.
 
-| Local state | Remote delta | With `lastWriteWins()` | With `deferToUser()` |
-|-------------|--------------|------------------------|----------------------|
-| `PENDING` update | Tombstone | Newer `updatedAtMillis` wins; tombstone usually deletes locally | **Conflict** — user picks keep local (re-push) or accept remote (delete locally) |
-| `SYNCED` | Tombstone | Row deleted locally (no conflict) | Row deleted locally |
-
-The sample app reproduces the `deferToUser()` case: sync a task → edit locally → **Server delete**
-(mock-server `POST /dev/simulate-delete`) → **Sync** → resolve in the conflict sheet.
-
-### Accepting a server delete in the UI
-
-When the remote side is a tombstone, `ConflictRecord.remoteJson` is `null`. Show **“Deleted on
-server”** in the remote column; `AcceptRemote` removes the local row.
+Tombstone-aware merge recipes: [RECIPES.md](RECIPES.md) and roadmap **1.2-04**.
 
 ---
 
 ## Hierarchical data (trees, parent/child)
 
-SyncForge resolves conflicts **per `(entityType, id)`**. It does **not** automatically cascade
-deletes or merges across related rows.
+SyncForge does **not** cascade deletes or merges across related rows. Conflicts are per entity.
 
-**Example:** a parent folder is deleted on the server while you edited a child note offline.
-
-- SyncForge may surface a conflict on the **child** only (if it still exists server-side).
-- SyncForge will **not** orphan-reparent, cascade-delete children, or walk a graph for you.
-
-**App/backend responsibilities:**
+**App responsibilities:**
 
 1. Model relationships explicitly (e.g. `note.tagId` → `tags` row).
-2. Define policy for orphans (reject child push, soft-delete parent, background cleanup job).
-3. Optionally use `alwaysRemote()` on parent entities and `deferToUser()` on children.
+2. Define orphan policy (reject child push, soft-delete parent, cleanup job).
+3. Mix strategies per type (`alwaysRemote()` parents, `deferToUser()` children, etc.).
 
-The `:sample` app links notes to tags by ID to show multi-entity sync without implying built-in
-tree semantics. See [Best Practices → Hierarchical data](BEST_PRACTICES.md#hierarchical-data-trees-and-relationships).
+See [Best Practices → Hierarchical data](BEST_PRACTICES.md#hierarchical-data-trees-and-relationships).
+
+---
+
+## E2E verification (`./gradlew androidE2e`)
+
+Instrumented tests run on an emulator against `:mock-server` on `10.0.2.2:8080`.
+
+### `ConflictStrategyE2ETest` — per-strategy + multi-entity (1.2-05)
+
+| Test | Proves |
+|------|--------|
+| `tags_lww_remoteNewerWinsOnConcurrentEdit` | Tag LWW — remote newer wins |
+| `tags_lww_localNewerWinsOnConcurrentEdit` | Tag LWW — local newer stays pending |
+| `tasks_gitLike_unmergeableTitleClash_defersToUser` | Title clash → conflict sheet |
+| `tasks_gitLike_unmergeableTitleClash_resolveAcceptRemote` | Accept remote resolves |
+| `tasks_gitLike_unmergeableTitleClash_resolveKeepLocal` | Keep local resolves |
+| `notes_alwaysRemote_acceptsServerOnConcurrentBodyEdit` | Server body wins on concurrent edit |
+| `notes_alwaysRemote_localNewerStillAcceptsServer` | Local newer timestamp still accepts server |
+| `multiEntity_taskAutoMerge_noteStillSyncs` | Task auto-merge does not block note sync |
+| `multiEntity_taskDefer_noteStillSyncs` | Task defer does not block note sync |
+| `multiEntity_taskDefer_tagStillSyncs` | Task defer does not block tag sync |
+| `multiEntity_taskDefer_noteAlwaysRemoteStillSyncs` | Note `alwaysRemote` under open task conflict |
+
+### Related suites
+
+| Suite | Coverage |
+|-------|----------|
+| `TasksE2ETest` | Task add/sync, gitLike auto-merge, local delete |
+| `MultiEntityE2ETest` | Task + note on one sync; conflict isolation |
+| `SampleScenariosE2ETest` | Full tab matrix, delete-conflict, pull restore, note↔tag |
 
 ---
 
 ## Debugging conflicts
 
-1. Enable `SyncDebugLauncher` (debug builds only)
-2. Open **Conflicts** tab — inspect `localJson` / `remoteJson` snapshots
-3. Check **History** tab for `ConflictDetected` events
-4. Use mock server dev routes to reproduce locally
+1. Enable `SyncDebugLauncher` (debug builds).
+2. Open **Conflicts** tab — inspect `localJson` / `remoteJson`.
+3. Check **History** / event log for auto-resolved vs deferred outcomes.
+4. Use mock-server dev routes to reproduce.
 
 ```bash
+./gradlew androidE2e
+# Or mock-server only:
 ./gradlew :mock-server:run
 ./gradlew :sample:installDebug
-# Edit conflict:  Add task → Sync → Server edit → edit locally → Sync
-# Delete conflict: Add task → Sync → edit locally → Server delete → Sync
 ```
+
+**Manual repro (tasks):** Add task → Sync → Server edit → edit a different field locally → Sync.  
+**Delete conflict:** Add task → Sync → edit locally → Server delete → Sync → Resolve.
 
 ---
 
 ## FAQ
 
 **Does conflict detection run on push?**  
-No. Conflicts are detected during **pull** when remote deltas arrive. Push rejections with
-`CONFLICT` code are handled as server rejections (rollback), not the conflict policy system.
+No. Policies run on **pull**. Push `CONFLICT` rejections are OCC failures; pull applies the
+strategy against the server delta.
 
 **What if I never configure `conflicts { }`?**  
-All entity types use last-write-wins. No user prompts, no conflict table entries.
+All entity types use `lastWriteWins()`. No user prompts, no conflict table entries.
 
 **Do resolved conflicts survive app restart?**  
-Yes. `deferToUser()` records persist in SQLDelight across process death. Open conflicts remain until resolved.
+Yes. `deferToUser()` records persist in SQLDelight until resolved.
 
 **Can I mix strategies across entity types?**  
-Yes. Each `entity("type") { }` block is independent.
+Yes. Each `entity("type") { }` block is independent — see the `:sample` matrix.
 
-**What happens to the outbox during a deferred conflict?**  
-The local outbox entry may still exist. Resolution via `KeepLocal` re-queues the local version;
-`AcceptRemote` may clear the conflicting state and accept the server copy.
+**What happens to the outbox after auto-merge?**  
+`OutboxReconciler` replaces stale entries with a merged `UPDATE`. Full sync runs a **trailing
+push** so the merged row can reach `SYNCED` in one user-visible sync.
+
+**What happens to the outbox after `AcceptRemote`?**  
+Stale outbox entries for that entity are removed. The local row is overwritten with the server
+copy and `localVersion` is aligned to `serverVersion`.
+
+**Why does mock-server reject my push after Server edit?**  
+By design — simulate-edit bumps `serverVersion` so stale `UPDATE` rows fail OCC until pull
+merges or the user resolves.
+
+---
+
+## See also
+
+| Doc | Topic |
+|-----|-------|
+| [RECIPES.md](RECIPES.md) | Copy-paste `conflicts { }` wiring and Compose sheets |
+| [BEST_PRACTICES.md](BEST_PRACTICES.md) | Version bumps, strategy choice, hierarchical data |
+| [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) | 1.2 job IDs and acceptance criteria |
+| [REST_API.md](REST_API.md) | Push/pull contract, tombstones, `serverVersion` |
