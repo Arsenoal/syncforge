@@ -8,6 +8,9 @@ import org.junit.runner.RunWith
 /**
  * §10 conflict-strategy E2E — validates [:sample] [SampleConflictPolicies] on one emulator
  * with mock-server standing in for a second device.
+ *
+ * §10.6 multi-entity isolation — shared [dev.syncforge.sync.SyncManager], independent
+ * per-entity policies (tasks gitLike, notes alwaysRemote, tags lastWriteWins).
  */
 @RunWith(AndroidJUnit4::class)
 class ConflictStrategyE2ETest : SampleE2ETestBase() {
@@ -159,5 +162,114 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         syncAndWaitForIdle()
         waitForNoteBody(title, serverBody, timeoutMillis = 45_000)
         waitForRowSyncState(title, "Synced", timeoutMillis = 45_000)
+    }
+
+    @Test
+    fun multiEntity_taskAutoMerge_noteStillSyncs() {
+        val taskTitle = uniqueTitle("E2E Iso Merge Task")
+        val noteTitle = uniqueTitle("E2E Iso Merge Note")
+
+        addTask(taskTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(taskTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        toggleCheckboxForTask(taskTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 45_000)
+
+        addNote(noteTitle, body = "Isolated while task auto-merges")
+        syncAndWaitForIdle()
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
+
+        navigateToTasks()
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 30_000)
+    }
+
+    @Test
+    fun multiEntity_taskDefer_noteStillSyncs() {
+        val baseTitle = uniqueTitle("E2E Iso Defer Task")
+        val localTitle = taskLocalTitle(baseTitle)
+        val noteTitle = uniqueTitle("E2E Iso Defer Note")
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+
+        addNote(noteTitle, body = "Should sync while task stays in conflict")
+        syncAndWaitForIdle()
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
+
+        navigateToTasks()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 30_000)
+    }
+
+    @Test
+    fun multiEntity_taskDefer_tagStillSyncs() {
+        val baseTitle = uniqueTitle("E2E Iso Defer Tag Task")
+        val localTitle = taskLocalTitle(baseTitle)
+        val tagLabel = uniqueTitle("E2E Iso Defer Tag")
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+
+        addTag(tagLabel)
+        syncAndWaitForIdle()
+        navigateToTags()
+        waitForRowSyncState(tagLabel, "Synced", timeoutMillis = 60_000)
+
+        navigateToTasks()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 30_000)
+    }
+
+    @Test
+    fun multiEntity_taskDefer_noteAlwaysRemoteStillSyncs() {
+        val baseTitle = uniqueTitle("E2E Iso Defer Note Task")
+        val localTitle = taskLocalTitle(baseTitle)
+        val noteTitle = uniqueTitle("E2E Iso Defer Note Remote")
+        val baseBody = "Body under task conflict"
+        val serverBody = noteServerBody(baseBody)
+
+        addTask(baseTitle)
+        syncAndWaitForIdle()
+        waitForRowSyncState(baseTitle, "Synced", timeoutMillis = 45_000)
+
+        tapServerEdit()
+        waitForTextContains("Server updated")
+        tapTaskLocalEdit(baseTitle)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        syncAndWaitForIdle()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
+
+        addNote(noteTitle, baseBody)
+        syncAndWaitForIdle()
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 45_000)
+
+        tapNoteLocalEdit(noteTitle)
+        waitForRowSyncState(noteTitle, "Pending", timeoutMillis = 45_000)
+        simulateServerNoteEdit(noteTitle, serverBody)
+
+        syncAndWaitForIdle()
+        waitForNoteBody(noteTitle, serverBody, timeoutMillis = 45_000)
+        waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 45_000)
+
+        navigateToTasks()
+        waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 30_000)
     }
 }
