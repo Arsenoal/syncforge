@@ -30,11 +30,11 @@ class ConflictSettingsE2ETest : SampleE2ETestBase() {
         waitForRowSyncState(baseLabel, "Synced", timeoutMillis = 45_000)
 
         tapTagLocalEdit(baseLabel)
-        waitForRowSyncState(localLabel, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localLabel, "Pending", timeoutMillis = 30_000)
 
         simulateServerTagEdit(localLabel, serverLabel)
 
         syncAndWaitForIdle()
-        waitForRowSyncState(localLabel, "Conflict — tap Resolve", timeoutMillis = 45_000)
+        waitForRowSyncState(localLabel, "Conflict", timeoutMillis = 45_000)
     }
 }

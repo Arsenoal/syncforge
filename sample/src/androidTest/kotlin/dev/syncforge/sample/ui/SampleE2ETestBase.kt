@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.syncforge.conflict.ConflictStrategyKind
+import dev.syncforge.sample.conflicts.displayLabel
 import dev.syncforge.sample.MainActivity
 import dev.syncforge.sample.SampleApplication
 import dev.syncforge.sample.tags.tagLocalEditLabel
@@ -114,6 +115,11 @@ abstract class SampleE2ETestBase {
     protected fun selectConflictKind(entityType: String, kind: ConflictStrategyKind) {
         composeTestRule.onNodeWithTag("conflict_kind_dropdown_$entityType").performClick()
         composeTestRule.onNodeWithTag("conflict_kind_option_${entityType}_${kind.name}").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithText(kind.displayLabel(), substring = false)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeTestRule.waitForIdle()
     }
 
@@ -377,13 +383,21 @@ abstract class SampleE2ETestBase {
 
     protected fun tapTaskLocalEdit(baseTitle: String) {
         navigateToTasks()
-        tapTag("local_edit_$baseTitle")
+        val tag = "local_edit_$baseTitle"
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(tag).scrollToIfPossible().performClick()
         composeTestRule.waitForIdle()
     }
 
     protected fun tapTagLocalEdit(baseLabel: String) {
         navigateToTags()
-        tapTag("local_edit_$baseLabel")
+        val tag = "local_edit_$baseLabel"
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(tag).scrollToIfPossible().performClick()
         composeTestRule.waitForIdle()
     }
 

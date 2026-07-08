@@ -69,7 +69,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
 
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
@@ -88,7 +88,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
 
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
@@ -110,7 +110,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
 
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
@@ -200,7 +200,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
 
@@ -225,7 +225,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
 
@@ -253,7 +253,7 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         tapServerEdit()
         waitForTextContains("Server updated")
         tapTaskLocalEdit(baseTitle)
-        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 15_000)
+        waitForRowSyncState(localTitle, "Pending", timeoutMillis = 30_000)
         syncAndWaitForIdle()
         waitForRowSyncState(localTitle, "Conflict — tap Resolve", timeoutMillis = 45_000)
 

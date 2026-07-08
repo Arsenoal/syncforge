@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Android E2E conflict tests on CI** — `tapTaskLocalEdit` / `tapTagLocalEdit` wait and scroll to off-screen buttons after server-edit banner; `selectConflictKind` waits for policy persistence; tags conflict label is `Conflict` (not tasks' `Conflict — tap Resolve`)
 - **`multiEntity_taskConflict_noteStillSyncs` E2E flake** — `waitForRowSyncState` uses passive semantics reads inside `waitUntil` (avoids `performMeasureAndLayout` during layout)
 - **`KotlinFlowInterop.swift`** — reusable SKIE Flow collector; `ios-sample` observes status via `observeStatusLabel()` AsyncSequence
 - **`:sample-desktop`** — JVM CLI sample proving `SyncForge.desktop { }` against `:mock-server`; `desktopE2e` in CI (1.3-01)
