@@ -113,6 +113,15 @@ internal class SyncDebugImpl(
         onResetPullCursor()
     }
 
+    override fun exportConflictAudit(
+        format: AuditLogFormat,
+        includePayloads: Boolean,
+    ): String = ConflictAuditExporter.exportRecords(
+        records = conflictRecords.value,
+        format = format,
+        includePayloads = includePayloads,
+    )
+
     suspend fun recordSyncResult(
         type: SyncEventType,
         result: SyncResult,

@@ -776,7 +776,7 @@ Operators and senior developers can **see** sync health in production-like envir
 | 1.5-03 | **Full SyncHealth dashboard UI**     | P1       | Debug + optional release diagnostic screen ✅                |
 | 1.5-04 | **Hierarchical sync recipes**        | P1       | Parent/child entities, orphan FK guidance ✅                 |
 | 1.5-05 | **Rate limiting + backoff policies** | P2       | Server-friendly client behavior ✅                          |
-| 1.5-06 | **Audit log export**                 | P2       | Conflict history CSV/JSON for support                       |
+| 1.5-06 | **Audit log export**                 | P2       | Conflict history CSV/JSON for support ✅                    |
 
 ### 1.5.0 acceptance criteria
 

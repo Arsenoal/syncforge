@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,10 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictRecord
+import dev.syncforge.debug.AuditLogFormat
 import dev.syncforge.debug.SyncEvent
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncStatus
@@ -75,6 +81,7 @@ fun SyncDebugPanel(
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showClearOutboxConfirm by remember { mutableStateOf(false) }
+    var exportedAuditText by remember { mutableStateOf<String?>(null) }
 
     val health by syncManager.debug.health.collectAsState()
     val outboxItems by syncManager.debug.outboxItems.collectAsState()
@@ -127,7 +134,15 @@ fun SyncDebugPanel(
                         recentErrors = events.filter { !it.success && it.errorCode != null }.take(5),
                     )
                     DebugTab.OUTBOX -> OutboxTab(items = outboxItems, maxRetries = health.maxRetries)
-                    DebugTab.CONFLICTS -> ConflictsTab(records = conflictRecords)
+                    DebugTab.CONFLICTS -> ConflictsTab(
+                        records = conflictRecords,
+                        onExport = { format, includePayloads ->
+                            exportedAuditText = syncManager.debug.exportConflictAudit(
+                                format = format,
+                                includePayloads = includePayloads,
+                            )
+                        },
+                    )
                     DebugTab.HISTORY -> HistoryTab(
                         events = events,
                         onClearHistory = { scope.launch { syncManager.debug.clearEventLog() } },
@@ -152,6 +167,13 @@ fun SyncDebugPanel(
                 }
             }
         }
+    }
+
+    exportedAuditText?.let { text ->
+        AuditExportDialog(
+            text = text,
+            onDismiss = { exportedAuditText = null },
+        )
     }
 
     if (showClearOutboxConfirm) {
@@ -235,7 +257,23 @@ private fun OutboxRow(entry: OutboxEntry, maxRetries: Int) {
 }
 
 @Composable
-private fun ConflictsTab(records: List<ConflictRecord>) {
+private fun ConflictsTab(
+    records: List<ConflictRecord>,
+    onExport: (AuditLogFormat, includePayloads: Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedButton(onClick = { onExport(AuditLogFormat.JSON, true) }) {
+            Text("Export JSON")
+        }
+        OutlinedButton(onClick = { onExport(AuditLogFormat.CSV, true) }) {
+            Text("Export CSV")
+        }
+    }
     if (records.isEmpty()) {
         EmptyTabMessage("No conflicts recorded")
         return
@@ -358,6 +396,41 @@ private fun EventRow(event: SyncEvent) {
             }
         }
     }
+}
+
+@Composable
+private fun AuditExportDialog(
+    text: String,
+    onDismiss: () -> Unit,
+) {
+    val clipboard = LocalClipboardManager.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Conflict audit export") },
+        text = {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier
+                    .heightIn(max = 320.dp)
+                    .verticalScroll(rememberScrollState()),
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    clipboard.setText(AnnotatedString(text))
+                    onDismiss()
+                },
+            ) {
+                Text("Copy & close")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        },
+    )
 }
 
 @Composable

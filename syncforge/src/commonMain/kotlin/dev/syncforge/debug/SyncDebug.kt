@@ -34,4 +34,14 @@ interface SyncDebug {
 
     /** Resets the pull cursor to 0 (persisted store + in-memory engine state). */
     suspend fun resetPullCursor()
+
+    /**
+     * Exports conflict audit history as CSV or JSON for support (1.5-06).
+     *
+     * @param includePayloads When `true`, includes `localJson` / `remoteJson` snapshots.
+     */
+    fun exportConflictAudit(
+        format: AuditLogFormat,
+        includePayloads: Boolean = false,
+    ): String
 }

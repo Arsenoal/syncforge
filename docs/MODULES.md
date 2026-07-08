@@ -636,6 +636,7 @@ Cursor advances from `PullResult.serverTimestampMillis` on successful pull/sync.
 | `conflictRecords: StateFlow<List<ConflictRecord>>` | Full conflict audit trail |
 | `clearOutbox()` | Remove all outbox entries |
 | `clearEventLog()` | Reset the event ring buffer |
+| `exportConflictAudit(format, includePayloads)` | CSV/JSON conflict history for support ([AUDIT_EXPORT.md](AUDIT_EXPORT.md)) |
 
 ### `SyncHealth`
 
