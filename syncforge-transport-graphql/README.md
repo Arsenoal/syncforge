@@ -9,7 +9,7 @@ Ready-made [GraphQlSyncTransport](src/commonMain/kotlin/dev/syncforge/transport/
 
 ## Setup
 
-Point at a GraphQL endpoint that exposes the SyncForge sync operations (same semantics as [REST_API.md](../docs/REST_API.md)). `:mock-server` ships a `/graphql` facade for local dev; full schema recipes land in `1.4-09`.
+Point at a GraphQL endpoint that exposes the SyncForge sync operations (same semantics as [REST_API.md](../docs/REST_API.md)). Schema and resolver recipes: [syncforge-server/graphql/README.md](../syncforge-server/graphql/README.md).
 
 ```kotlin
 @OptIn(ExperimentalSyncForgeApi::class)

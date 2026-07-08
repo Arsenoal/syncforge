@@ -37,6 +37,7 @@ include(
     ":syncforge-server",
     ":backend-starter",
     ":backend-starter-spring",
+    ":backend-starter-graphql",
     ":mock-server",
     ":sample",
     ":sample-ios-shared",

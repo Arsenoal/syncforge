@@ -73,6 +73,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge-annotations:compileKotlinJvm",
         ":syncforge-ksp:compileKotlin",
         ":backend-starter:compileKotlin",
+        ":backend-starter-graphql:compileKotlin",
         ":backend-starter-spring:test",
         ":mock-server:compileKotlin",
         ":sample-desktop:compileKotlin",

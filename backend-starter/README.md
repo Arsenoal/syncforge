@@ -9,6 +9,7 @@ building a SyncForge client.
 | `:syncforge-server` | Shared routes, DTO wiring, and `SyncStore` contract |
 | `:backend-starter` | Runnable Ktor reference app (this module) |
 | `:backend-starter-spring` | Spring Boot reference app with optional JDBC store |
+| `:backend-starter-graphql` | GraphQL-only reference app (`POST /graphql`) |
 | `:mock-server` | Same contract **plus** `/dev/*` routes for conflict demos |
 
 ## Run

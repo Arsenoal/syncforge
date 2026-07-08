@@ -910,6 +910,237 @@ Use `SyncForge.builder { }` in `commonTest` — no Android context required.
 
 ---
 
+## GraphQL sync transport (client)
+
+Use when your backend already exposes GraphQL and you want the same push/pull semantics as REST
+without changing entity handlers or KSP codegen.
+
+### Dependencies
+
+```kotlin
+implementation("studio.syncforge:syncforge-transport-graphql:1.2.0")
+```
+
+### Wire the transport
+
+```kotlin
+import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.transport.graphql.GraphQlSyncConfig
+import dev.syncforge.transport.graphql.GraphQlSyncTransport
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+
+@OptIn(ExperimentalSyncForgeApi::class)
+val graphqlHttpClient = HttpClient(OkHttp.create()) {
+    install(ContentNegotiation) {
+        json(dev.syncforge.transport.graphql.KtorGraphQlSyncApi.defaultJson)
+    }
+}
+
+SyncForge.android(this) {
+    transport(
+        GraphQlSyncTransport(
+            config = GraphQlSyncConfig(
+                endpointUrl = "http://10.0.2.2:8080/graphql",
+                bearerToken = { tokenStore.accessToken },
+            ),
+            httpClient = graphqlHttpClient,
+        ),
+    )
+    registry(SyncForgeHandlers.registry(taskDao))
+    // baseUrl() omitted — GraphQL transport owns the endpoint
+}
+```
+
+Operations map 1:1 to REST (`syncPush` mutation, `syncPull` query). See
+[syncforge-server/graphql/syncforge-sync.graphql](../syncforge-server/graphql/syncforge-sync.graphql).
+
+### Local reference server
+
+```bash
+./gradlew :backend-starter-graphql:run   # GraphQL only
+./gradlew :mock-server:run               # REST + GraphQL + conflict demos
+```
+
+---
+
+## GraphQL server schema and resolvers
+
+Expose **two** operations with the same semantics as [REST_API.md](REST_API.md) — not per-entity
+CRUD. `payloadJson` stays an opaque string.
+
+### Schema (copy into your GraphQL server)
+
+Full SDL: [syncforge-server/graphql/syncforge-sync.graphql](../syncforge-server/graphql/syncforge-sync.graphql)
+
+```graphql
+scalar Long
+
+enum ChangeType { CREATE UPDATE DELETE }
+
+input OutboxEntryInput {
+  id: Long!
+  entityType: String!
+  entityId: String!
+  changeType: ChangeType!
+  payloadJson: String
+  localVersion: Long!
+  createdAtMillis: Long!
+}
+
+type PushPayload {
+  acknowledgedIds: [Long!]!
+  rejected: [PushRejection!]!
+}
+
+type PullPayload {
+  deltas: [RemoteDelta!]!
+  serverTimestampMillis: Long!
+  hasMore: Boolean!
+  nextPageCursor: String
+}
+
+type Query {
+  syncPull(since: Long!, types: [String!]!, limit: Int, cursor: String): PullPayload!
+}
+
+type Mutation {
+  syncPush(entries: [OutboxEntryInput!]!): PushPayload!
+}
+```
+
+### Ktor resolver (self-hosted)
+
+`:syncforge-server` delegates to `SyncHandlers` — same store as REST:
+
+```kotlin
+import dev.syncforge.server.graphqlRoutes
+import dev.syncforge.server.syncRoutes
+
+routing {
+    syncRoutes(mySyncStore)      // optional REST
+    graphqlRoutes(mySyncStore)   // POST /graphql
+}
+```
+
+Runnable starter: `./gradlew :backend-starter-graphql:run`
+
+Apollo Server and Spring GraphQL sketches: [syncforge-server/graphql/README.md](../syncforge-server/graphql/README.md).
+
+---
+
+## BYO `SyncDeltaStore` (BaaS / hosted backend)
+
+Use when the client talks to Firebase, Supabase, or a custom RPC/NoSQL store instead of REST or
+GraphQL. Implement the storage port once; `DeltaStoreSyncTransport` maps it to `SyncTransport`.
+
+### Dependencies
+
+```kotlin
+implementation("studio.syncforge:syncforge-transport-core:1.2.0")
+// optional ready-made impls:
+implementation("studio.syncforge:syncforge-transport-supabase:1.2.0")
+implementation("studio.syncforge:syncforge-transport-firebase:1.2.0")
+```
+
+### Ready-made stores
+
+```kotlin
+@OptIn(ExperimentalSyncForgeApi::class)
+SyncForge.android(this) {
+    transport(DeltaStoreSyncTransport(SupabaseSyncDeltaStore(config)))
+    // or: DeltaStoreSyncTransport(FirebaseSyncDeltaStore(config))
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+See [syncforge-transport-supabase](../syncforge-transport-supabase/README.md) and
+[syncforge-transport-firebase](../syncforge-transport-firebase/README.md).
+
+### Custom store (~100–200 lines)
+
+```kotlin
+@OptIn(ExperimentalSyncForgeApi::class)
+class MyRpcSyncDeltaStore(
+    private val api: MyBackendApi,
+) : SyncDeltaStore {
+
+    override suspend fun appendEntries(entries: List<OutboxEntry>): PushResult {
+        val response = api.push(entries.map { it.toDto() })
+        return response.toPushResult()
+    }
+
+    override suspend fun queryDeltas(
+        sinceTimestampMillis: Long,
+        entityTypes: Set<String>,
+        pageSize: Int,
+        pageCursor: String?,
+    ): PullResult {
+        val response = api.pull(sinceTimestampMillis, entityTypes, pageSize, pageCursor)
+        return response.toPullResult()
+    }
+}
+
+SyncForge.android(this) {
+    transport(DeltaStoreSyncTransport(MyRpcSyncDeltaStore(api)))
+    registry(handlers)
+}
+```
+
+Contract test kit: implement `SyncDeltaStoreContract` scenarios in `commonTest` (see
+[transport-core README](../syncforge-transport-core/README.md)).
+
+---
+
+## Custom `SyncTransport`
+
+Use when the wire format is neither REST (`KtorSyncTransport`) nor a shipped adapter (GraphQL,
+Supabase, Firebase). `SyncManager` only requires `push()` / `pull()`.
+
+### Minimal skeleton
+
+```kotlin
+class MySyncTransport(
+    private val backend: MyBackendClient,
+) : SyncTransport {
+
+    override suspend fun push(entries: List<OutboxEntry>): PushResult {
+        val response = backend.uploadChanges(entries.map { it.toDto() })
+        return response.toPushResult()
+    }
+
+    override suspend fun pull(
+        sinceTimestampMillis: Long,
+        entityTypes: Set<String>,
+        pageSize: Int,
+        pageCursor: String?,
+    ): PullResult {
+        val response = backend.downloadChanges(sinceTimestampMillis, entityTypes, pageSize, pageCursor)
+        return response.toPullResult()
+    }
+}
+
+SyncForge.android(this) {
+    transport(MySyncTransport(backend))
+    registry(handlers)
+}
+```
+
+Reuse `OutboxEntry.toDto()`, `PushResponse.toPushResult()`, and `PullResponse.toPullResult()` from
+`dev.syncforge.network.api` when your backend shares REST DTO shapes.
+
+### Shipped alternatives
+
+| Backend | Transport |
+|---------|-----------|
+| REST / Ktor | `KtorSyncTransport` (default) |
+| GraphQL | `GraphQlSyncTransport` — [GraphQL sync transport](#graphql-sync-transport-client) |
+| Supabase / Firebase | `DeltaStoreSyncTransport` + vendor `SyncDeltaStore` |
+
+---
+
 ## Simulate conflicts locally (mock server)
 
 With `:mock-server` running:

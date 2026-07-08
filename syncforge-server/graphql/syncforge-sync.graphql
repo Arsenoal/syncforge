@@ -1,0 +1,58 @@
+# SyncForge GraphQL sync contract
+#
+# Same semantics as docs/REST_API.md — dedicated push/pull channel, not per-entity CRUD.
+# Client: :syncforge-transport-graphql (GraphQlSyncTransport)
+# Ktor resolver: graphqlRoutes(store) in dev.syncforge.server
+
+scalar Long
+
+enum ChangeType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+input OutboxEntryInput {
+  id: Long!
+  entityType: String!
+  entityId: String!
+  changeType: ChangeType!
+  payloadJson: String
+  localVersion: Long!
+  createdAtMillis: Long!
+}
+
+type PushRejection {
+  outboxId: Long!
+  code: String!
+  message: String!
+}
+
+type PushPayload {
+  acknowledgedIds: [Long!]!
+  rejected: [PushRejection!]!
+}
+
+type RemoteDelta {
+  entityType: String!
+  entityId: String!
+  payloadJson: String
+  serverVersion: Long!
+  updatedAtMillis: Long!
+  isDeleted: Boolean!
+}
+
+type PullPayload {
+  deltas: [RemoteDelta!]!
+  serverTimestampMillis: Long!
+  hasMore: Boolean!
+  nextPageCursor: String
+}
+
+type Query {
+  syncPull(since: Long!, types: [String!]!, limit: Int, cursor: String): PullPayload!
+}
+
+type Mutation {
+  syncPush(entries: [OutboxEntryInput!]!): PushPayload!
+}

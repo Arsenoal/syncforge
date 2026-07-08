@@ -572,6 +572,8 @@ When you use `SyncForge.android { }`, these are configured automatically:
 | BYO entity store (`@SyncForgeStore`) | [Recipes → BYO entity store](RECIPES.md#byo-entity-store-syncforgestore) |
 | Koin / Hilt wiring | [Recipes → Dependency injection](RECIPES.md#dependency-injection-koin--hilt) |
 | Injectable Ktor `HttpClient` | [Recipes → Inject app-owned HttpClient](RECIPES.md#inject-app-owned-ktor-httpclient) |
+| GraphQL transport | [Recipes → GraphQL sync transport](RECIPES.md#graphql-sync-transport-client) |
+| BaaS `SyncDeltaStore` | [Recipes → BYO SyncDeltaStore](RECIPES.md#byo-syncdeltastore-baas--hosted-backend) |
 | Custom field merges | [Recipes → merge { }](RECIPES.md#custom-merge-with-merge--) |
 | User-driven conflict UI | [Recipes → deferToUser](RECIPES.md#handle-defertouser-conflicts-in-compose) |
 | In-app debug console | [Recipes → Debug console](RECIPES.md#use-the-in-app-debug-console) |

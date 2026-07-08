@@ -5,6 +5,7 @@ SyncForge defines a minimal delta-sync HTTP contract. The reference implementati
 - **Client:** `KtorSyncTransport` (`:syncforge` androidMain)
 - **Server (production starter):** `:backend-starter` (Ktor) or `:backend-starter-spring` (Spring Boot) + `:syncforge-server` library
 - **Server (local dev / demos):** `:mock-server` (adds `/dev/*` routes for conflict demos)
+- **GraphQL wire format:** same push/pull semantics via `syncPush` / `syncPull` — see [syncforge-server/graphql/README.md](../syncforge-server/graphql/README.md) and [RECIPES.md](RECIPES.md#graphql-server-schema-and-resolvers)
 
 DTOs live in `dev.syncforge.network.api` (`commonMain`) and are shared between client
 and server.
@@ -85,6 +86,7 @@ major SyncForge release. Migration notes for backend authors are published in th
 | Production starter (Ktor) | `./gradlew :backend-starter:run` — see `backend-starter/README.md` |
 | Production starter (Spring) | `./gradlew :backend-starter-spring:bootRun` — JDBC via `jdbc` profile; see `backend-starter-spring/README.md` |
 | Local dev + conflict demos | `./gradlew :mock-server:run` — contract + `/dev/simulate-edit` |
+| GraphQL reference | `./gradlew :backend-starter-graphql:run` — `POST /graphql` only |
 | CI / samples | `:mock-server` on port `8080`; Android emulator uses `http://10.0.2.2:8080` |
 | Contract drift | Run client E2E (`./gradlew androidE2e`, `./gradlew iosE2e`) against your backend before upgrading SyncForge major versions |
 

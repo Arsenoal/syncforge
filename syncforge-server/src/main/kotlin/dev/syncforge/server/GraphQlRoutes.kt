@@ -17,7 +17,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
  * Minimal GraphQL-over-HTTP facade for SyncForge push/pull — delegates to [SyncHandlers].
  *
  * Accepts standard POST `{ query, operationName?, variables? }` and routes `syncPush` / `syncPull`
- * to the same store contract as [syncRoutes]. Full schema recipes ship in 1.4-09.
+ * to the same store contract as [syncRoutes]. Schema: `syncforge-server/graphql/syncforge-sync.graphql`.
  */
 fun Route.graphqlRoutes(store: SyncStore) {
     post("/graphql") {
