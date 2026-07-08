@@ -10,6 +10,9 @@ import dev.syncforge.sample.notes.SyncForgeHandlers
 import dev.syncforge.sample.notes.NoteRepository
 import dev.syncforge.sample.tags.TagRepository
 import dev.syncforge.sample.demo.DemoActivityLog
+import dev.syncforge.sample.conflicts.SampleConflictPolicyStore
+import dev.syncforge.sample.conflicts.SampleEntityConflictKinds
+import dev.syncforge.sample.conflicts.conflictPolicyFromSampleKinds
 import dev.syncforge.sample.conflicts.sampleEntityConflicts
 import dev.syncforge.sample.tasks.SampleDatabase
 import dev.syncforge.sample.tasks.TaskRepository
@@ -36,6 +39,9 @@ class SampleApplication : Application(), Configuration.Provider {
     lateinit var tagRepository: TagRepository
         private set
 
+    lateinit var conflictPolicyStore: SampleConflictPolicyStore
+        private set
+
     override val workManagerConfiguration: Configuration
         get() = SyncForgeAndroid.workManagerConfiguration { syncManager }
 
@@ -47,6 +53,8 @@ class SampleApplication : Application(), Configuration.Provider {
         val noteDao = database.noteDao()
         val tagDao = database.tagDao()
 
+        conflictPolicyStore = SampleConflictPolicyStore(this)
+
         syncManager = SyncForge.android(this) {
             baseUrl(BuildConfig.SYNC_BASE_URL)
             registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
@@ -55,6 +63,11 @@ class SampleApplication : Application(), Configuration.Provider {
                 sampleEntityConflicts()
             }
             schedulePeriodicSyncOnStart()
+        }
+
+        runBlocking {
+            val kinds = conflictPolicyStore.currentKinds()
+            syncManager.updateConflictPolicy(conflictPolicyFromSampleKinds(kinds))
         }
 
         taskRepository = TaskRepository(taskDao, syncManager)
@@ -89,6 +102,8 @@ class SampleApplication : Application(), Configuration.Provider {
         runBlocking {
             syncManager.cancelScheduledSync()
             DemoActivityLog.clear()
+            conflictPolicyStore.resetToDefaults()
+            syncManager.updateConflictPolicy(conflictPolicyFromSampleKinds(SampleEntityConflictKinds.Default))
             database.clearAllTables()
             syncManager.debug.clearOutbox()
             syncManager.debug.clearEventLog()

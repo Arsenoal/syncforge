@@ -10,3 +10,6 @@ data object NotesRoute
 
 @Serializable
 data object TagsRoute
+
+@Serializable
+data object ConflictSettingsRoute

@@ -543,7 +543,7 @@ Merge base storage: persist last-synced entity JSON per `(entityType, entityId)`
 | 1.2-07 | **Merge-base snapshot store**                                                  | P0       | Last-synced JSON per `(entityType, entityId)`; feeds three-way merge |
 | 1.2-08 | **`gitLike { }` strategy** — `threeWayMerge` + `onUnmergeable { deferToUser() }` | P0    | Accept local / accept remote / custom merge fallback |
 | 1.2-09 | **`ConflictStrategyKind` catalog** — enum + `ConflictStrategies.fromKind()`    | P0       | App selects resolver per entity from all built-in types |
-| 1.2-10 | **Runtime policy updates** — `updateConflictPolicy()` + preference-driven DSL  | P1       | Settings screen can switch strategy per entity without recompile |
+| 1.2-10 | **Runtime policy updates** — `updateConflictPolicy()` + preference-driven DSL  | P1       | `:sample` Policy tab + DataStore persistence ✅ |
 | 1.2-11 | **Outbox reconcile on resolve** — clear stale outbox on `AcceptRemote`; enqueue hint on `Custom` | P1 | Keeps push state aligned with user/git-like resolution |
 
 ### Conflict strategy matrix (target 1.2)
@@ -582,7 +582,7 @@ Merge base storage: persist last-synced entity JSON per `(entityType, entityId)`
 | E2E delete + notes + tasks | [`SampleScenariosE2ETest.tasks_deleteConflict_resolveAcceptRemote_removesTask`](../../sample/src/androidTest/kotlin/dev/syncforge/sample/ui/SampleScenariosE2ETest.kt); notes/tasks/tag matrix in [`ConflictStrategyE2ETest`](../../sample/src/androidTest/kotlin/dev/syncforge/sample/ui/ConflictStrategyE2ETest.kt); [`RECIPES.md` `:sample` conflict matrix](RECIPES.md#sample-conflict-matrix-12); CI `androidE2e` green (28 tests) |
 | Outbox reconcile | [`OutboxReconcileTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/OutboxReconcileTest.kt) (`AcceptRemote`, `Custom` merged); trailing push in [`SyncEngine.runFullSync`](../../syncforge/src/commonMain/kotlin/dev/syncforge/sync/SyncEngine.kt); [CONFLICT_RESOLUTION.md → Outbox reconcile](CONFLICT_RESOLUTION.md#full-sync-cycle-localversion-and-outbox-reconcile) |
 
-**1.2 feature jobs (same audit):** 1.2-01 … 1.2-09 and 1.2-11 ✅ shipped; 1.2-05 ✅ (`ConflictStrategyE2ETest` + CI); 1.2-06 ✅ (CONFLICT_RESOLUTION v2). **1.2-10** partial — `updateConflictPolicy()` + `conflictPolicyFromKinds()` API/tests land; no `:sample` settings screen wiring yet (P1, not a 1.2.0 acceptance gate).
+**1.2 feature jobs (same audit):** 1.2-01 … 1.2-09, 1.2-10, and 1.2-11 ✅ shipped; 1.2-05 ✅ (`ConflictStrategyE2ETest` + CI); 1.2-06 ✅ (CONFLICT_RESOLUTION v2). **1.2-10** — `ConflictSettingsScreen` + `SampleConflictPolicyStore` (DataStore) + `ConflictSettingsE2ETest`.
 
 ---
 

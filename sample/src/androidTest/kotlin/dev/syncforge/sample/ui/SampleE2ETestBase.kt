@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
+import dev.syncforge.conflict.ConflictStrategyKind
 import dev.syncforge.sample.MainActivity
 import dev.syncforge.sample.SampleApplication
 import dev.syncforge.sample.tags.tagLocalEditLabel
@@ -101,6 +102,19 @@ abstract class SampleE2ETestBase {
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithTag("add_tag_button").fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    protected fun navigateToConflictSettings() {
+        composeTestRule.onNodeWithTag("nav_conflict_settings").performClick()
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule.onAllNodesWithTag("conflict_settings_screen").fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    protected fun selectConflictKind(entityType: String, kind: ConflictStrategyKind) {
+        composeTestRule.onNodeWithTag("conflict_kind_dropdown_$entityType").performClick()
+        composeTestRule.onNodeWithTag("conflict_kind_option_${entityType}_${kind.name}").performClick()
+        composeTestRule.waitForIdle()
     }
 
     protected fun addTask(title: String) {

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,8 @@ import dev.syncforge.compose.SyncConflictChip
 import dev.syncforge.compose.SyncDebugLauncher
 import dev.syncforge.compose.SyncStatusUiModel
 import dev.syncforge.compose.toUiModel
+import dev.syncforge.sample.conflicts.ConflictSettingsScreen
+import dev.syncforge.sample.conflicts.ConflictSettingsViewModel
 import dev.syncforge.sample.notes.NotesScreen
 import dev.syncforge.sample.notes.NotesViewModel
 import dev.syncforge.sample.tags.TagsScreen
@@ -50,6 +53,7 @@ fun SampleApp(
     tasksViewModel: TasksViewModel,
     notesViewModel: NotesViewModel,
     tagsViewModel: TagsViewModel,
+    conflictSettingsViewModel: ConflictSettingsViewModel,
     syncManager: SyncManager,
     onSync: () -> Unit,
     onClearLocalData: suspend () -> Unit = {},
@@ -67,6 +71,7 @@ fun SampleApp(
         destination?.hasRoute<TasksRoute>() == true -> "Tasks"
         destination?.hasRoute<NotesRoute>() == true -> "Notes"
         destination?.hasRoute<TagsRoute>() == true -> "Tags"
+        destination?.hasRoute<ConflictSettingsRoute>() == true -> "Conflict policy"
         else -> "SyncForge"
     }
 
@@ -127,6 +132,19 @@ fun SampleApp(
                         label = { Text("Tags") },
                         modifier = Modifier.testTag("nav_tags"),
                     )
+                    NavigationBarItem(
+                        selected = destination?.hasRoute<ConflictSettingsRoute>() == true,
+                        onClick = {
+                            navController.navigate(ConflictSettingsRoute) {
+                                popUpTo(TasksRoute) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Conflict policy") },
+                        label = { Text("Policy") },
+                        modifier = Modifier.testTag("nav_conflict_settings"),
+                    )
                 }
             },
         ) { padding ->
@@ -152,6 +170,9 @@ fun SampleApp(
                     }
                     composable<TagsRoute> {
                         TagsScreen(viewModel = tagsViewModel)
+                    }
+                    composable<ConflictSettingsRoute> {
+                        ConflictSettingsScreen(viewModel = conflictSettingsViewModel)
                     }
                 }
             }

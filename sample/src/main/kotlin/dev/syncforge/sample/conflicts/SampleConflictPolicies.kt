@@ -3,7 +3,9 @@ package dev.syncforge.sample.conflicts
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictEntityBuilder
 import dev.syncforge.conflict.ConflictPolicyBuilder
+import dev.syncforge.conflict.ConflictStrategyKind
 import dev.syncforge.conflict.ThreeWayMergeResult
+import dev.syncforge.conflict.conflictPolicy
 import dev.syncforge.model.SyncState
 import dev.syncforge.sample.tasks.TaskEntity
 
@@ -19,9 +21,30 @@ import dev.syncforge.sample.tasks.TaskEntity
  */
 @OptIn(ExperimentalSyncForgeApi::class)
 fun ConflictPolicyBuilder.sampleEntityConflicts() {
-    entity("notes") { alwaysRemote() }
-    entity("tags") { lastWriteWins() }
-    entity("tasks") { sampleTaskGitLikePolicy() }
+    applySampleEntityConflictKinds(SampleEntityConflictKinds.Default)
+}
+
+/** Builds a [dev.syncforge.conflict.ConflictPolicy] from persisted or UI-selected kinds (1.2-10). */
+@OptIn(ExperimentalSyncForgeApi::class)
+fun conflictPolicyFromSampleKinds(
+    kinds: SampleEntityConflictKinds,
+): dev.syncforge.conflict.ConflictPolicy = conflictPolicy {
+    applySampleEntityConflictKinds(kinds)
+}
+
+@OptIn(ExperimentalSyncForgeApi::class)
+private fun ConflictPolicyBuilder.applySampleEntityConflictKinds(kinds: SampleEntityConflictKinds) {
+    entity("notes") { applyCatalogKind(kinds.notes) }
+    entity("tags") { applyCatalogKind(kinds.tags) }
+    entity("tasks") { applyCatalogKind(kinds.tasks) }
+}
+
+@OptIn(ExperimentalSyncForgeApi::class)
+private fun ConflictEntityBuilder.applyCatalogKind(kind: ConflictStrategyKind) {
+    when (kind) {
+        ConflictStrategyKind.GIT_LIKE -> sampleTaskGitLikePolicy()
+        else -> strategy(kind)
+    }
 }
 
 @OptIn(ExperimentalSyncForgeApi::class)

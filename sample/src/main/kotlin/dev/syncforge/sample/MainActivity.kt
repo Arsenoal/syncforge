@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import dev.syncforge.sample.demo.DemoRecordingRunner
 import dev.syncforge.sample.demo.attachDemoPresentation
+import dev.syncforge.sample.conflicts.ConflictSettingsViewModel
 import dev.syncforge.sample.navigation.SampleApp
 import kotlinx.coroutines.delay
 import dev.syncforge.sample.notes.NotesViewModel
@@ -39,6 +40,10 @@ class MainActivity : ComponentActivity() {
             tagRepository = app.tagRepository,
         )
         val tagsViewModel = TagsViewModel(repository = app.tagRepository)
+        val conflictSettingsViewModel = ConflictSettingsViewModel(
+            syncManager = app.syncManager,
+            policyStore = app.conflictPolicyStore,
+        )
 
         lifecycleScope.attachDemoPresentation(
             syncManager = app.syncManager,
@@ -50,6 +55,7 @@ class MainActivity : ComponentActivity() {
                 tasksViewModel = tasksViewModel,
                 notesViewModel = notesViewModel,
                 tagsViewModel = tagsViewModel,
+                conflictSettingsViewModel = conflictSettingsViewModel,
                 syncManager = app.syncManager,
                 onSync = {
                     lifecycleScope.launch { app.syncManager.sync() }

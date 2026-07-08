@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:sample` conflict policy settings (1.2-10)** — Policy tab with per-entity strategy dropdowns (notes/tags/tasks), DataStore persistence, `updateConflictPolicy()` on change; `ConflictSettingsE2ETest` validates runtime switch to defer-to-user
 - **`docs/SWIFT_INTEROP.md`** — SKIE Swift patterns: Flow collection, suspend/async, callbacks, error handling, reference table (1.3-07)
 
 ### Fixed
