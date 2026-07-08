@@ -17,6 +17,8 @@ import dev.syncforge.sample.MainActivity
 import dev.syncforge.sample.SampleApplication
 import dev.syncforge.sample.tags.tagLocalEditLabel
 import dev.syncforge.sample.tags.tagServerEditLabel
+import dev.syncforge.sample.notes.noteLocalEditBody
+import dev.syncforge.sample.notes.noteServerEditBody
 import dev.syncforge.sample.tasks.DevSyncClient
 import dev.syncforge.sample.tasks.taskLocalEditTitle
 import kotlinx.coroutines.flow.first
@@ -269,6 +271,64 @@ abstract class SampleE2ETestBase {
                     .onNodeWithTag("row_sync_state_$itemTitle")
                     .scrollToIfPossible()
                     .assert(hasText(stateLabel, substring = false))
+            }.isSuccess
+        }
+    }
+
+    protected fun noteLocalBody(baseBody: String): String = noteLocalEditBody(baseBody)
+
+    protected fun noteServerBody(baseBody: String): String = noteServerEditBody(baseBody)
+
+    protected fun tapNoteLocalEdit(noteTitle: String) {
+        navigateToNotes()
+        tapTag("local_edit_$noteTitle")
+        composeTestRule.waitForIdle()
+    }
+
+    protected fun simulateServerNoteEdit(noteTitle: String, newBody: String): Long {
+        val app = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .applicationContext as SampleApplication
+        val serverUpdatedAtMillis = runBlocking {
+            val note = app.noteRepository.observeNotes().first()
+                .firstOrNull { it.title == noteTitle }
+                ?: error("No note with title $noteTitle")
+            DevSyncClient.simulateServerEdit(note, newBody).getOrThrow()
+        }
+        composeTestRule.waitForIdle()
+        return serverUpdatedAtMillis
+    }
+
+    protected fun applyNoteLocalBodyEditNewerThan(
+        noteTitle: String,
+        newBody: String,
+        serverUpdatedAtMillis: Long,
+    ) {
+        val app = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .applicationContext as SampleApplication
+        runBlocking {
+            val note = app.noteRepository.observeNotes().first()
+                .firstOrNull { it.title == noteTitle }
+                ?: error("No note with title $noteTitle")
+            app.noteRepository.updateBody(
+                note = note,
+                newBody = newBody,
+                updatedAtMillis = maxOf(System.currentTimeMillis(), serverUpdatedAtMillis + 1L),
+            )
+        }
+        navigateToNotes()
+        composeTestRule.waitForIdle()
+    }
+
+    protected fun waitForNoteBody(noteTitle: String, body: String, timeoutMillis: Long = 45_000) {
+        navigateToNotes()
+        composeTestRule.waitUntil(timeoutMillis) {
+            runCatching {
+                composeTestRule
+                    .onNodeWithTag("note_body_$noteTitle")
+                    .scrollToIfPossible()
+                    .assert(hasText(body, substring = false))
             }.isSuccess
         }
     }

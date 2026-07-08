@@ -116,4 +116,48 @@ class ConflictStrategyE2ETest : SampleE2ETestBase() {
         waitForRowSyncState(localTitle, "Pending", timeoutMillis = 45_000)
         waitForTextGone("Conflict — tap Resolve", timeoutMillis = 15_000)
     }
+
+    @Test
+    fun notes_alwaysRemote_acceptsServerOnConcurrentBodyEdit() {
+        val title = uniqueTitle("E2E Note Remote")
+        val baseBody = "Original body"
+        val localBody = noteLocalBody(baseBody)
+        val serverBody = noteServerBody(baseBody)
+
+        addNote(title, baseBody)
+        syncAndWaitForIdle()
+        waitForRowSyncState(title, "Synced", timeoutMillis = 45_000)
+        waitForNoteBody(title, baseBody)
+
+        tapNoteLocalEdit(title)
+        waitForRowSyncState(title, "Pending", timeoutMillis = 15_000)
+        waitForNoteBody(title, localBody)
+
+        simulateServerNoteEdit(title, serverBody)
+
+        syncAndWaitForIdle()
+        waitForNoteBody(title, serverBody, timeoutMillis = 45_000)
+        waitForRowSyncState(title, "Synced", timeoutMillis = 45_000)
+    }
+
+    @Test
+    fun notes_alwaysRemote_localNewerStillAcceptsServer() {
+        val title = uniqueTitle("E2E Note Local Newer")
+        val baseBody = "Baseline body"
+        val localBody = noteLocalBody(baseBody)
+        val serverBody = noteServerBody(baseBody)
+
+        addNote(title, baseBody)
+        syncAndWaitForIdle()
+        waitForRowSyncState(title, "Synced", timeoutMillis = 45_000)
+
+        val serverUpdatedAtMillis = simulateServerNoteEdit(title, serverBody)
+        applyNoteLocalBodyEditNewerThan(title, localBody, serverUpdatedAtMillis)
+        waitForRowSyncState(title, "Pending", timeoutMillis = 15_000)
+        waitForNoteBody(title, localBody)
+
+        syncAndWaitForIdle()
+        waitForNoteBody(title, serverBody, timeoutMillis = 45_000)
+        waitForRowSyncState(title, "Synced", timeoutMillis = 45_000)
+    }
 }

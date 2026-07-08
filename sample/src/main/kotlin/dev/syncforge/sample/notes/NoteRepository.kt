@@ -27,6 +27,20 @@ class NoteRepository(
         syncManager.enqueueChange(Change.create(NoteEntity.ENTITY_TYPE, note))
     }
 
+    suspend fun updateBody(
+        note: NoteEntity,
+        newBody: String,
+        updatedAtMillis: Long = System.currentTimeMillis(),
+    ) {
+        val updated = note.copy(
+            body = newBody.trim(),
+            localVersion = note.localVersion + 1,
+            updatedAtMillis = updatedAtMillis,
+            syncState = SyncState.PENDING,
+        )
+        syncManager.enqueueChange(Change.update(NoteEntity.ENTITY_TYPE, updated))
+    }
+
     suspend fun deleteNote(note: NoteEntity) {
         syncManager.enqueueChange(
             Change.delete<NoteEntity>(

@@ -2,6 +2,7 @@ package dev.syncforge.sample.tasks
 
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.sample.BuildConfig
+import dev.syncforge.sample.notes.NoteEntity
 import dev.syncforge.sample.tags.TagEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,6 +40,19 @@ object DevSyncClient {
                 ),
             ),
         ).map { }
+
+    suspend fun simulateServerEdit(note: NoteEntity, newBody: String): Result<Long> =
+        simulateServerEdit(
+            entityType = NoteEntity.ENTITY_TYPE,
+            entityId = note.id,
+            payloadJson = json.encodeToString(
+                note.copy(
+                    body = newBody,
+                    updatedAtMillis = serverEditTimestamp(note),
+                    syncState = dev.syncforge.model.SyncState.SYNCED,
+                ),
+            ),
+        )
 
     suspend fun simulateServerEdit(tag: TagEntity, newLabel: String): Result<Long> =
         simulateServerEdit(

@@ -35,6 +35,7 @@ import dev.syncforge.model.SyncState
 fun NotesScreen(viewModel: NotesViewModel) {
     val notes by viewModel.notes.collectAsState()
     val tags by viewModel.tags.collectAsState()
+    val devMessage by viewModel.devMessage.collectAsState()
     var title by rememberSaveable { mutableStateOf("") }
     var body by rememberSaveable { mutableStateOf("") }
     var selectedTagId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -53,6 +54,13 @@ fun NotesScreen(viewModel: NotesViewModel) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        devMessage?.let { message ->
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
@@ -129,6 +137,8 @@ fun NotesScreen(viewModel: NotesViewModel) {
                 NoteRow(
                     note = note,
                     tagLabel = note.tagId?.let { tagLabels[it] },
+                    onLocalEdit = { viewModel.applyLocalBodyEdit(note) },
+                    onSimulateServerEdit = { viewModel.simulateServerEdit(note) },
                     onDelete = { viewModel.deleteNote(note) },
                 )
             }
@@ -140,6 +150,8 @@ fun NotesScreen(viewModel: NotesViewModel) {
 private fun NoteRow(
     note: NoteEntity,
     tagLabel: String?,
+    onLocalEdit: () -> Unit,
+    onSimulateServerEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -150,7 +162,11 @@ private fun NoteRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(text = note.title, style = MaterialTheme.typography.bodyLarge)
             if (note.body.isNotBlank()) {
-                Text(text = note.body, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = note.body,
+                    modifier = Modifier.testTag("note_body_${note.title}"),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
             if (tagLabel != null) {
                 Text(
@@ -167,11 +183,23 @@ private fun NoteRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        TextButton(
-            onClick = onDelete,
-            modifier = Modifier.testTag("delete_note_${note.id}"),
-        ) {
-            Text("Delete")
+        Row {
+            if (note.syncState == SyncState.SYNCED) {
+                TextButton(
+                    onClick = onLocalEdit,
+                    modifier = Modifier.testTag("local_edit_${note.title}"),
+                ) { Text("Local edit") }
+                TextButton(
+                    onClick = onSimulateServerEdit,
+                    modifier = Modifier.testTag("server_edit_${note.id}"),
+                ) { Text("Server edit") }
+            }
+            TextButton(
+                onClick = onDelete,
+                modifier = Modifier.testTag("delete_note_${note.id}"),
+            ) {
+                Text("Delete")
+            }
         }
     }
 }
