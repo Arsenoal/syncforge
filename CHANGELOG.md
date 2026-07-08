@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Web platform spike (1.6-00)** — `:web-spike` (Kotlin/JS + Ktor + SQLDelight web-worker) and `:web-spike-wasm` (wasmJs transport PoC); `verifyWebSpike`; [WEB_SPIKE.md](docs/WEB_SPIKE.md) go/no-go (**primary: `js`**, Wasm persistence deferred to SQLDelight ≥2.1)
 - **Audit log export (1.5-06)** — `ConflictAuditExporter` + `SyncDebug.exportConflictAudit()` (CSV/JSON); export buttons on Conflicts tab and `SyncHealthDiagnosticScreen`; [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md)
 - **Rate limiting + backoff policies (1.5-05)** — `SyncBackoffPolicy` (exponential/linear/fixed + jitter) on `SyncConfig`; `minSyncInterval` client throttle; HTTP 429 → retryable `SERVER` with `Retry-After` parsing; `SyncError.retryAfterMillis`; [RATE_LIMITING.md](docs/RATE_LIMITING.md)
 - **Hierarchical sync recipes (1.5-04)** — [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md): parent/child patterns, orphan FK policies, server `VALIDATION` + client cleanup; explicit limitations in [BEST_PRACTICES.md](docs/BEST_PRACTICES.md)

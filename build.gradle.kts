@@ -45,6 +45,15 @@ tasks.register("publishAllToMavenLocal") {
     )
 }
 
+tasks.register("verifyWebSpike") {
+    group = "verification"
+    description = "1.6-00 web spike compile check (js + wasmJs); see docs/WEB_SPIKE.md."
+    dependsOn(
+        ":web-spike:compileKotlinJs",
+        ":web-spike-wasm:compileKotlinWasmJs",
+    )
+}
+
 tasks.register("verifyReleaseSignOff") {
     group = "verification"
     description =
@@ -85,6 +94,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge-bom:verifyBomConstraints",
         ":syncforge-catalog:verifyCatalogArtifacts",
         "verifyConsumerSmoke",
+        "verifyWebSpike",
     )
 }
 
