@@ -332,3 +332,112 @@ fun Project.resolveIosSimulatorDestination(): String {
     }
     return "platform=iOS Simulator,name=iPhone 15,OS=17.5"
 }
+
+fun Project.adbDevices(): List<String> {
+    val output = java.io.ByteArrayOutputStream()
+    exec {
+        commandLine("adb", "devices")
+        standardOutput = output
+        isIgnoreExitValue = true
+    }
+    return output.toString().lineSequence()
+        .drop(1)
+        .map { it.trim() }
+        .filter { it.endsWith("device") }
+        .map { it.substringBefore("\t").trim() }
+        .filter { it.isNotEmpty() }
+        .toList()
+}
+
+fun Project.installSampleApks(serial: String) {
+    val appApk = file("sample/build/outputs/apk/debug/sample-debug.apk")
+    val testApk = file("sample/build/outputs/apk/androidTest/debug/sample-debug-androidTest.apk")
+    require(appApk.exists()) { "Missing $appApk — run :sample:assembleDebug" }
+    require(testApk.exists()) { "Missing $testApk — run :sample:assembleDebugAndroidTest" }
+    exec { commandLine("adb", "-s", serial, "install", "-r", appApk.absolutePath) }
+    exec { commandLine("adb", "-s", serial, "install", "-r", testApk.absolutePath) }
+}
+
+fun Project.runMultiDeviceInstrument(
+    serial: String,
+    testMethod: String,
+    sessionId: String,
+    deviceRole: String,
+) {
+    val runner = "dev.syncforge.sample.test/androidx.test.runner.AndroidJUnitRunner"
+    logger.lifecycle("Multi-device E2E: $serial role=$deviceRole $testMethod")
+    exec {
+        commandLine(
+            "adb",
+            "-s",
+            serial,
+            "shell",
+            "am",
+            "instrument",
+            "-w",
+            "-e",
+            "class",
+            "dev.syncforge.sample.ui.MultiDeviceE2ETest#$testMethod",
+            "-e",
+            "sessionId",
+            sessionId,
+            "-e",
+            "deviceRole",
+            deviceRole,
+            runner,
+        )
+    }
+}
+
+tasks.register("androidMultiDeviceE2e") {
+    group = "verification"
+    description =
+        "Two-emulator concurrent-edit E2E (1.4-06). Requires 2 running emulators + mock-server."
+    dependsOn(
+        ":mock-server:installDist",
+        ":sample:assembleDebug",
+        ":sample:assembleDebugAndroidTest",
+    )
+
+    doLast {
+        val devices = adbDevices()
+        if (devices.size < 2) {
+            logger.lifecycle(
+                "Skipping androidMultiDeviceE2e: need 2 adb devices (found ${devices.size}). " +
+                    "Start two emulators locally, then re-run.",
+            )
+            return@doLast
+        }
+        val deviceA = devices[0]
+        val deviceB = devices[1]
+        val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
+        val logFile = File(System.getProperty("java.io.tmpdir"), "syncforge-mock-server-multi.log")
+        val process = startMockServer(port, logFile)
+        val sessionId = java.util.UUID.randomUUID().toString()
+        try {
+            waitForMockServerHealth(port, logFile)
+            resetMockServerState(port)
+            installSampleApks(deviceA)
+            installSampleApks(deviceB)
+
+            logger.lifecycle("=== Multi-device task gitLike conflict (session $sessionId) ===")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_createTaskAndSync", sessionId, "A")
+            runMultiDeviceInstrument(deviceB, "phase_deviceB_pullTask", sessionId, "B")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_localEdit", sessionId, "A")
+            runMultiDeviceInstrument(deviceB, "phase_deviceB_localEditAndSync", sessionId, "B")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_syncExpectConflict", sessionId, "A")
+
+            resetMockServerState(port)
+            val tagSessionId = java.util.UUID.randomUUID().toString()
+            logger.lifecycle("=== Multi-device tag LWW (session $tagSessionId) ===")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_createTagAndSync", tagSessionId, "A")
+            runMultiDeviceInstrument(deviceB, "phase_deviceB_pullTag", tagSessionId, "B")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_tagLocalEditPending", tagSessionId, "A")
+            runMultiDeviceInstrument(deviceB, "phase_deviceB_tagLocalEditNewerAndSync", tagSessionId, "B")
+            runMultiDeviceInstrument(deviceA, "phase_deviceA_tagSyncExpectRemoteWins", tagSessionId, "A")
+        } finally {
+            process.destroy()
+            process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
+        }
+    }
+}

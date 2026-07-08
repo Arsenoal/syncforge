@@ -44,16 +44,24 @@ abstract class SampleE2ETestBase {
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     protected fun prepareDevice() {
+        assumeMockServerHealthy()
+        resetMockServerAndApp()
+        waitForAppReady()
+    }
+
+    protected fun assumeMockServerHealthy() {
         Assume.assumeTrue(
             "Mock server must be running on host port 8080 (./gradlew androidE2e)",
             isMockServerHealthy(),
         )
-        resetE2eState()
-        waitForAppReady()
     }
 
-    private fun resetE2eState() {
+    protected fun resetMockServerAndApp() {
         resetMockServer()
+        resetAppOnly()
+    }
+
+    protected fun resetAppOnly() {
         val app = InstrumentationRegistry.getInstrumentation()
             .targetContext
             .applicationContext as SampleApplication
@@ -61,7 +69,7 @@ abstract class SampleE2ETestBase {
         composeTestRule.waitForIdle()
     }
 
-    private fun resetMockServer() {
+    protected fun resetMockServer() {
         val baseUrl = InstrumentationRegistry.getArguments().getString("mockServerUrl")
             ?: "http://10.0.2.2:8080"
         runCatching {
@@ -77,7 +85,7 @@ abstract class SampleE2ETestBase {
         }
     }
 
-    private fun waitForAppReady() {
+    protected fun waitForAppReady() {
         composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule.onAllNodesWithTag("sync_button").fetchSemanticsNodes().isNotEmpty() &&
                 composeTestRule.onAllNodesWithText("New task").fetchSemanticsNodes().isNotEmpty()

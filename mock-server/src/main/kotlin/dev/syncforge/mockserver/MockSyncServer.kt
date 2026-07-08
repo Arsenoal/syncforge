@@ -9,6 +9,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 
@@ -19,6 +20,7 @@ fun main() {
 
 fun Application.mockSyncModule() {
     val store = InMemorySyncStore()
+    val e2eSessions = E2eSessionStore()
     installSyncServerPlugins()
 
     routing {
@@ -30,7 +32,31 @@ fun Application.mockSyncModule() {
          */
         post("/dev/reset") {
             store.clear()
+            e2eSessions.resetAll()
             call.respond(mapOf("reset" to true))
+        }
+
+        post("/dev/e2e/session") {
+            val request = call.receive<E2eSessionCreateRequest>()
+            e2eSessions.create(request.sessionId)
+            call.respond(E2eSessionCreateResponse(created = true))
+        }
+
+        post("/dev/e2e/session/{sessionId}") {
+            val sessionId = call.parameters["sessionId"]
+                ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "sessionId required"))
+            val request = call.receive<E2eSessionPutRequest>()
+            e2eSessions.put(sessionId, request.key, request.value)
+            call.respond(E2eSessionPutResponse(stored = true))
+        }
+
+        get("/dev/e2e/session/{sessionId}") {
+            val sessionId = call.parameters["sessionId"]
+            if (sessionId == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "sessionId required"))
+            } else {
+                call.respond(E2eSessionSnapshotResponse(values = e2eSessions.snapshot(sessionId)))
+            }
         }
 
         post("/dev/simulate-edit") {
