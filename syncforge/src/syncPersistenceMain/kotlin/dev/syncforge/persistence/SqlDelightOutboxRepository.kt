@@ -1,5 +1,8 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOne
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
@@ -47,12 +50,12 @@ internal class SqlDelightOutboxRepository(
 
     override suspend fun countAwaitingPush(): Int =
         withContext(dispatcher) {
-            queries.countAwaiting(maxRetries.toLong()).executeAsOne().toInt()
+            queries.countAwaiting(maxRetries.toLong()).awaitAsOne().toInt()
         }
 
     override suspend fun countPermanentlyFailed(maxRetries: Int): Int =
         withContext(dispatcher) {
-            queries.countPermanentlyFailed(maxRetries.toLong()).executeAsOne().toInt()
+            queries.countPermanentlyFailed(maxRetries.toLong()).awaitAsOne().toInt()
         }
 
     override suspend fun enqueue(
@@ -70,8 +73,8 @@ internal class SqlDelightOutboxRepository(
                 localVersion = change.localVersion,
                 createdAtMillis = change.updatedAtMillis,
             )
-            val id = queries.lastInsertRowId().executeAsOne()
-            queries.findById(id).executeAsOne().toModel()
+            val id = queries.lastInsertRowId().awaitAsOne()
+            queries.findById(id).awaitAsOne().toModel()
         }
     }
 
@@ -81,7 +84,7 @@ internal class SqlDelightOutboxRepository(
                 limit = limit.toLong(),
                 nowMillis = nowMillis,
                 maxRetries = maxRetries.toLong(),
-            ).executeAsList().map { it.toModel() }
+            ).awaitAsList().map { it.toModel() }
         }
 
     override suspend fun markAcknowledged(ids: List<Long>) {
@@ -94,7 +97,7 @@ internal class SqlDelightOutboxRepository(
     override suspend fun findForEntity(entityType: String, entityId: String): List<OutboxEntry> =
         withContext(dispatcher) {
             queries.findByEntity(entityType = entityType, entityId = entityId)
-                .executeAsList()
+                .awaitAsList()
                 .map { it.toModel() }
         }
 
@@ -112,7 +115,7 @@ internal class SqlDelightOutboxRepository(
         retryAtMillis: Long?,
     ) {
         withContext(dispatcher) {
-            val current = queries.findById(id).executeAsOneOrNull() ?: return@withContext
+            val current = queries.findById(id).awaitAsOneOrNull() ?: return@withContext
             val newRetryCount = current.retryCount + 1
             val isPermanent = !retryable || newRetryCount >= maxRetries
             queries.updateOutboxEntry(
@@ -140,7 +143,7 @@ internal class SqlDelightOutboxRepository(
             queries.earliestFutureRetryAtMillis(
                 nowMillis = currentTimeMillis(),
                 maxRetries = maxRetries.toLong(),
-            ).executeAsOneOrNull()?.MIN
+            ).awaitAsOneOrNull()?.MIN
         }
 
     override suspend fun clear() {

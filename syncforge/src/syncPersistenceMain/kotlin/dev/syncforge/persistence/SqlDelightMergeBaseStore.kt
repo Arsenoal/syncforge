@@ -1,5 +1,6 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import dev.syncforge.conflict.MergeBaseSnapshot
 import dev.syncforge.conflict.MergeBaseStore
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ internal class SqlDelightMergeBaseStore(
     override suspend fun get(entityType: String, entityId: String): MergeBaseSnapshot? =
         withContext(dispatcher) {
             queries.findMergeBase(entityType = entityType, entityId = entityId)
-                .executeAsOneOrNull()
+                .awaitAsOneOrNull()
                 ?.toSnapshot()
         }
 

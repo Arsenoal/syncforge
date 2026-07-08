@@ -25,6 +25,10 @@ kotlin {
         }
     }
 
+    js(IR) {
+        browser()
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -40,9 +44,25 @@ kotlin {
     }
 
     sourceSets {
+        val webMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        jsMain {
+            dependsOn(webMain)
+        }
+
         commonMain.dependencies {
             api(project(":syncforge-annotations"))
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.sqldelight.async.extensions)
+        }
+        jsMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.sqldelight.web.worker.driver)
+            implementation(libs.sqldelight.async.extensions)
+            implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+            implementation(devNpm("@cashapp/sqldelight-sqljs-worker", "2.0.2"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -86,6 +106,7 @@ sqldelight {
         create("SyncForgePersistenceDatabase") {
             packageName.set("dev.syncforge.persistence")
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            generateAsync.set(true)
         }
     }
 }

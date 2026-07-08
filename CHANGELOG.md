@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **KMP `js` + `webMain` (1.6-01)** — Kotlin/JS browser targets on `:syncforge`, `:syncforge-persistence`, `:syncforge-network-ktor`, `:syncforge-annotations`; SQLDelight `generateAsync` + web-worker driver; experimental `SyncForge.web { }` DSL stub; `verifyWebCompile` in `verifyReleaseSignOff`
 - **Web platform spike (1.6-00)** — `:web-spike` (Kotlin/JS + Ktor + SQLDelight web-worker) and `:web-spike-wasm` (wasmJs transport PoC); `verifyWebSpike`; [WEB_SPIKE.md](docs/WEB_SPIKE.md) go/no-go (**primary: `js`**, Wasm persistence deferred to SQLDelight ≥2.1)
 - **Audit log export (1.5-06)** — `ConflictAuditExporter` + `SyncDebug.exportConflictAudit()` (CSV/JSON); export buttons on Conflicts tab and `SyncHealthDiagnosticScreen`; [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md)
 - **Rate limiting + backoff policies (1.5-05)** — `SyncBackoffPolicy` (exponential/linear/fixed + jitter) on `SyncConfig`; `minSyncInterval` client throttle; HTTP 429 → retryable `SERVER` with `Retry-After` parsing; `SyncError.retryAfterMillis`; [RATE_LIMITING.md](docs/RATE_LIMITING.md)

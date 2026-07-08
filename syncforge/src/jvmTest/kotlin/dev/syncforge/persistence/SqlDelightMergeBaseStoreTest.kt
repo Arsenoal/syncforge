@@ -1,6 +1,8 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitCreate
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import kotlinx.coroutines.runBlocking
 import dev.syncforge.conflict.MergeBaseSnapshot
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -77,7 +79,7 @@ class SqlDelightMergeBaseStoreTest {
 
     private fun createStore(): dev.syncforge.conflict.MergeBaseStore {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         return SyncForgePersistence.create(driver).mergeBaseStore()
     }
 }

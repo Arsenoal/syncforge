@@ -52,6 +52,10 @@ kotlin {
         }
     }
 
+    js(IR) {
+        browser()
+    }
+
     applyDefaultHierarchyTemplate()
 
     sourceSets.all {
@@ -67,6 +71,11 @@ kotlin {
             dependsOn(commonMain.get())
         }
 
+        val webMain by creating {
+            dependsOn(commonMain.get())
+            dependsOn(syncPersistenceMain)
+        }
+
         androidMain {
             dependsOn(syncPersistenceMain)
             dependsOn(composeMain)
@@ -78,6 +87,10 @@ kotlin {
         jvmMain {
             dependsOn(syncPersistenceMain)
             dependsOn(composeMain)
+        }
+        jsMain {
+            dependsOn(webMain)
+            dependsOn(syncPersistenceMain)
         }
 
         composeMain.dependencies {
@@ -98,6 +111,11 @@ kotlin {
         syncPersistenceMain.dependencies {
             implementation(project(":syncforge-persistence"))
             implementation(libs.sqldelight.coroutines)
+            implementation(libs.sqldelight.async.extensions)
+        }
+        jsMain.dependencies {
+            implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.ktor.client.js)
         }
         commonTest.dependencies {
             implementation(project(":syncforge-store-inmemory"))

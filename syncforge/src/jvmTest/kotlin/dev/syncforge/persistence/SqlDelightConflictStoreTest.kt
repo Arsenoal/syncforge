@@ -1,6 +1,8 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitCreate
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import kotlinx.coroutines.runBlocking
 import dev.syncforge.conflict.ConflictResolutionKind
 import dev.syncforge.conflict.ConflictStatus
 import kotlinx.coroutines.test.runTest
@@ -13,7 +15,7 @@ class SqlDelightConflictStoreTest {
     @Test
     fun recordDeferred_persistsOpenConflict() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val store = SyncForgePersistence.create(driver).conflictStore()
 
         val id = store.recordDeferred(
@@ -38,7 +40,7 @@ class SqlDelightConflictStoreTest {
     @Test
     fun markUserResolved_closesConflict() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val store = SyncForgePersistence.create(driver).conflictStore()
 
         val id = store.recordDeferred(

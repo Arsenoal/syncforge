@@ -1,5 +1,7 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitAsOne
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import dev.syncforge.conflict.ConflictRecord
@@ -35,7 +37,7 @@ internal class SqlDelightConflictStore(
 
     override suspend fun countOpen(): Int =
         withContext(dispatcher) {
-            queries.countOpen(openStatus = ConflictStatus.OPEN.name).executeAsOne().toInt()
+            queries.countOpen(openStatus = ConflictStatus.OPEN.name).awaitAsOne().toInt()
         }
 
     override suspend fun recordDeferred(
@@ -61,7 +63,7 @@ internal class SqlDelightConflictStore(
                 status = ConflictStatus.OPEN.name,
                 resolutionKind = null,
             )
-            queries.lastInsertRowId().executeAsOne()
+            queries.lastInsertRowId().awaitAsOne()
         }
     }
 
@@ -96,7 +98,7 @@ internal class SqlDelightConflictStore(
                 entityType = entityType,
                 entityId = entityId,
                 openStatus = ConflictStatus.OPEN.name,
-            ).executeAsOneOrNull()?.toRecord()
+            ).awaitAsOneOrNull()?.toRecord()
         }
 
     override suspend fun markUserResolved(id: Long, resolutionKind: ConflictResolutionKind) {

@@ -26,6 +26,10 @@ kotlin {
         publishLibraryVariants("release")
     }
 
+    js(IR) {
+        browser()
+    }
+
     listOf(
         iosX64(),
         iosArm64(),

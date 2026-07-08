@@ -24,10 +24,11 @@ fun createSyncForgePersistence(
     databaseName: String = DEFAULT_DATABASE_NAME,
 ): SyncForgePersistence {
     val driver = AndroidSqliteDriver(
-        schema = SyncForgePersistenceDatabase.Schema,
+        schema = SyncForgePersistenceNoOpSyncSchema,
         context = context.applicationContext,
         name = databaseName,
     )
+    bootstrapSyncForgePersistenceSchema(driver)
     return SyncForgePersistence.create(driver)
 }
 

@@ -25,6 +25,10 @@ kotlin {
         }
     }
 
+    js(IR) {
+        browser()
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -56,6 +60,9 @@ kotlin {
         }
         appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+        jsMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
         androidUnitTest.dependencies {
             implementation(libs.junit)

@@ -1,6 +1,8 @@
 package dev.syncforge.persistence
 
+import app.cash.sqldelight.async.coroutines.awaitCreate
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import kotlinx.coroutines.runBlocking
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.Change
 import dev.syncforge.model.ChangeType
@@ -15,7 +17,7 @@ class SqlDelightOutboxRepositoryTest {
     @Test
     fun enqueue_persistsAndPeekReturnsEntry() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val repository = SyncForgePersistence.create(driver).outboxRepository(maxRetries = 3)
 
         val task = TestEntity(id = "task-1", localVersion = 1, updatedAtMillis = 1_000L)
@@ -37,7 +39,7 @@ class SqlDelightOutboxRepositoryTest {
     @Test
     fun markAcknowledged_removesFromPeek() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val repository = SyncForgePersistence.create(driver).outboxRepository()
 
         val task = TestEntity(id = "task-2", localVersion = 2, updatedAtMillis = 2_000L)
@@ -54,7 +56,7 @@ class SqlDelightOutboxRepositoryTest {
     @Test
     fun removeForEntity_deletesMatchingRowsOnly() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val repository = SyncForgePersistence.create(driver).outboxRepository()
 
         val taskOne = TestEntity(id = "task-1", localVersion = 1, updatedAtMillis = 1_000L)
@@ -71,7 +73,7 @@ class SqlDelightOutboxRepositoryTest {
     @Test
     fun markFailed_incrementsRetryCount() = runTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        SyncForgePersistenceDatabase.Schema.create(driver)
+        runBlocking { SyncForgePersistenceDatabase.Schema.awaitCreate(driver) }
         val repository = SyncForgePersistence.create(driver).outboxRepository(maxRetries = 3)
 
         val task = TestEntity(id = "task-3", localVersion = 1, updatedAtMillis = 1_000L)

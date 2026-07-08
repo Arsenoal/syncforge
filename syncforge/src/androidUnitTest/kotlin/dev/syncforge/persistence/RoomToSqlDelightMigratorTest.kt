@@ -2,6 +2,8 @@ package dev.syncforge.persistence
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOne
 import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.ConflictStatus
 import kotlinx.coroutines.test.runTest
@@ -54,11 +56,11 @@ class RoomToSqlDelightMigratorTest {
         assertTrue(result.roomDatabaseDeleted)
         assertFalse(context.databaseList().contains(RoomToSqlDelightMigrator.ROOM_DATABASE_NAME))
 
-        val migratedOutbox = persistence.database.outboxQueries.observeAll().executeAsList()
+        val migratedOutbox = persistence.database.outboxQueries.observeAll().awaitAsList()
         assertEquals(1, migratedOutbox.size)
         assertEquals("entity-0", migratedOutbox.single().entityId)
 
-        val migratedConflicts = persistence.database.conflictsQueries.observeAll().executeAsList()
+        val migratedConflicts = persistence.database.conflictsQueries.observeAll().awaitAsList()
         assertEquals(1, migratedConflicts.size)
         assertEquals("conflict-0", migratedConflicts.single().entityId)
         assertEquals(ConflictStatus.OPEN.name, migratedConflicts.single().status)
@@ -92,11 +94,11 @@ class RoomToSqlDelightMigratorTest {
         assertEquals(outboxCount, result.outboxRows)
         assertEquals(
             outboxCount,
-            persistence.database.outboxQueries.observeAll().executeAsList().size,
+            persistence.database.outboxQueries.observeAll().awaitAsList().size,
         )
         assertEquals(
             outboxCount.toLong(),
-            persistence.database.outboxQueries.maxOutboxId().executeAsOne().MAX,
+            persistence.database.outboxQueries.maxOutboxId().awaitAsOne().MAX,
         )
     }
 
@@ -126,11 +128,11 @@ class RoomToSqlDelightMigratorTest {
         assertNull(recovered.errorMessage)
         assertEquals(
             outboxCount,
-            persistence.database.outboxQueries.observeAll().executeAsList().size,
+            persistence.database.outboxQueries.observeAll().awaitAsList().size,
         )
         assertEquals(
             2,
-            persistence.database.conflictsQueries.observeAll().executeAsList().size,
+            persistence.database.conflictsQueries.observeAll().awaitAsList().size,
         )
     }
 

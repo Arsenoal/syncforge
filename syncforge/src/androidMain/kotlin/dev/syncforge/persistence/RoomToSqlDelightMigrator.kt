@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import dev.syncforge.conflict.ConflictEntryEntity
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import dev.syncforge.outbox.OutboxEntryEntity
 import dev.syncforge.outbox.SyncForgeDatabaseFactory
 import kotlinx.coroutines.flow.first
@@ -123,14 +124,14 @@ object RoomToSqlDelightMigrator {
             log("failed: ${t.message} — will retry on next launch", t)
             Result(
                 status = Status.FAILED,
-                outboxRows = persistence.database.outboxQueries.observeAll().executeAsList().size,
-                conflictRows = persistence.database.conflictsQueries.observeAll().executeAsList().size,
+                outboxRows = persistence.database.outboxQueries.observeAll().awaitAsList().size,
+                conflictRows = persistence.database.conflictsQueries.observeAll().awaitAsList().size,
                 errorMessage = t.message,
             )
         }
     }
 
-    private fun migrateOutboxBatched(
+    private suspend fun migrateOutboxBatched(
         persistence: SyncForgePersistence,
         roomOutbox: List<OutboxEntryEntity>,
     ) {
@@ -158,7 +159,7 @@ object RoomToSqlDelightMigrator {
         }
     }
 
-    private fun migrateConflictsBatched(
+    private suspend fun migrateConflictsBatched(
         persistence: SyncForgePersistence,
         roomConflicts: List<ConflictEntryEntity>,
     ) {

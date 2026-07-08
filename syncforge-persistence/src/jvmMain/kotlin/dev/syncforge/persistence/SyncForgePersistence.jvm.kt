@@ -8,6 +8,6 @@ import java.io.File
 actual fun createDefaultSyncForgePersistence(databaseName: String): SyncForgePersistence {
     val dbFile = File(System.getProperty("java.io.tmpdir"), databaseName)
     val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-    SyncForgePersistenceDatabase.Schema.create(driver)
+    bootstrapSyncForgePersistenceSchema(driver)
     return SyncForgePersistence.create(driver)
 }

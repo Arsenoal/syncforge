@@ -54,6 +54,17 @@ tasks.register("verifyWebSpike") {
     )
 }
 
+tasks.register("verifyWebCompile") {
+    group = "verification"
+    description = "1.6-01 web target compile check (:syncforge + persistence + network-ktor js)."
+    dependsOn(
+        ":syncforge-annotations:compileKotlinJs",
+        ":syncforge-persistence:compileKotlinJs",
+        ":syncforge:compileKotlinJs",
+        ":syncforge-network-ktor:compileKotlinJs",
+    )
+}
+
 tasks.register("verifyReleaseSignOff") {
     group = "verification"
     description =
@@ -95,6 +106,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge-catalog:verifyCatalogArtifacts",
         "verifyConsumerSmoke",
         "verifyWebSpike",
+        "verifyWebCompile",
     )
 }
 

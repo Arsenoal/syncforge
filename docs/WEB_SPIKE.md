@@ -12,7 +12,8 @@ Go/no-go for SyncForge browser support. Spike modules **do not ship in the BOM**
 Verify locally:
 
 ```bash
-./gradlew verifyWebSpike
+./gradlew verifyWebSpike    # spike modules (1.6-00)
+./gradlew verifyWebCompile  # :syncforge + persistence + network-ktor js (1.6-01)
 ```
 
 ## Toolchain (spike)
@@ -32,7 +33,7 @@ Verify locally:
 |------|--------|-------|
 | **Ktor HTTP** | ✅ Compiles | `ktor-client-js` + ContentNegotiation + kotlinx.serialization |
 | **SQLDelight persistence** | ✅ Compiles | `web-worker-driver` (replaces removed `sqljs-driver`); `generateAsync = true`; `@cashapp/sqldelight-sqljs-worker` npm + webpack worker URL |
-| **Shared sync code** | ⚠️ Not wired | Spike uses isolated schema; wiring `:syncforge` + `:syncforge-persistence` is 1.6-01 scope |
+| **Shared sync code** | ✅ Compiles | `:syncforge` + `:syncforge-persistence` + `:syncforge-network-ktor` `js` targets wired (1.6-01); `verifyWebCompile` |
 | **Compose Web** | ⏸️ Deferred | Not in spike; evaluate in 1.6-04 (`:sample-web`) |
 
 **Implications for 1.6-02 `SyncForge.web { }`:**
@@ -62,7 +63,7 @@ Verify locally:
 | **1.6-01 primary target** | **`js` (Kotlin/JS IR)** |
 | **1.6-01 secondary** | Document `wasmJs` transport path; full persistence after SQLDelight ≥2.1 evaluation |
 | **BOM / publish** | No web artifacts until 1.6-01 acceptance |
-| **CI** | `verifyWebSpike` gates compile; browser runtime E2E deferred to 1.6-06 |
+| **CI** | `verifyWebSpike` + `verifyWebCompile` gate compile; browser runtime E2E deferred to 1.6-06 |
 
 ## Risks for 1.6-01+
 
@@ -76,7 +77,7 @@ Verify locally:
 
 ## Next jobs
 
-1. **1.6-01** — `js` + `webMain` on `:syncforge` / `:syncforge-persistence` (experimental API)
+1. ~~**1.6-01**~~ — `js` + `webMain` on `:syncforge` / `:syncforge-persistence` (experimental API) ✅
 2. **1.6-02** — `SyncForge.web { }` DSL (persistence + cursor + transport)
 3. **1.6-03** — `createKtorSyncTransport` browser factory (extract from spike)
 4. **1.6-04** — `:sample-web` push/pull against `:mock-server`

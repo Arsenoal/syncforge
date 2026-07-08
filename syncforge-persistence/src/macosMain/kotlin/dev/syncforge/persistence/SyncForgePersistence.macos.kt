@@ -20,8 +20,9 @@ actual fun createDefaultSyncForgePersistence(databaseName: String): SyncForgePer
 
     val dbPath = supportDirectory.path + "/$databaseName"
     val driver = NativeSqliteDriver(
-        schema = SyncForgePersistenceDatabase.Schema,
+        schema = SyncForgePersistenceNoOpSyncSchema,
         name = dbPath,
     )
+    bootstrapSyncForgePersistenceSchema(driver)
     return SyncForgePersistence.create(driver)
 }
