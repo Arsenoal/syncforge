@@ -552,13 +552,27 @@ Merge base storage: persist last-synced entity JSON per `(entityType, entityId)`
 
 ### 1.2.0 acceptance criteria
 
-- [ ] `CrdtMergeStrategy` implements `ConflictStrategy`; wired through `ConflictPullApplier`
-- [ ] `gitLike { }` + merge-base store: three-way auto-merge unit tests; unmergeable fields fall back to `deferToUser` UI
-- [ ] `ConflictStrategyKind` catalog documented; app can assign a kind per `entityType` (static + runtime)
-- [ ] Unit tests per CRDT primitive + integration test for concurrent tag merge on pull
-- [ ] `crdt { }` and `gitLike { }` marked `@ExperimentalSyncForgeApi` until 2.0 graduation
-- [ ] Delete-conflict E2E still passes; notes accept-remote + tasks merge/gitLike covered in sample or RECIPES
-- [ ] Outbox reconciled after `AcceptRemote` / documented `enqueueChange` after `Custom` merge
+- [x] `CrdtMergeStrategy` implements `ConflictStrategy`; wired through `ConflictPullApplier`
+- [x] `gitLike { }` + merge-base store: three-way auto-merge unit tests; unmergeable fields fall back to `deferToUser` UI
+- [x] `ConflictStrategyKind` catalog documented; app can assign a kind per `entityType` (static + runtime)
+- [x] Unit tests per CRDT primitive + integration test for concurrent tag merge on pull
+- [x] `crdt { }` and `gitLike { }` marked `@ExperimentalSyncForgeApi` until 2.0 graduation
+- [x] Delete-conflict E2E still passes; notes accept-remote + tasks merge/gitLike covered in sample or RECIPES
+- [x] Outbox reconciled after `AcceptRemote` / documented `enqueueChange` after `Custom` merge
+
+**Audit (2026-07-08)** — evidence for sign-off:
+
+| Criterion | Evidence |
+|-----------|----------|
+| CRDT + pull applier | [`CrdtMergeStrategy`](../../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/CrdtMergeStrategy.kt); [`CrdtMergeStrategyTest.pullApplier_mergesConcurrentTagsOnConflict`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/CrdtMergeStrategyTest.kt) |
+| gitLike + merge base + defer UI | [`GitLikeMergeStrategyTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/GitLikeMergeStrategyTest.kt), [`ConflictStrategyPullApplierE2ETest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/ConflictStrategyPullApplierE2ETest.kt), [`MergeBasePullApplierTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/MergeBasePullApplierTest.kt); E2E defer/resolve in [`ConflictStrategyE2ETest`](../../sample/src/androidTest/kotlin/dev/syncforge/sample/ui/ConflictStrategyE2ETest.kt) |
+| Strategy catalog static + runtime | [`ConflictStrategyKind`](../../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictStrategyKind.kt), [`conflictPolicyFromKinds`](../../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictPolicy.kt), [`UpdateConflictPolicyTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/UpdateConflictPolicyTest.kt); docs [CONFLICT_RESOLUTION.md v2](CONFLICT_RESOLUTION.md) |
+| CRDT primitive + tag merge tests | [`LwwRegisterTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/crdt/LwwRegisterTest.kt), [`OrSetTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/crdt/OrSetTest.kt), [`GCounterTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/crdt/GCounterTest.kt); concurrent tag union via `pullApplier_mergesConcurrentTagsOnConflict` |
+| Experimental API markers | `@ExperimentalSyncForgeApi` on [`gitLike`](../../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictPolicy.kt) / [`crdt`](../../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/ConflictPolicy.kt) DSL |
+| E2E delete + notes + tasks | [`SampleScenariosE2ETest.tasks_deleteConflict_resolveAcceptRemote_removesTask`](../../sample/src/androidTest/kotlin/dev/syncforge/sample/ui/SampleScenariosE2ETest.kt); notes/tasks/tag matrix in [`ConflictStrategyE2ETest`](../../sample/src/androidTest/kotlin/dev/syncforge/sample/ui/ConflictStrategyE2ETest.kt); [`RECIPES.md` `:sample` conflict matrix](RECIPES.md#sample-conflict-matrix-12); CI `androidE2e` green (28 tests) |
+| Outbox reconcile | [`OutboxReconcileTest`](../../syncforge/src/commonTest/kotlin/dev/syncforge/conflict/OutboxReconcileTest.kt) (`AcceptRemote`, `Custom` merged); trailing push in [`SyncEngine.runFullSync`](../../syncforge/src/commonMain/kotlin/dev/syncforge/sync/SyncEngine.kt); [CONFLICT_RESOLUTION.md → Outbox reconcile](CONFLICT_RESOLUTION.md#full-sync-cycle-localversion-and-outbox-reconcile) |
+
+**1.2 feature jobs (same audit):** 1.2-01 … 1.2-09 and 1.2-11 ✅ shipped; 1.2-05 ✅ (`ConflictStrategyE2ETest` + CI); 1.2-06 ✅ (CONFLICT_RESOLUTION v2). **1.2-10** partial — `updateConflictPolicy()` + `conflictPolicyFromKinds()` API/tests land; no `:sample` settings screen wiring yet (P1, not a 1.2.0 acceptance gate).
 
 ---
 
@@ -969,5 +983,5 @@ When a version ships, update [CHANGELOG.md](../CHANGELOG.md), mark jobs done her
 | [ROADMAP.md](ROADMAP.md)                                                      | Pre-1.0 phases and current status         |
 | [MODULES.md](MODULES.md)                                                      | API stability by area                     |
 | [REST_API.md](REST_API.md)                                                    | Backend contract + versioning             |
-| [CONFLICT_RESOLUTION.md](CONFLICT_RESOLUTION.md)                              | Strategy guide (CRDT section planned 1.2) |
+| [CONFLICT_RESOLUTION.md](CONFLICT_RESOLUTION.md)                              | Strategy guide v2 (1.2 catalog + `:sample` matrix) |
 | [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md)                                          | Maven Central publish + verify workflow   |
