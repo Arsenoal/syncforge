@@ -7,7 +7,8 @@ building a SyncForge client.
 | Module | Role |
 |--------|------|
 | `:syncforge-server` | Shared routes, DTO wiring, and `SyncStore` contract |
-| `:backend-starter` | Runnable reference app (this module) |
+| `:backend-starter` | Runnable Ktor reference app (this module) |
+| `:backend-starter-spring` | Spring Boot reference app with optional JDBC store |
 | `:mock-server` | Same contract **plus** `/dev/*` routes for conflict demos |
 
 ## Run

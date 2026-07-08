@@ -99,8 +99,9 @@ Companion modules:
 | `:syncforge-annotations` | `@SyncForgeEntity`, `@SyncForgeDao`, `@ExperimentalSyncForgeApi` |
 | `:syncforge-ksp` | KSP processor — generates handlers + `SyncForgeHandlers` registry |
 | `:syncforge-persistence` | SQLDelight schemas + platform drivers (`SyncForgePersistence.create()`) |
-| `:syncforge-server` | Shared Ktor sync routes and `SyncStore` contract |
-| `:backend-starter` | Minimal runnable reference backend (contract routes only) |
+| `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
+| `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
+| `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |
 | `:mock-server` | JVM Ktor dev server — contract + `/dev/*` conflict demos |
 | `:sample` | Android Compose demo app |
 | `:sample-ios-shared` | iOS sample framework (`IosSampleController`; SKIE-enabled) |
@@ -746,8 +747,8 @@ Copy-paste wiring for `:sample` (tasks, notes, tags): [RECIPES.md → DI](RECIPE
 
 ### `:syncforge-server`
 
-JVM library: `SyncStore`, `InMemorySyncStore`, `syncRoutes()`, and Ktor plugins shared by
-`:backend-starter` and `:mock-server`. Depends on `:syncforge` JVM for REST DTOs.
+JVM library: `SyncStore`, `InMemorySyncStore`, `JdbcSyncStore`, `SyncHandlers`, `syncRoutes()`, and Ktor plugins shared by
+`:backend-starter`, `:backend-starter-spring`, and `:mock-server`. Depends on `:syncforge` JVM for REST DTOs.
 
 ```bash
 ./gradlew :syncforge-server:test
@@ -759,9 +760,20 @@ JVM library: `SyncStore`, `InMemorySyncStore`, `syncRoutes()`, and Ktor plugins 
 ./gradlew :backend-starter:run
 ```
 
-Minimal reference backend on port `8080` (override with `PORT`). Implements
+Minimal Ktor reference backend on port `8080` (override with `PORT`). Implements
 [REST_API.md](REST_API.md) contract routes only — copy and replace `InMemorySyncStore` for
 production. See [backend-starter/README.md](../backend-starter/README.md).
+
+### `:backend-starter-spring`
+
+```bash
+./gradlew :backend-starter-spring:bootRun
+```
+
+Spring Boot 3 reference backend with the same contract and auth flow. Default in-memory store;
+enable JDBC persistence with `--spring.profiles.active=jdbc` and Postgres via
+`backend-starter-spring/docker-compose.yml`. See
+[backend-starter-spring/README.md](../backend-starter-spring/README.md).
 
 ### `:mock-server`
 

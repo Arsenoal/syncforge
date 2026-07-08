@@ -1,0 +1,26 @@
+server:
+  port: ${PORT:8080}
+
+syncforge:
+  store:
+    type: in-memory
+
+spring:
+  application:
+    name: syncforge-backend-starter-spring
+
+---
+spring:
+  config:
+    activate:
+      on-profile: jdbc
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:syncforge}
+    username: ${DB_USER:syncforge}
+    password: ${DB_PASSWORD:syncforge}
+  flyway:
+    enabled: true
+
+syncforge:
+  store:
+    type: jdbc

@@ -10,20 +10,12 @@ import io.ktor.server.routing.post
 fun Route.syncRoutes(store: SyncStore, includeHealth: Boolean = true) {
     post("/sync/push") {
         val request = call.receive<PushRequest>()
-        val response = store.push(request.entries, System.currentTimeMillis())
-        call.respond(response)
+        call.respond(SyncHandlers.push(store, request))
     }
 
     get("/sync/pull") {
         val params = parsePullQueryParams(call.request.queryParameters)
-        val response = store.pull(
-            sinceTimestampMillis = params.since,
-            entityTypes = params.types,
-            nowMillis = System.currentTimeMillis(),
-            limit = params.limit,
-            pageCursor = params.cursor,
-        )
-        call.respond(response)
+        call.respond(SyncHandlers.pull(store, params))
     }
 
     if (includeHealth) {
@@ -40,15 +32,27 @@ data class PullQueryParams(
     val cursor: String? = null,
 )
 
-fun parsePullQueryParams(query: io.ktor.http.Parameters): PullQueryParams {
-    val since = query["since"]?.toLongOrNull() ?: 0L
-    val types = query["types"]
+fun parsePullQueryParams(query: io.ktor.http.Parameters): PullQueryParams =
+    parsePullQueryParams(
+        since = query["since"],
+        types = query["types"],
+        limit = query["limit"],
+        cursor = query["cursor"],
+    )
+
+fun parsePullQueryParams(
+    since: String?,
+    types: String?,
+    limit: String?,
+    cursor: String?,
+): PullQueryParams {
+    val sinceMillis = since?.toLongOrNull() ?: 0L
+    val entityTypes = types
         ?.split(",")
         ?.map { it.trim() }
         ?.filter { it.isNotEmpty() }
         ?.toSet()
         ?: emptySet()
-    val limit = query["limit"]?.toIntOrNull() ?: Int.MAX_VALUE
-    val cursor = query["cursor"]
-    return PullQueryParams(since = since, types = types, limit = limit, cursor = cursor)
+    val pageLimit = limit?.toIntOrNull() ?: Int.MAX_VALUE
+    return PullQueryParams(since = sinceMillis, types = entityTypes, limit = pageLimit, cursor = cursor)
 }

@@ -474,7 +474,8 @@ If you don't have a backend yet, use the included reference server:
 
 | Goal | Module | Command |
 |------|--------|---------|
-| Minimal production starter | `:backend-starter` | `./gradlew :backend-starter:run` |
+| Minimal production starter (Ktor) | `:backend-starter` | `./gradlew :backend-starter:run` |
+| Minimal production starter (Spring) | `:backend-starter-spring` | `./gradlew :backend-starter-spring:bootRun` |
 | Conflict demo (`/dev/simulate-edit`) | `:mock-server` | `./gradlew :mock-server:run` |
 
 ```bash

@@ -36,6 +36,11 @@ logback = "1.5.16"
 sqldelight = "2.0.2"
 skie = "0.10.4"
 dokka = "2.2.0"
+springBoot = "3.4.5"
+springDependencyManagement = "1.1.7"
+flyway = "11.7.2"
+postgresql = "42.7.5"
+h2 = "2.3.232"
 
 
 [libraries]
@@ -106,6 +111,15 @@ sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", 
 
 skie-configuration-annotations = { module = "co.touchlab.skie:configuration-annotations", version.ref = "skie" }
 
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springBoot" }
+spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc", version.ref = "springBoot" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -120,3 +134,5 @@ skie = { id = "co.touchlab.skie", version.ref = "skie" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 dokkaJavadoc = { id = "org.jetbrains.dokka-javadoc", version.ref = "dokka" }
+springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
+springDependencyManagement = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }

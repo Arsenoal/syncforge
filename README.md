@@ -338,7 +338,7 @@ val syncManager = SyncForge.ios {
 ### Backend (both platforms)
 
 Implement `POST /sync/push` and `GET /sync/pull` per [REST API](docs/REST_API.md). Runnable
-starters: `./gradlew :mock-server:run` · `./gradlew :backend-starter:run`
+starters: `./gradlew :mock-server:run` · `./gradlew :backend-starter:run` · `./gradlew :backend-starter-spring:bootRun`
 
 ---
 

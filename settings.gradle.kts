@@ -31,6 +31,7 @@ include(
     ":syncforge-bom",
     ":syncforge-server",
     ":backend-starter",
+    ":backend-starter-spring",
     ":mock-server",
     ":sample",
     ":sample-ios-shared",

@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.skie) apply false
     alias(libs.plugins.composeMultiplatform) apply false
+    alias(libs.plugins.springBoot) apply false
+    alias(libs.plugins.springDependencyManagement) apply false
 }
 
 apply(from = "gradle/publish-convention.gradle.kts")
@@ -58,6 +60,7 @@ tasks.register("verifyReleaseSignOff") {
         ":syncforge-annotations:compileKotlinJvm",
         ":syncforge-ksp:compileKotlin",
         ":backend-starter:compileKotlin",
+        ":backend-starter-spring:test",
         ":mock-server:compileKotlin",
         ":sample-desktop:compileKotlin",
         ":sample:compileDebugKotlin",

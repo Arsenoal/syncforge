@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Spring Boot backend starter (1.4-01)** — `:backend-starter-spring` with `SyncHandlers`-backed REST routes, in-memory or `JdbcSyncStore`, Flyway schema, `docker-compose` Postgres quickstart; `JdbcSyncStore` in `:syncforge-server`
 - **Compose Multiplatform conflict UI (1.3-05)** — `SyncConflictChip` + `SyncConflictResolutionSheet` in `:syncforge` `composeMain` (Android, JVM, Apple); `:sample-desktop:runComposeConflictDemo`; [COMPOSE_UI.md](docs/COMPOSE_UI.md)
 - **`:sample` conflict policy settings (1.2-10)** — Policy tab with per-entity strategy dropdowns (notes/tags/tasks), DataStore persistence, `updateConflictPolicy()` on change; `ConflictSettingsE2ETest` validates runtime switch to defer-to-user
 - **`docs/SWIFT_INTEROP.md`** — SKIE Swift patterns: Flow collection, suspend/async, callbacks, error handling, reference table (1.3-07)

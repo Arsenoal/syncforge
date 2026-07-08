@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:syncforge}
+    username: ${DB_USER:syncforge}
+    password: ${DB_PASSWORD:syncforge}
+  flyway:
+    enabled: true
+
+syncforge:
+  store:
+    type: jdbc
