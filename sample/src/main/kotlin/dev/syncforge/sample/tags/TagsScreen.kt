@@ -28,6 +28,7 @@ import dev.syncforge.model.SyncState
 @Composable
 fun TagsScreen(viewModel: TagsViewModel) {
     val tags by viewModel.tags.collectAsState()
+    val devMessage by viewModel.devMessage.collectAsState()
     var label by rememberSaveable { mutableStateOf("") }
 
     Column(
@@ -66,6 +67,14 @@ fun TagsScreen(viewModel: TagsViewModel) {
             }
         }
 
+        devMessage?.let { message ->
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -73,6 +82,8 @@ fun TagsScreen(viewModel: TagsViewModel) {
             items(tags, key = { it.id }) { tag ->
                 TagRow(
                     tag = tag,
+                    onLocalEdit = { viewModel.applyLocalEdit(tag) },
+                    onSimulateServerEdit = { viewModel.simulateServerEdit(tag) },
                     onDelete = { viewModel.deleteTag(tag) },
                 )
             }
@@ -83,6 +94,8 @@ fun TagsScreen(viewModel: TagsViewModel) {
 @Composable
 private fun TagRow(
     tag: TagEntity,
+    onLocalEdit: () -> Unit,
+    onSimulateServerEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -91,7 +104,11 @@ private fun TagRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = tag.label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = tag.label,
+                modifier = Modifier.testTag("tag_label_${tag.label}"),
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Text(
                 text = when (tag.syncState) {
                     SyncState.SYNCED -> "Synced"
@@ -104,11 +121,23 @@ private fun TagRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        TextButton(
-            onClick = onDelete,
-            modifier = Modifier.testTag("delete_tag_${tag.id}"),
-        ) {
-            Text("Delete")
+        Row {
+            if (tag.syncState == SyncState.SYNCED) {
+                TextButton(
+                    onClick = onLocalEdit,
+                    modifier = Modifier.testTag("local_edit_${tag.label}"),
+                ) { Text("Local edit") }
+                TextButton(
+                    onClick = onSimulateServerEdit,
+                    modifier = Modifier.testTag("server_edit_${tag.label}"),
+                ) { Text("Server edit") }
+            }
+            TextButton(
+                onClick = onDelete,
+                modifier = Modifier.testTag("delete_tag_${tag.id}"),
+            ) {
+                Text("Delete")
+            }
         }
     }
 }

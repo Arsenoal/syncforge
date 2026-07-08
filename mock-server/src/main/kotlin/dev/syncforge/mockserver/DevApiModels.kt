@@ -12,6 +12,7 @@ data class SimulateEditRequest(
 @Serializable
 data class SimulateEditResponse(
     val updated: Boolean,
+    val updatedAtMillis: Long? = null,
     val message: String? = null,
 )
 

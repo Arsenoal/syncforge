@@ -142,19 +142,35 @@ class InMemorySyncStore : SyncStore {
         entityId: String,
         payloadJson: String,
         nowMillis: Long,
-    ): Boolean {
+    ): Long? {
         val key = recordKey(entityType, entityId)
-        val existing = records[key] ?: return false
-        if (existing.isDeleted) return false
+        val existing = records[key] ?: return null
+        if (existing.isDeleted) return null
 
         val nextVersion = versionCounter.getAndIncrement()
+        val payloadUpdatedAtMillis = parsePayloadUpdatedAtMillis(payloadJson)
+        val recordUpdatedAtMillis = when (payloadUpdatedAtMillis) {
+            null -> nowMillis
+            else -> maxOf(nowMillis, payloadUpdatedAtMillis)
+        }
         records[key] = existing.copy(
             payloadJson = payloadJson,
             serverVersion = nextVersion,
-            updatedAtMillis = nowMillis,
+            updatedAtMillis = recordUpdatedAtMillis,
             isDeleted = false,
         )
-        return true
+        return recordUpdatedAtMillis
+    }
+
+    /**
+     * Reads [dev.syncforge.entity.SyncedEntity.updatedAtMillis] from a pushed/simulated payload so
+     * LWW demos stay deterministic across emulator vs host clock skew.
+     */
+    private fun parsePayloadUpdatedAtMillis(payloadJson: String): Long? =
+        PAYLOAD_UPDATED_AT_REGEX.find(payloadJson)?.groupValues?.get(1)?.toLongOrNull()
+
+    private companion object {
+        private val PAYLOAD_UPDATED_AT_REGEX = """"updatedAtMillis"\s*:\s*(\d+)""".toRegex()
     }
 
     /** Dev/testing helper — tombstones an entity (delete-on-server demo). */

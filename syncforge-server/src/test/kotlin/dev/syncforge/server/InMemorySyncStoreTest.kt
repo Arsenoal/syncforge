@@ -125,7 +125,8 @@ class InMemorySyncStoreTest {
             ),
             nowMillis = 100L,
         )
-        assertTrue(
+        assertEquals(
+            200L,
             store.forceUpdate(
                 entityType = "tasks",
                 entityId = "task-1",
@@ -152,5 +153,81 @@ class InMemorySyncStoreTest {
         assertTrue(response.acknowledgedIds.isEmpty())
         assertEquals(1, response.rejected.size)
         assertEquals("CONFLICT", response.rejected.single().code)
+    }
+
+    @Test
+    fun forceUpdate_usesPayloadUpdatedAtMillisForLwwDemos() {
+        val store = InMemorySyncStore()
+        store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 1,
+                    entityType = "tags",
+                    entityId = "tag-1",
+                    changeType = ChangeType.CREATE,
+                    payloadJson = """{"id":"tag-1","label":"Original","updatedAtMillis":100}""",
+                    localVersion = 1,
+                    createdAtMillis = 100L,
+                ),
+            ),
+            nowMillis = 100L,
+        )
+
+        assertEquals(
+            500L,
+            store.forceUpdate(
+                entityType = "tags",
+                entityId = "tag-1",
+                payloadJson = """{"id":"tag-1","label":"Remote","updatedAtMillis":500}""",
+                nowMillis = 200L,
+            ),
+        )
+
+        val pull = store.pull(
+            sinceTimestampMillis = 0L,
+            entityTypes = setOf("tags"),
+            nowMillis = 600L,
+            limit = 10,
+            pageCursor = null,
+        )
+        assertEquals(500L, pull.deltas.single().updatedAtMillis)
+    }
+
+    @Test
+    fun forceUpdate_bumpsRecordTimestampToHostNowWhenPayloadIsOlderThanPullCursor() {
+        val store = InMemorySyncStore()
+        store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 1,
+                    entityType = "tags",
+                    entityId = "tag-1",
+                    changeType = ChangeType.CREATE,
+                    payloadJson = """{"id":"tag-1","label":"Original","updatedAtMillis":100}""",
+                    localVersion = 1,
+                    createdAtMillis = 100L,
+                ),
+            ),
+            nowMillis = 100L,
+        )
+
+        assertEquals(
+            500L,
+            store.forceUpdate(
+                entityType = "tags",
+                entityId = "tag-1",
+                payloadJson = """{"id":"tag-1","label":"Remote","updatedAtMillis":150}""",
+                nowMillis = 500L,
+            ),
+        )
+
+        val pull = store.pull(
+            sinceTimestampMillis = 400L,
+            entityTypes = setOf("tags"),
+            nowMillis = 600L,
+            limit = 10,
+            pageCursor = null,
+        )
+        assertEquals(500L, pull.deltas.single().updatedAtMillis)
     }
 }

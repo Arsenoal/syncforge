@@ -35,14 +35,19 @@ fun Application.mockSyncModule() {
 
         post("/dev/simulate-edit") {
             val request = call.receive<SimulateEditRequest>()
-            val updated = store.forceUpdate(
+            val updatedAtMillis = store.forceUpdate(
                 entityType = request.entityType,
                 entityId = request.entityId,
                 payloadJson = request.payloadJson,
                 nowMillis = System.currentTimeMillis(),
             )
-            if (updated) {
-                call.respond(SimulateEditResponse(updated = true))
+            if (updatedAtMillis != null) {
+                call.respond(
+                    SimulateEditResponse(
+                        updated = true,
+                        updatedAtMillis = updatedAtMillis,
+                    ),
+                )
             } else {
                 call.respond(
                     HttpStatusCode.NotFound,

@@ -25,6 +25,20 @@ class TagRepository(
         syncManager.enqueueChange(Change.create(TagEntity.ENTITY_TYPE, tag))
     }
 
+    suspend fun updateLabel(
+        tag: TagEntity,
+        newLabel: String,
+        updatedAtMillis: Long = System.currentTimeMillis(),
+    ) {
+        val updated = tag.copy(
+            label = newLabel.trim(),
+            localVersion = tag.localVersion + 1,
+            updatedAtMillis = updatedAtMillis,
+            syncState = SyncState.PENDING,
+        )
+        syncManager.enqueueChange(Change.update(TagEntity.ENTITY_TYPE, updated))
+    }
+
     suspend fun deleteTag(tag: TagEntity) {
         syncManager.enqueueChange(
             Change.delete<TagEntity>(

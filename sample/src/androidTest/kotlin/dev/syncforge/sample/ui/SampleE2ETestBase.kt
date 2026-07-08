@@ -15,6 +15,11 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.syncforge.sample.MainActivity
 import dev.syncforge.sample.SampleApplication
+import dev.syncforge.sample.tags.tagLocalEditLabel
+import dev.syncforge.sample.tags.tagServerEditLabel
+import dev.syncforge.sample.tasks.DevSyncClient
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assume
 import org.junit.Rule
 import java.net.HttpURLConnection
@@ -284,6 +289,59 @@ abstract class SampleE2ETestBase {
     /** Title after mock-server `POST /dev/simulate-edit` (appends ` (server edit)`). */
     protected fun serverEditedTitle(originalTitle: String): String =
         "$originalTitle (server edit)"
+
+    protected fun tagLocalLabel(baseLabel: String): String = tagLocalEditLabel(baseLabel)
+
+    protected fun tagServerLabel(baseLabel: String): String = tagServerEditLabel(baseLabel)
+
+    protected fun tapTagLocalEdit(baseLabel: String) {
+        navigateToTags()
+        tapTag("local_edit_$baseLabel")
+        composeTestRule.waitForIdle()
+    }
+
+    protected fun tapTagServerEdit(baseLabel: String) {
+        navigateToTags()
+        tapTag("server_edit_$baseLabel")
+        waitForTextContains("Server updated")
+    }
+
+    /**
+     * Simulates a concurrent server edit while the tag row is [SyncState.PENDING]
+     * (server edit button is hidden after local edit).
+     */
+    protected fun simulateServerTagEdit(currentLabel: String, newLabel: String): Long {
+        val app = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .applicationContext as SampleApplication
+        val serverUpdatedAtMillis = runBlocking {
+            val tag = app.tagRepository.observeTags().first()
+                .firstOrNull { it.label == currentLabel }
+                ?: error("No tag with label $currentLabel")
+            DevSyncClient.simulateServerEdit(tag, newLabel).getOrThrow()
+        }
+        composeTestRule.waitForIdle()
+        return serverUpdatedAtMillis
+    }
+
+    /** Applies a local tag edit with a timestamp strictly newer than a mock-server simulate-edit. */
+    protected fun applyTagLocalEditNewerThan(baseLabel: String, serverUpdatedAtMillis: Long) {
+        val app = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .applicationContext as SampleApplication
+        runBlocking {
+            val tag = app.tagRepository.observeTags().first()
+                .firstOrNull { it.label == baseLabel }
+                ?: error("No tag with label $baseLabel")
+            app.tagRepository.updateLabel(
+                tag = tag,
+                newLabel = tagLocalLabel(baseLabel),
+                updatedAtMillis = maxOf(System.currentTimeMillis(), serverUpdatedAtMillis + 1L),
+            )
+        }
+        navigateToTags()
+        composeTestRule.waitForIdle()
+    }
 
     private fun isMockServerHealthy(): Boolean =
         runCatching {
