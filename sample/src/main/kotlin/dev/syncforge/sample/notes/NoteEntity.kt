@@ -14,7 +14,7 @@ data class NoteEntity(
     @PrimaryKey override val id: String,
     val title: String,
     val body: String = "",
-    /** Optional FK to [dev.syncforge.sample.tags.TagEntity] — synced independently. */
+    /** Optional FK to [TagEntity] — synced independently; see docs/HIERARCHICAL_SYNC.md. */
     val tagId: String? = null,
     override val localVersion: Long = 0,
     override val updatedAtMillis: Long = System.currentTimeMillis(),

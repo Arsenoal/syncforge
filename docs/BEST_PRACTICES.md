@@ -115,6 +115,7 @@ within one entity, use `merge { }` with field-level helpers.
 ## Hierarchical data (trees and relationships)
 
 SyncForge syncs **flat entity rows**. Foreign keys, trees, and graphs are an **app concern**.
+Copy-paste recipes: [HIERARCHICAL_SYNC.md](HIERARCHICAL_SYNC.md).
 
 | You model | SyncForge syncs | You must handle |
 |-----------|-----------------|-----------------|
@@ -122,14 +123,27 @@ SyncForge syncs **flat entity rows**. Foreign keys, trees, and graphs are an **a
 | Folder / child rows | Each row by `entityType` + `id` | Parent delete while child edited offline |
 | Aggregates / counters | Not recommended as synced fields | Recompute server-side or use merge |
 
-**Practical patterns:**
+### Explicit limitations (hierarchical data)
+
+SyncForge **will not** (by design — 1.5-04):
+
+- **Cascade** parent `DELETE` to child entity types or clear child FKs automatically
+- **Validate** foreign keys when enqueueing — invalid `tagId` is pushed unless your server rejects it
+- **Order** push batches across entity types (parent before child is not guaranteed in one `sync()`)
+- **Block** pull on entity B because entity A has a deferred conflict — handlers are isolated
+- **Atomic merge** across two entity types — conflicts are always per `entityType` + `entityId`
+- **Repair** orphan FKs — use a post-sync reconcile job or server `VALIDATION` rejections
+
+What you **should** do:
 
 - **Soft-delete parents** (`isDeleted` on parent row) so children can still sync until cleanup.
-- **Reject invalid pushes** on the server when FK targets are tombstoned.
-- **Background reconcile job** after sync for orphan detection.
+- **Reject invalid pushes** on the server when FK targets are missing or tombstoned (`VALIDATION`).
+- **Background reconcile job** after sync for orphan detection (null FK, default tag, etc.).
 - **Different strategies per type** — e.g. `alwaysRemote()` for folders, `deferToUser()` for documents.
+- **Guard creates in UI** — persist and ack parent before enqueueing child when FK is required.
 
-Details: [Conflict Resolution → hierarchical data](CONFLICT_RESOLUTION.md#hierarchical-data-trees-parentchild).
+Details: [HIERARCHICAL_SYNC.md](HIERARCHICAL_SYNC.md),
+[Conflict Resolution → hierarchical data](CONFLICT_RESOLUTION.md#hierarchical-data-trees-parentchild).
 
 ---
 

@@ -774,7 +774,7 @@ Operators and senior developers can **see** sync health in production-like envir
 | 1.5-01 | **Structured tracing hooks**         | P0       | OpenTelemetry-compatible spans: push, pull, conflict, retry ✅ |
 | 1.5-02 | **SyncHealth metrics expansion**     | P1       | Latency percentiles, conflict rate, outbox depth ✅          |
 | 1.5-03 | **Full SyncHealth dashboard UI**     | P1       | Debug + optional release diagnostic screen ✅                |
-| 1.5-04 | **Hierarchical sync recipes**        | P1       | Parent/child entities, orphan FK guidance                   |
+| 1.5-04 | **Hierarchical sync recipes**        | P1       | Parent/child entities, orphan FK guidance ✅                 |
 | 1.5-05 | **Rate limiting + backoff policies** | P2       | Server-friendly client behavior                             |
 | 1.5-06 | **Audit log export**                 | P2       | Conflict history CSV/JSON for support                       |
 
@@ -782,7 +782,7 @@ Operators and senior developers can **see** sync health in production-like envir
 
 - [x] Tracing opt-in does not allocate when disabled
 - [x] Dashboard shows outbox, last sync, conflict count, error breakdown
-- [ ] BEST_PRACTICES.md hierarchical section with explicit limitations
+- [x] BEST_PRACTICES.md hierarchical section with explicit limitations
 
 ---
 

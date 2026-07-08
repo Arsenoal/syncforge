@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Hierarchical sync recipes (1.5-04)** — [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md): parent/child patterns, orphan FK policies, server `VALIDATION` + client cleanup; explicit limitations in [BEST_PRACTICES.md](docs/BEST_PRACTICES.md)
 - **Full SyncHealth dashboard UI (1.5-03)** — `SyncHealthDashboard` with status banner, metric tiles, latency bars, error breakdown; `SyncHealthDiagnosticScreen` for read-only release/support; `SyncDebugPanelMode.DIAGNOSTIC`
 - **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`
 - **Structured tracing hooks (1.5-01)** — opt-in `SyncTracer` / `SyncSpan` API (`syncforge.push`, `syncforge.pull`, `syncforge.conflict`, `syncforge.retry`); `tracing()` on Android DSL; `:syncforge-integration-opentelemetry` bridge; [TRACING.md](docs/TRACING.md)

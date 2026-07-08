@@ -109,6 +109,67 @@ entity("tasks") {
 
 ---
 
+## Hierarchical parent/child sync
+
+Parent/child and FK relationships are **app-owned** — SyncForge syncs each `entityType` as flat
+rows. Full guide: [HIERARCHICAL_SYNC.md](HIERARCHICAL_SYNC.md).
+
+### Optional FK (notes → tags) — `:sample` pattern
+
+```kotlin
+// NoteEntity.kt — tagId is optional; tags sync on a separate handler
+data class NoteEntity(
+    @PrimaryKey override val id: String,
+    val title: String,
+    val tagId: String? = null,
+    // ...
+)
+
+conflicts {
+    entity("tags") { lastWriteWins() }
+    entity("notes") { alwaysRemote() }
+}
+```
+
+Register both handlers on one registry — `sync()` pushes/pulls both types; **no guaranteed
+parent-before-child order** within a single cycle.
+
+### Orphan policy (pick one or combine)
+
+| Policy | Where | When |
+|--------|-------|------|
+| **Soft-delete parent** | Parent entity + server | Avoid hard tombstone while children exist |
+| **Server `VALIDATION`** | `SyncStore.push` | Reject child when `tagId` missing — see [REST_API.md](REST_API.md) |
+| **Client cleanup** | After `sync()` | Null out orphan FKs locally (optionally enqueue update to replicate) |
+
+```kotlin
+// Server — reject orphan note push (see HIERARCHICAL_SYNC.md recipe 3)
+rejected += PushRejectionDto(
+    outboxId = entry.id,
+    code = "VALIDATION",
+    message = "tagId $tagId does not exist",
+)
+```
+
+```kotlin
+// Client — post-sync reconcile (recipe 4)
+suspend fun reconcileOrphanNoteTags(noteDao: NoteDao, tagDao: TagDao) {
+    val valid = tagDao.getAllIds().toSet()
+    noteDao.getAll().forEach { note ->
+        note.tagId?.takeUnless { it in valid }?.let {
+            noteDao.update(note.copy(tagId = null))
+        }
+    }
+}
+```
+
+### Explicit limitations
+
+SyncForge does **not** cascade deletes, validate FKs on enqueue, or order cross-type outbox
+entries. See [BEST_PRACTICES.md § Explicit limitations](BEST_PRACTICES.md#explicit-limitations-hierarchical-data).
+
+---
+
 ## Handle `deferToUser()` conflicts in Compose
 
 Use when the user must choose between local and remote versions — e.g. editing the same

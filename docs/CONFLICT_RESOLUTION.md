@@ -387,7 +387,10 @@ SyncForge does **not** cascade deletes or merges across related rows. Conflicts 
 2. Define orphan policy (reject child push, soft-delete parent, cleanup job).
 3. Mix strategies per type (`alwaysRemote()` parents, `deferToUser()` children, etc.).
 
-See [Best Practices → Hierarchical data](BEST_PRACTICES.md#hierarchical-data-trees-and-relationships).
+**Recipes and limitations:** [HIERARCHICAL_SYNC.md](HIERARCHICAL_SYNC.md) (1.5-04) —
+optional FK (`:sample` notes/tags), soft-delete parents, server `VALIDATION`, client orphan cleanup.
+
+See also [Best Practices → Hierarchical data](BEST_PRACTICES.md#hierarchical-data-trees-and-relationships).
 
 ---
 
