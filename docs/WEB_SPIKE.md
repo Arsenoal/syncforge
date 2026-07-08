@@ -79,7 +79,7 @@ Verify locally:
 
 1. ~~**1.6-01**~~ — `js` + `webMain` on `:syncforge` / `:syncforge-persistence` (experimental API) ✅
 2. ~~**1.6-02**~~ — `SyncForge.web { }` DSL (persistence + cursor + transport) ✅ — [WEB_DSL.md](WEB_DSL.md)
-3. **1.6-03** — `createKtorSyncTransport` browser factory (extract from spike)
+3. ~~**1.6-03**~~ — `createKtorSyncTransport` browser factory (`createWebKtorSyncTransport` + `ktor-client-js`) ✅
 4. **1.6-04** — `:sample-web` push/pull against `:mock-server`
 
 ## Related

@@ -1,9 +1,10 @@
 package dev.syncforge
 
 import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.network.createWebKtorSyncTransport
 
 /**
- * Compile-time guard for [SyncForge.web] DSL surface — does not invoke [WebSyncForgeDsl.build].
+ * Compile-time guard for [SyncForge.web] and [createWebKtorSyncTransport] — does not invoke build.
  */
 @OptIn(ExperimentalSyncForgeApi::class)
 @Suppress("unused")
@@ -13,3 +14,7 @@ internal val webDslCompileCheck: suspend WebSyncForgeDsl.() -> Unit = {
     networkMonitorAlwaysOnline()
     syncOnTabVisible(enabled = false)
 }
+
+@OptIn(ExperimentalSyncForgeApi::class)
+@Suppress("unused")
+private val webTransportCompileCheck = createWebKtorSyncTransport("http://127.0.0.1:8080")

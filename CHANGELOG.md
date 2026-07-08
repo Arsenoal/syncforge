@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Browser Ktor transport (1.6-03)** — `createWebKtorSyncTransport` + built-in `ktor-client-js` in `:syncforge` js (no `:syncforge-network-ktor` required); shared `buildSyncForgeHttpClient` / `HttpStatusMapper` in core
 - **`SyncForge.web { }` DSL (1.6-02)** — suspend browser setup with `createWebSyncForgePersistence`, namespaced `localStorage` cursor, `BrowserNetworkMonitor`, optional `syncOnTabVisible()` via `WebVisibilitySyncTrigger`; [WEB_DSL.md](docs/WEB_DSL.md)
 - **KMP `js` + `webMain` (1.6-01)** — Kotlin/JS browser targets on `:syncforge`, `:syncforge-persistence`, `:syncforge-network-ktor`, `:syncforge-annotations`; SQLDelight `generateAsync` + web-worker driver; experimental `SyncForge.web { }` DSL stub; `verifyWebCompile` in `verifyReleaseSignOff`
 - **Web platform spike (1.6-00)** — `:web-spike` (Kotlin/JS + Ktor + SQLDelight web-worker) and `:web-spike-wasm` (wasmJs transport PoC); `verifyWebSpike`; [WEB_SPIKE.md](docs/WEB_SPIKE.md) go/no-go (**primary: `js`**, Wasm persistence deferred to SQLDelight ≥2.1)

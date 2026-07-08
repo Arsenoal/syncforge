@@ -18,7 +18,7 @@ kotlin {
         jsMain.dependencies {
             implementation("studio.syncforge:syncforge:…")
             implementation("studio.syncforge:syncforge-persistence:…")
-            implementation("studio.syncforge:syncforge-network-ktor:…") // required for REST transport
+            // optional: implementation("studio.syncforge:syncforge-network-ktor:…")
         }
     }
 }
@@ -35,15 +35,11 @@ jsMain.dependencies {
 
 ## Bootstrap
 
-Register the Ktor transport adapter **once** before building the manager (same pattern as `:sample-desktop`):
-
 ```kotlin
 import dev.syncforge.SyncForge
-import dev.syncforge.network.ensureSyncForgeNetworkKtorLoaded
 import dev.syncforge.web
 
 suspend fun main() {
-    ensureSyncForgeNetworkKtorLoaded()
     val syncManager = SyncForge.web {
         baseUrl("http://localhost:8080")
         registry(myEntityRegistry)
@@ -59,7 +55,7 @@ suspend fun main() {
 |---------|----------------|-------|
 | **Persistence** | SQLDelight `web-worker-driver` | In-memory SQL.js per tab session; schema via `createWebSyncForgePersistence` |
 | **Cursor** | `localStorage` keyed by `databaseName` | `SyncCursorStoreFactory.createForDatabase(name)` |
-| **Transport** | `KtorSyncTransport` (`ktor-client-js`) | Requires `:syncforge-network-ktor` on classpath |
+| **Transport** | [createWebKtorSyncTransport](WEB_DSL.md) (`ktor-client-js` / fetch) | Built into `:syncforge` js; optional `:syncforge-network-ktor` for `KtorSyncTransport` |
 | **Network** | `BrowserNetworkMonitor` | `navigator.onLine` + `online`/`offline` → reconnect push |
 | **Background sync** | None (by design) | Use `syncOnTabVisible()` or app-driven `sync()`; no WorkManager |
 
@@ -77,3 +73,14 @@ suspend fun main() {
 ```
 
 Runtime browser smoke (`:sample-web`, Playwright) lands in **1.6-04** / **1.6-06**.
+
+## Explicit transport (optional)
+
+```kotlin
+import dev.syncforge.network.createWebKtorSyncTransport
+
+val transport = createWebKtorSyncTransport(
+    baseUrl = "http://localhost:8080",
+    auth = SyncAuthProvider.bearer { myToken },
+)
+```

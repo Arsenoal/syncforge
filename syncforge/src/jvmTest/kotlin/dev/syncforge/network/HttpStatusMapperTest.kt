@@ -4,6 +4,7 @@ import dev.syncforge.model.SyncError
 import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
 class HttpStatusMapperTest {
 
     @Test

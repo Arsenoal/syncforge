@@ -810,7 +810,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 | 1.6-00 | **Web platform spike** — Wasm vs JS, persistence + Ktor engine PoC  | P0       | Go/no-go doc; does not ship in BOM until 1.6-01+ green ✅ |
 | 1.6-01 | **KMP `js` and/or `wasmJs` targets** on `:syncforge` + persistence | P0       | `webMain` source set; experimental `@ExperimentalSyncForgeApi` ✅ |
 | 1.6-02 | **`SyncForge.web { }` DSL** — browser persistence + cursor + transport | P0    | IndexedDB/SQLDelight-web or documented in-memory + localStorage cursor fallback ✅ |
-| 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine |
+| 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine ✅ |
 | 1.6-04 | **`:sample-web`** — minimal Compose/Web or Kotlin/JS page           | P1       | Push + pull against `:mock-server` (same acceptance as `:sample-desktop`) |
 | 1.6-05 | **`WEB_SETUP.md`** + MODULES.md stability row                       | P1       | Gradle consumer snippet; CORS notes for dev mock-server |
 | 1.6-06 | **`webE2e` CI** — headless browser smoke (Playwright or Karma)      | P2       | Nightly; optional gate for 1.6.0 tag |

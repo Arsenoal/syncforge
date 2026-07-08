@@ -35,12 +35,11 @@ import kotlin.time.Duration
  * Browser setup with SQLDelight web-worker persistence, [localStorage][kotlinx.browser.localStorage]
  * cursor, Ktor JS transport, and [BrowserNetworkMonitor] reconnect sync.
  *
- * **Requires** `studio.syncforge:syncforge-network-ktor` on the app classpath. Call
- * [dev.syncforge.network.ensureSyncForgeNetworkKtorLoaded] once before [web] (see [docs/WEB_DSL.md]).
+ * Uses built-in `ktor-client-js` transport via [dev.syncforge.network.createWebKtorSyncTransport]
+ * (no `:syncforge-network-ktor` required). See [docs/WEB_DSL.md].
  *
  * ```
  * suspend fun main() {
- *     ensureSyncForgeNetworkKtorLoaded()
  *     val manager = SyncForge.web {
  *         baseUrl("http://localhost:8080")
  *         registry(myRegistry)
