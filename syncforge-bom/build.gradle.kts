@@ -20,6 +20,7 @@ dependencies {
         api("${project.group}:syncforge-persistence:$libraryVersion")
         api("${project.group}:syncforge-android-deps:$libraryVersion")
         api("${project.group}:syncforge-network-ktor:$libraryVersion")
+        api("${project.group}:syncforge-transport-core:$libraryVersion")
         api("${project.group}:syncforge-store-room:$libraryVersion")
         api("${project.group}:syncforge-store-inmemory:$libraryVersion")
         api("${project.group}:syncforge-integration-koin:$libraryVersion")
@@ -48,6 +49,7 @@ tasks.register("verifyBomConstraints") {
             "syncforge-persistence",
             "syncforge-android-deps",
             "syncforge-network-ktor",
+            "syncforge-transport-core",
             "syncforge-store-room",
             "syncforge-store-inmemory",
             "syncforge-integration-koin",

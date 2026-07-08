@@ -23,6 +23,7 @@ include(
     ":syncforge-ksp",
     ":syncforge-persistence",
     ":syncforge-network-ktor",
+    ":syncforge-transport-core",
     ":syncforge-store-room",
     ":syncforge-store-inmemory",
     ":syncforge-integration-koin",

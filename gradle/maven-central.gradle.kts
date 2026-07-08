@@ -15,6 +15,7 @@ val mavenCentralRequiredArtifacts = listOf(
     "syncforge-persistence",
     "syncforge-android-deps",
     "syncforge-network-ktor",
+    "syncforge-transport-core",
     "syncforge-store-room",
     "syncforge-store-inmemory",
     "syncforge-integration-koin",

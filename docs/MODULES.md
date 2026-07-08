@@ -99,6 +99,8 @@ Companion modules:
 | `:syncforge-annotations` | `@SyncForgeEntity`, `@SyncForgeDao`, `@ExperimentalSyncForgeApi` |
 | `:syncforge-ksp` | KSP processor — generates handlers + `SyncForgeHandlers` registry |
 | `:syncforge-persistence` | SQLDelight schemas + platform drivers (`SyncForgePersistence.create()`) |
+| `:syncforge-network-ktor` | Optional Ktor REST `SyncHttpClient` + `KtorSyncTransport` |
+| `:syncforge-transport-core` | Optional BaaS port — `SyncDeltaStore` + `DeltaStoreSyncTransport` |
 | `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
 | `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
 | `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |
@@ -412,6 +414,20 @@ Pre-0.6.0 Room outbox/conflict schema. Not part of the public API — only used 
 ### `NoOpSyncTransport`
 
 Acknowledges all pushes and returns empty pulls. Useful for tests and offline-only mode.
+
+### `SyncDeltaStore` + `DeltaStoreSyncTransport` (`:syncforge-transport-core`)
+
+BaaS / hosted-backend adapter (1.4). Implement `SyncDeltaStore` once per vendor (Firestore, Supabase, custom RPC); wire with a single `SyncTransport`:
+
+```kotlin
+@OptIn(ExperimentalSyncForgeApi::class)
+SyncForge.android(this) {
+    transport(DeltaStoreSyncTransport(mySupabaseSyncDeltaStore))
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+`appendEntries` / `queryDeltas` mirror server `SyncStore` and [REST_API.md](REST_API.md) push/pull semantics. Auth lives inside the store implementation.
 
 ### `KtorSyncTransport` (commonMain)
 
