@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:syncforge-transport-supabase` (1.4-03)** — `SupabaseSyncDeltaStore` via PostgREST RPC (`syncforge_push` / `syncforge_pull`); SQL migration + Realtime patterns
 - **`SyncDeltaStore` + `DeltaStoreSyncTransport` (1.4-02)** — `:syncforge-transport-core` optional BOM artifact; BaaS storage port + single `SyncTransport` adapter for Firebase/Supabase/custom backends
 - **Spring Boot backend starter (1.4-01)** — `:backend-starter-spring` with `SyncHandlers`-backed REST routes, in-memory or `JdbcSyncStore`, Flyway schema, `docker-compose` Postgres quickstart; `JdbcSyncStore` in `:syncforge-server`
 - **Compose Multiplatform conflict UI (1.3-05)** — `SyncConflictChip` + `SyncConflictResolutionSheet` in `:syncforge` `composeMain` (Android, JVM, Apple); `:sample-desktop:runComposeConflictDemo`; [COMPOSE_UI.md](docs/COMPOSE_UI.md)

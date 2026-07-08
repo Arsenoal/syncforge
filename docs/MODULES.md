@@ -101,6 +101,7 @@ Companion modules:
 | `:syncforge-persistence` | SQLDelight schemas + platform drivers (`SyncForgePersistence.create()`) |
 | `:syncforge-network-ktor` | Optional Ktor REST `SyncHttpClient` + `KtorSyncTransport` |
 | `:syncforge-transport-core` | Optional BaaS port — `SyncDeltaStore` + `DeltaStoreSyncTransport` |
+| `:syncforge-transport-supabase` | Supabase Postgres `SupabaseSyncDeltaStore` (PostgREST RPC) |
 | `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
 | `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
 | `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |
@@ -428,6 +429,10 @@ SyncForge.android(this) {
 ```
 
 `appendEntries` / `queryDeltas` mirror server `SyncStore` and [REST_API.md](REST_API.md) push/pull semantics. Auth lives inside the store implementation.
+
+### `:syncforge-transport-supabase`
+
+Ready-made [SupabaseSyncDeltaStore](../syncforge-transport-supabase/README.md) — PostgREST RPC to `syncforge_push` / `syncforge_pull` (SQL in `supabase/migrations/`). Wire with `DeltaStoreSyncTransport`; subscribe to Realtime `postgres_changes` on `sync_entity` for background pull.
 
 ### `KtorSyncTransport` (commonMain)
 

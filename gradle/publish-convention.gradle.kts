@@ -18,6 +18,7 @@ val publishableModules = setOf(
     "syncforge-persistence",
     "syncforge-network-ktor",
     "syncforge-transport-core",
+    "syncforge-transport-supabase",
     "syncforge-store-room",
     "syncforge-store-inmemory",
     "syncforge-integration-koin",
