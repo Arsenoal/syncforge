@@ -2,8 +2,6 @@
 agp = "8.9.0"
 kotlin = "2.1.10"
 room = "2.7.1"
-# Fallback when -Psyncforge.version is not set; keep in sync with gradle.properties above.
-syncforge = "1.1.0"
 
 [libraries]
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -12,4 +10,3 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 [plugins]
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-syncforgeAndroid = { id = "studio.syncforge.android", version.ref = "syncforge" }

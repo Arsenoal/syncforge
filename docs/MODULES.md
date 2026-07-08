@@ -103,6 +103,8 @@ Companion modules:
 | `:syncforge-transport-core` | Optional BaaS port — `SyncDeltaStore` + `DeltaStoreSyncTransport` |
 | `:syncforge-transport-supabase` | Supabase Postgres `SupabaseSyncDeltaStore` (PostgREST RPC) |
 | `:syncforge-transport-firebase` | Firebase Firestore `FirebaseSyncDeltaStore` (Cloud Functions HTTPS) |
+| `:syncforge-bom` | Maven BOM — aligns all SyncForge library artifact versions |
+| `:syncforge-catalog` | Published Gradle version catalog — same pins as BOM + Android plugin |
 | `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
 | `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
 | `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |

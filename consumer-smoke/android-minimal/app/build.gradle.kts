@@ -3,11 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    id("studio.syncforge.android")
+    alias(syncforge.plugins.syncforge.android)
 }
-
-val syncforgeVersion =
-    findProperty("syncforge.version") as String? ?: libs.versions.syncforge.get()
 
 android {
     namespace = "dev.syncforge.consumer.smoke"
@@ -34,8 +31,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:$syncforgeVersion"))
-    implementation("studio.syncforge:syncforge")
+    implementation(syncforge.core)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

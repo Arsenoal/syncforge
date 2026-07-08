@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`:syncforge-catalog` (1.4-05)** — published Gradle version catalog pinning all SyncForge library artifacts and `studio.syncforge.android`; BOM-free consumer setup in GETTING_STARTED + consumer-smoke
 - **`:syncforge-transport-firebase` (1.4-04)** — `FirebaseSyncDeltaStore` via Cloud Functions HTTPS (`syncforgePush` / `syncforgePull`); Firestore schema + listener patterns
 - **`:syncforge-transport-supabase` (1.4-03)** — `SupabaseSyncDeltaStore` via PostgREST RPC (`syncforge_push` / `syncforge_pull`); SQL migration + Realtime patterns
 - **`SyncDeltaStore` + `DeltaStoreSyncTransport` (1.4-02)** — `:syncforge-transport-core` optional BOM artifact; BaaS storage port + single `SyncTransport` adapter for Firebase/Supabase/custom backends

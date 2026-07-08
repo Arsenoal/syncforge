@@ -49,6 +49,8 @@ One **plugin** + one **library** line. The plugin applies KSP, Kotlin serializat
 `syncforge-ksp` automatically. **Room KSP compiler** is added only when your sources use Room
 (`@SyncForgeDao` or `androidx.room`) — skip it for BYO-store apps (see [Path B](#path-b--bring-your-own-store-syncforgestore)).
 
+**Version catalog (recommended)** — pins every SyncForge library and the Gradle plugin without `platform(...)`:
+
 ```kotlin
 // settings.gradle.kts
 pluginManagement {
@@ -59,22 +61,41 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:1.2.0")
+        }
+    }
+}
+
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinAndroid)
-    id("studio.syncforge.android") version "1.1.0"
+    alias(syncforge.plugins.syncforge.android)
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:1.1.0"))
+    implementation(syncforge.core)
+}
+```
+
+Optional modules use the same pin, e.g. `implementation(syncforge.transport.supabase)`.
+
+**BOM (alternative)** — same version alignment via `platform(...)`:
+
+```kotlin
+dependencies {
+    implementation(platform("studio.syncforge:syncforge-bom:1.2.0"))
     implementation("studio.syncforge:syncforge")
 }
 ```
 
 | Coordinate | You declare it? | Notes |
 |------------|-----------------|-------|
-| `studio.syncforge:syncforge` | **Yes** | Main KMP library |
-| `studio.syncforge:syncforge-bom` | Optional | Pins all SyncForge artifact versions |
+| `studio.syncforge:syncforge` | **Yes** | Main KMP library (`syncforge.core` in catalog) |
+| `studio.syncforge:syncforge-catalog` | Optional | Published version catalog — pins all library + plugin versions |
+| `studio.syncforge:syncforge-bom` | Optional | Maven BOM — same pins as catalog |
 | `studio.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
 | `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
 | `studio.syncforge:syncforge-ksp` | No | Added by `studio.syncforge.android` plugin |

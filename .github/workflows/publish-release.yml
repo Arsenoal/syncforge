@@ -81,6 +81,7 @@ jobs:
             :syncforge-annotations:compileKotlinMacosArm64 \
             :syncforge-ksp:compileKotlin \
             :syncforge-bom:generatePomFileForMavenPublication \
+            :syncforge-catalog:generatePomFileForMavenPublication \
             --no-daemon
 
       - name: Test JVM

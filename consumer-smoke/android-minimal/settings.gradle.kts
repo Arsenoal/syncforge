@@ -36,6 +36,12 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        create("syncforge") {
+            val catalogVersion = providers.gradleProperty("syncforge.version").orElse("1.2.0")
+            from("studio.syncforge:syncforge-catalog:${catalogVersion.get()}")
+        }
+    }
 }
 
 rootProject.name = "syncforge-consumer-smoke-android"

@@ -32,6 +32,7 @@ include(
     ":syncforge-integration-hilt",
     ":syncforge-android-deps",
     ":syncforge-bom",
+    ":syncforge-catalog",
     ":syncforge-server",
     ":backend-starter",
     ":backend-starter-spring",

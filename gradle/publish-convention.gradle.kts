@@ -26,6 +26,7 @@ val publishableModules = setOf(
     "syncforge-integration-hilt",
     "syncforge-android-deps",
     "syncforge-bom",
+    "syncforge-catalog",
 )
 
 fun Project.readRootGradleProperty(name: String): String? {
@@ -81,6 +82,7 @@ gradle.projectsEvaluated {
                     val component = components.findByName("java")
                         ?: components.findByName("kotlin")
                         ?: components.findByName("release")
+                        ?: components.findByName("versionCatalog")
                     if (component != null) {
                         publications.create<MavenPublication>("maven") {
                             from(component)

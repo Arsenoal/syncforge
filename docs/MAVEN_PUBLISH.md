@@ -153,6 +153,7 @@ Or point your app at the repo with Gradle `includeBuild("../syncforge")` / compo
 | `studio.syncforge:syncforge-integration-koin` | Optional Koin DI helpers |
 | `studio.syncforge:syncforge-integration-hilt` | Optional Hilt DI helpers |
 | `studio.syncforge:syncforge-bom` | Version alignment BOM (core + optional modules above) |
+| `studio.syncforge:syncforge-catalog` | Gradle version catalog — same pins as BOM + `studio.syncforge.android` plugin |
 | `studio.syncforge:syncforge-gradle-plugin` | Gradle plugin implementation (Maven `pluginMaven`) |
 | `studio.syncforge.android:studio.syncforge.android.gradle.plugin` | Plugin marker for `id("studio.syncforge.android")` |
 
@@ -166,8 +167,7 @@ Consumer setup: [GETTING_STARTED.md](GETTING_STARTED.md) Step 0.
 
 After the release is live on Central, update:
 
-- `consumer-smoke/android-minimal/gradle.properties` (`syncforge.version`)
-- `consumer-smoke/android-minimal/gradle/libs.versions.toml` (`syncforge`)
+- `consumer-smoke/android-minimal/gradle.properties` (`syncforge.version` — catalog import version)
 
 Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates. Until Central syncs, `verifySignOffMatrix` may fail on the Maven Central artifact check.
 

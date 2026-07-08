@@ -38,6 +38,7 @@ tasks.register("publishAllToMavenLocal") {
         ":syncforge-integration-hilt:publishToMavenLocal",
         ":syncforge-android-deps:publishToMavenLocal",
         ":syncforge-bom:publishToMavenLocal",
+        ":syncforge-catalog:publishToMavenLocal",
         gradle.includedBuild("syncforge-gradle-plugin").task(":publishToMavenLocal"),
     )
 }
@@ -75,6 +76,7 @@ tasks.register("verifyReleaseSignOff") {
         ":sample:compileDebugKotlin",
         ":sample:compileDebugAndroidTestKotlin",
         ":syncforge-bom:verifyBomConstraints",
+        ":syncforge-catalog:verifyCatalogArtifacts",
         "verifyConsumerSmoke",
     )
 }
@@ -154,6 +156,7 @@ tasks.register("publishAllToMavenCentral") {
         ":syncforge-integration-hilt:publishReleasePublicationToMavenCentralRepository",
         ":syncforge-android-deps:publishAllPublicationsToMavenCentralRepository",
         ":syncforge-bom:publishMavenPublicationToMavenCentralRepository",
+        ":syncforge-catalog:publishMavenPublicationToMavenCentralRepository",
         gradle.includedBuild("syncforge-gradle-plugin")
             .task(":publishAllPublicationsToMavenCentralRepository"),
     )
