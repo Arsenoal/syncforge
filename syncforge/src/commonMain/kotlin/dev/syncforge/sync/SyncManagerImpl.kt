@@ -27,6 +27,14 @@ import dev.syncforge.model.SyncStatus
 import dev.syncforge.network.NetworkMonitor
 import dev.syncforge.network.AlwaysOnlineNetworkMonitor
 import dev.syncforge.network.SyncTransport
+import dev.syncforge.trace.NoOpSyncTracer
+import dev.syncforge.trace.SyncSpanName
+import dev.syncforge.trace.SyncTraceAttributes
+import dev.syncforge.trace.SyncTracer
+import dev.syncforge.trace.recordSyncResult
+import dev.syncforge.trace.runSpan
+import dev.syncforge.trace.runSuspendSpan
+import dev.syncforge.trace.syncSpanStatusFor
 import dev.syncforge.outbox.OutboxRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +68,7 @@ internal class SyncManagerImpl(
     private val mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
     private val scope: CoroutineScope,
     private val authService: SyncForgeAuthService? = null,
+    private val tracer: SyncTracer = NoOpSyncTracer,
 ) : SyncManager {
 
     private val loggedOutAuthState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
@@ -72,6 +81,7 @@ internal class SyncManagerImpl(
         conflictStore = conflictStore,
         mergeBaseRecorder = mergeBaseRecorder,
         outboxReconciler = outboxReconciler,
+        tracer = tracer,
     )
 
     private val engine: SyncEngine = SyncEngine(
@@ -82,6 +92,7 @@ internal class SyncManagerImpl(
         conflictStore = conflictStore,
         mergeBaseStore = mergeBaseStore,
         conflictPullApplier = conflictPullApplier,
+        tracer = tracer,
     )
     private val conflictResolutionService = ConflictResolutionService(
         registry = registry,
@@ -228,6 +239,15 @@ internal class SyncManagerImpl(
         choice: ConflictChoice,
     ) {
         mutex.withLock {
+            tracer.runSpan(
+                name = SyncSpanName.CONFLICT,
+                attributes = mapOf(
+                    SyncTraceAttributes.ENTITY_TYPE to entityType,
+                    SyncTraceAttributes.ENTITY_ID to entityId,
+                    SyncTraceAttributes.CONFLICT_OUTCOME to "user_resolved",
+                    SyncTraceAttributes.OPERATION to choice.toString(),
+                ),
+            ) { }
             conflictResolutionService.resolve(entityType, entityId, choice)
             eventLog.record(
                 type = SyncEventType.CONFLICT_RESOLVED,
@@ -289,6 +309,13 @@ internal class SyncManagerImpl(
     private suspend fun scheduleRetryIfNeeded() {
         val nextAt = outbox.earliestRetryAtMillis(config.maxRetries) ?: return
         val delayMs = (nextAt - currentTimeMillis()).coerceAtLeast(0)
+        tracer.runSpan(
+            name = SyncSpanName.RETRY,
+            attributes = mapOf(
+                SyncTraceAttributes.OPERATION to "schedule",
+                SyncTraceAttributes.RETRY_DELAY_MS to delayMs.toString(),
+            ),
+        ) { }
         retryScheduler.scheduleRetry(delayMs.milliseconds)
     }
 
@@ -303,8 +330,9 @@ internal class SyncManagerImpl(
     private suspend fun runCycle(
         eventType: SyncEventType,
         block: suspend () -> SyncResult,
-    ): SyncResult =
-        mutex.withLock {
+    ): SyncResult {
+        val runBlock: suspend () -> SyncResult = {
+            mutex.withLock {
             authService?.requireAuthenticated()?.let { authFailure ->
                 val failure = authFailure.toSyncFailure()
                 syncDebugImpl.recordSyncResult(eventType, failure)
@@ -347,7 +375,21 @@ internal class SyncManagerImpl(
             refreshStatus()
             scheduleRetryIfNeeded()
             result
+            }
         }
+
+        return if (eventType == SyncEventType.FULL_SYNC) {
+            tracer.runSuspendSpan(
+                name = SyncSpanName.SYNC,
+                attributes = mapOf(SyncTraceAttributes.OPERATION to "full_sync"),
+                statusFor = ::syncSpanStatusFor,
+            ) { span ->
+                runBlock().also { span.recordSyncResult(it) }
+            }
+        } else {
+            runBlock()
+        }
+    }
 
     private fun AuthResult.Failure.toSyncFailure(): SyncResult.Failure =
         SyncResult.Failure(

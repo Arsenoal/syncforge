@@ -28,6 +28,7 @@ dependencies {
         api("${project.group}:syncforge-store-inmemory:$libraryVersion")
         api("${project.group}:syncforge-integration-koin:$libraryVersion")
         api("${project.group}:syncforge-integration-hilt:$libraryVersion")
+        api("${project.group}:syncforge-integration-opentelemetry:$libraryVersion")
     }
 }
 
@@ -60,6 +61,7 @@ tasks.register("verifyBomConstraints") {
             "syncforge-store-inmemory",
             "syncforge-integration-koin",
             "syncforge-integration-hilt",
+            "syncforge-integration-opentelemetry",
         )
         val found = configurations.getByName("api")
             .allDependencyConstraints

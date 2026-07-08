@@ -23,6 +23,7 @@ import dev.syncforge.persistence.mergeBaseStore
 import dev.syncforge.persistence.outboxRepository
 import dev.syncforge.sync.SyncCursorStoreFactory
 import dev.syncforge.sync.SyncManager
+import dev.syncforge.trace.SyncTracer
 import dev.syncforge.work.AndroidSyncWorkScheduler
 import dev.syncforge.work.SyncWorkerFactory
 import kotlinx.coroutines.CoroutineScope
@@ -127,6 +128,15 @@ class AndroidSyncForgeDsl internal constructor(
 
     fun conflicts(block: ConflictPolicyBuilder.() -> Unit) {
         builder.conflicts(block)
+    }
+
+    /**
+     * Opt-in structured tracing (OpenTelemetry-compatible spans). Default is [SyncTracer.None]
+     * (zero overhead).
+     */
+    @ExperimentalSyncForgeApi
+    fun tracing(tracer: SyncTracer) {
+        builder.syncTracer = tracer
     }
 
     /** Escape hatch for advanced overrides on the underlying [SyncForgeBuilder]. */

@@ -47,6 +47,7 @@ dependencies {
 | `store-inmemory` | `studio.syncforge:syncforge-store-inmemory` |
 | `integration-koin` | `studio.syncforge:syncforge-integration-koin` |
 | `integration-hilt` | `studio.syncforge:syncforge-integration-hilt` |
+| `integration-opentelemetry` | `studio.syncforge:syncforge-integration-opentelemetry` |
 
 Plugin: `syncforge.plugins.syncforge.android` → `id("studio.syncforge.android")`.
 

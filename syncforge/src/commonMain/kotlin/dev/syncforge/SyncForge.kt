@@ -21,6 +21,7 @@ import dev.syncforge.sync.SyncCursorStore
 import dev.syncforge.sync.SyncManager
 import dev.syncforge.sync.SyncManagerImpl
 import dev.syncforge.sync.SyncWorkScheduler
+import dev.syncforge.trace.SyncTracer
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -54,6 +55,7 @@ object SyncForge {
         conflictStore: ConflictStore = NoOpConflictStore,
         mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
         authService: SyncForgeAuthService? = null,
+        syncTracer: SyncTracer = SyncTracer.None,
     ): SyncManager {
         require(config.entityTypes.containsAll(registry.entityTypes())) {
             "SyncConfig.entityTypes must include all registered handler types: " +
@@ -73,6 +75,7 @@ object SyncForge {
             mergeBaseStore = mergeBaseStore,
             scope = scope,
             authService = authService,
+            tracer = syncTracer,
         )
     }
 
@@ -93,11 +96,14 @@ object SyncForge {
         conflictStore: ConflictStore = NoOpConflictStore,
         mergeBaseStore: MergeBaseStore = NoOpMergeBaseStore,
         authService: SyncForgeAuthService? = null,
+        syncTracer: SyncTracer = SyncTracer.None,
     ): SyncManager {
         lateinit var manager: SyncManager
-        val retryScheduler = dev.syncforge.sync.InProcessRetryScheduler(scope) {
-            manager.push()
-        }
+        val retryScheduler = dev.syncforge.sync.InProcessRetryScheduler(
+            scope = scope,
+            onRetry = { manager.push() },
+            tracer = syncTracer,
+        )
         manager = create(
             config = config,
             outbox = outbox,
@@ -112,6 +118,7 @@ object SyncForge {
             conflictStore = conflictStore,
             mergeBaseStore = mergeBaseStore,
             authService = authService,
+            syncTracer = syncTracer,
         )
         return manager
     }

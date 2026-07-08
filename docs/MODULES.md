@@ -54,6 +54,7 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
 | `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Conflict-resolution API. |
 | `SyncDebug`, `SyncHealth`, `SyncEvent` | **Experimental** | Developer observability. |
+| `SyncTracer`, `SyncSpan`, `SyncSpanName` | **Experimental** | Opt-in structured tracing (1.5-01). |
 | `SyncDebugLauncher`, `SyncDebugPanel` | **Experimental** | Debug Compose UI (Android). |
 | `SyncStatusUiModel`, `collectSyncStatusUiModel()`, conflict Compose UI | **Stable** | Production UI helpers on Android. |
 | `databaseName()` | **Stable** | SQLDelight database file name on Android (default `syncforge.db` since 0.6.0); JVM desktop uses `java.io.tmpdir` (1.3-03). |
@@ -642,6 +643,20 @@ Snapshot fields: `status`, `isOnline`, `pendingOutboxCount`, `failedOutboxCount`
 `openConflictCount`, `lastSyncedAtMillis`, `pullCursorMillis`, `maxRetries`.
 
 Events are logged automatically in `SyncManagerImpl` for sync, push, pull, enqueue, and conflicts.
+
+### `SyncTracer` (Experimental, 1.5-01)
+
+Opt-in OpenTelemetry-compatible spans. Default [SyncTracer.None](../syncforge/src/commonMain/kotlin/dev/syncforge/trace/SyncTracer.kt) — zero overhead when disabled.
+
+| Span | Trigger |
+|------|---------|
+| `syncforge.sync` | `syncManager.sync()` |
+| `syncforge.push` | Push batch |
+| `syncforge.pull` | Pull + apply |
+| `syncforge.conflict` | Conflict deferred/resolved |
+| `syncforge.retry` | Retry scheduled or executed |
+
+Wire: `tracing(OpenTelemetrySyncTracer(...))` on `SyncForge.android { }`. See [TRACING.md](TRACING.md).
 
 ---
 

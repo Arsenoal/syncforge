@@ -20,6 +20,7 @@ import dev.syncforge.sync.SyncConfig
 import dev.syncforge.sync.SyncCursorStore
 import dev.syncforge.sync.SyncManager
 import dev.syncforge.sync.SyncWorkScheduler
+import dev.syncforge.trace.SyncTracer
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -52,6 +53,7 @@ class SyncForgeBuilder {
     var conflictStore: ConflictStore? = null
     var mergeBaseStore: MergeBaseStore? = null
     var authService: SyncForgeAuthService? = null
+    var syncTracer: SyncTracer = SyncTracer.None
 
     internal var schedulePeriodicSyncOnStart: Boolean = false
 
@@ -101,6 +103,7 @@ class SyncForgeBuilder {
                 conflictStore = conflictStore ?: NoOpConflictStore,
                 mergeBaseStore = mergeBaseStore ?: NoOpMergeBaseStore,
                 authService = authService,
+                syncTracer = syncTracer,
             )
         } else {
             SyncForge.create(
@@ -117,6 +120,7 @@ class SyncForgeBuilder {
                 conflictStore = conflictStore ?: NoOpConflictStore,
                 mergeBaseStore = mergeBaseStore ?: NoOpMergeBaseStore,
                 authService = authService,
+                syncTracer = syncTracer,
             )
         }
     }

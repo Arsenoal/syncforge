@@ -6,12 +6,18 @@ import dev.syncforge.entity.TypedEntitySyncHandler
 import dev.syncforge.model.SyncState
 import dev.syncforge.network.RemoteDelta
 import dev.syncforge.sync.OutboxReconciler
+import dev.syncforge.trace.NoOpSyncTracer
+import dev.syncforge.trace.SyncSpanName
+import dev.syncforge.trace.SyncTraceAttributes
+import dev.syncforge.trace.SyncTracer
+import dev.syncforge.trace.runSpan
 
 internal class ConflictPullApplier(
     private val policy: MutableConflictPolicy,
     private val conflictStore: ConflictStore,
     private val mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
     private val outboxReconciler: OutboxReconciler? = null,
+    private val tracer: SyncTracer = NoOpSyncTracer,
     private val clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
 ) {
 
@@ -20,12 +26,14 @@ internal class ConflictPullApplier(
         conflictStore: ConflictStore,
         mergeBaseRecorder: MergeBaseRecorder = MergeBaseRecorder(),
         outboxReconciler: OutboxReconciler? = null,
+        tracer: SyncTracer = NoOpSyncTracer,
         clock: () -> Long = { dev.syncforge.sync.currentTimeMillis() },
     ) : this(
         policy = MutableConflictPolicy(policy),
         conflictStore = conflictStore,
         mergeBaseRecorder = mergeBaseRecorder,
         outboxReconciler = outboxReconciler,
+        tracer = tracer,
         clock = clock,
     )
 
@@ -73,6 +81,14 @@ internal class ConflictPullApplier(
 
         return when (outcome) {
             is ConflictOutcome.Deferred -> {
+                tracer.runSpan(
+                    name = SyncSpanName.CONFLICT,
+                    attributes = mapOf(
+                        SyncTraceAttributes.ENTITY_TYPE to handler.entityType,
+                        SyncTraceAttributes.ENTITY_ID to delta.entityId,
+                        SyncTraceAttributes.CONFLICT_OUTCOME to "deferred",
+                    ),
+                ) { }
                 conflictStore.closeOpenForEntity(handler.entityType, delta.entityId)
                 conflictStore.recordDeferred(
                     entityType = handler.entityType,
@@ -92,6 +108,14 @@ internal class ConflictPullApplier(
             }
 
             is ConflictOutcome.Resolved -> {
+                tracer.runSpan(
+                    name = SyncSpanName.CONFLICT,
+                    attributes = mapOf(
+                        SyncTraceAttributes.ENTITY_TYPE to handler.entityType,
+                        SyncTraceAttributes.ENTITY_ID to delta.entityId,
+                        SyncTraceAttributes.CONFLICT_OUTCOME to "auto_resolved",
+                    ),
+                ) { }
                 conflictStore.recordAutoResolved(
                     entityType = handler.entityType,
                     entityId = delta.entityId,

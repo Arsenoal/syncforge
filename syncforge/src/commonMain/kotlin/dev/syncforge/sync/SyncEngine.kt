@@ -12,6 +12,13 @@ import dev.syncforge.model.SyncResult
 import dev.syncforge.model.SyncStatus
 import dev.syncforge.network.SyncTransport
 import dev.syncforge.outbox.OutboxRepository
+import dev.syncforge.trace.SyncSpanName
+import dev.syncforge.trace.SyncTraceAttributes
+import dev.syncforge.trace.SyncTracer
+import dev.syncforge.trace.NoOpSyncTracer
+import dev.syncforge.trace.recordSyncResult
+import dev.syncforge.trace.runSuspendSpan
+import dev.syncforge.trace.syncSpanStatusFor
 
 /**
  * Internal coordinator for push/pull cycles.
@@ -29,6 +36,7 @@ internal class SyncEngine(
         mergeBaseRecorder,
     ),
     private val pullDeltaApplier: PullDeltaApplier = PullDeltaApplier(registry, conflictPullApplier),
+    private val tracer: SyncTracer = NoOpSyncTracer,
     private val clock: () -> Long = { currentTimeMillis() },
 ) {
 
@@ -40,6 +48,7 @@ internal class SyncEngine(
         conflictStore: dev.syncforge.conflict.ConflictStore,
         mergeBaseStore: MergeBaseStore,
         conflictPullApplier: ConflictPullApplier,
+        tracer: SyncTracer = NoOpSyncTracer,
         clock: () -> Long = { currentTimeMillis() },
     ) : this(
         config = config,
@@ -49,6 +58,7 @@ internal class SyncEngine(
         conflictStore = conflictStore,
         mergeBaseRecorder = MergeBaseRecorder(mergeBaseStore, clock),
         conflictPullApplier = conflictPullApplier,
+        tracer = tracer,
         clock = clock,
     )
 
@@ -76,7 +86,20 @@ internal class SyncEngine(
             return SyncResult.Success()
         }
 
-        return try {
+        return tracer.runSuspendSpan(
+            name = SyncSpanName.PUSH,
+            attributes = mapOf(
+                SyncTraceAttributes.OPERATION to "push",
+                SyncTraceAttributes.BATCH_SIZE to batch.size.toString(),
+            ),
+            statusFor = ::syncSpanStatusFor,
+        ) { span ->
+            runPushInner(batch, span)
+        }
+    }
+
+    private suspend fun runPushInner(batch: List<dev.syncforge.model.OutboxEntry>, span: dev.syncforge.trace.SyncSpan): SyncResult =
+        try {
             val response = transport.push(batch)
 
             batch.filter { it.id in response.acknowledgedIds }.forEach { entry ->
@@ -106,6 +129,9 @@ internal class SyncEngine(
                 errors += rejection.error
             }
 
+            span.setAttribute(SyncTraceAttributes.ACKNOWLEDGED_COUNT, response.acknowledgedIds.size.toLong())
+            span.setAttribute(SyncTraceAttributes.REJECTED_COUNT, response.rejected.size.toLong())
+
             when {
                 errors.isEmpty() -> SyncResult.Success(pushed = response.acknowledgedIds.size)
                 response.acknowledgedIds.isNotEmpty() -> SyncResult.Partial(
@@ -117,7 +143,7 @@ internal class SyncEngine(
                     errors = errors,
                 )
                 else -> SyncResult.Failure(errors.first())
-            }
+            }.also { span.recordSyncResult(it) }
         } catch (e: Exception) {
             val error = SyncError(
                 code = SyncError.Code.NETWORK,
@@ -132,12 +158,23 @@ internal class SyncEngine(
                     maxRetries = config.maxRetries,
                 )
             }
-            SyncResult.Failure(error)
+            SyncResult.Failure(error).also { span.recordSyncResult(it) }
         }
-    }
 
-    suspend fun runPull(sinceTimestampMillis: Long): SyncResult {
-        return try {
+    suspend fun runPull(sinceTimestampMillis: Long): SyncResult =
+        tracer.runSuspendSpan(
+            name = SyncSpanName.PULL,
+            attributes = mapOf(
+                SyncTraceAttributes.OPERATION to "pull",
+                SyncTraceAttributes.SINCE_MILLIS to sinceTimestampMillis.toString(),
+            ),
+            statusFor = ::syncSpanStatusFor,
+        ) { span ->
+            runPullInner(sinceTimestampMillis, span)
+        }
+
+    private suspend fun runPullInner(sinceTimestampMillis: Long, span: dev.syncforge.trace.SyncSpan): SyncResult =
+        try {
             var pageCursor: String? = null
             var totalPulled = 0
             var conflictsResolved = 0
@@ -166,7 +203,12 @@ internal class SyncEngine(
                 conflictsResolved = conflictsResolved,
                 deleted = deleted,
                 syncCursorMillis = serverTimestamp,
-            )
+            ).also {
+                span.setAttribute(SyncTraceAttributes.PULLED_COUNT, totalPulled.toLong())
+                span.setAttribute(SyncTraceAttributes.CONFLICTS_RESOLVED, conflictsResolved.toLong())
+                span.setAttribute(SyncTraceAttributes.DELETED_COUNT, deleted.toLong())
+                span.recordSyncResult(it)
+            }
         } catch (e: Exception) {
             SyncResult.Failure(
                 SyncError(
@@ -174,9 +216,8 @@ internal class SyncEngine(
                     message = e.message ?: "Pull failed",
                     cause = e,
                 ),
-            )
+            ).also { span.recordSyncResult(it) }
         }
-    }
 
     suspend fun resolveStatus(
         networkOnline: Boolean,

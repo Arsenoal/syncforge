@@ -23,6 +23,7 @@ val catalogLibraries = listOf(
     "store-inmemory" to "syncforge-store-inmemory",
     "integration-koin" to "syncforge-integration-koin",
     "integration-hilt" to "syncforge-integration-hilt",
+    "integration-opentelemetry" to "syncforge-integration-opentelemetry",
 )
 
 catalog {

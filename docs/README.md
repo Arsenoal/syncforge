@@ -16,6 +16,7 @@ docs/
 ├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL
 ├── RECIPES.md                ← How-to: merge, deferToUser, debug, observe status
 ├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore (1.4)
+├── TRACING.md                ← Opt-in OpenTelemetry spans (1.5)
 ├── CONFLICT_RESOLUTION.md    ← Strategies, lifecycle, Compose UI, decision guide
 ├── BEST_PRACTICES.md         ← Entity design, strategy choices, performance
 ├── KMP_MIGRATION.md          ← Room → SQLDelight, iOS targets, expect/actual plan
