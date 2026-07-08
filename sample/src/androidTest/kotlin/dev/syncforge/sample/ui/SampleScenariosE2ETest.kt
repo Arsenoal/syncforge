@@ -39,8 +39,9 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
     }
 
     @Test
-    fun tasks_editConflict_resolveKeepLocal() {
+    fun tasks_serverEditAndLocalCheckbox_autoMerges() {
         val taskTitle = uniqueTitle("E2E Scenario EditConflict")
+        val mergedTitle = serverEditedTitle(taskTitle)
         addTask(taskTitle)
         syncAndWaitForIdle()
         waitForRowSyncState(taskTitle, "Synced")
@@ -50,10 +51,7 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
         toggleCheckboxForTask(taskTitle)
 
         syncAndWaitForIdle()
-        waitForTextContains("Conflict", timeoutMillis = 30_000)
-        waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
-
-        resolveConflictKeepLocal()
+        waitForRowSyncState(mergedTitle, "Synced", timeoutMillis = 45_000)
         waitForTextGone("Conflict — tap Resolve", timeoutMillis = 30_000)
     }
 
@@ -147,13 +145,13 @@ class SampleScenariosE2ETest : SampleE2ETestBase() {
         waitForTextContains("Server updated")
         toggleCheckboxForTask(taskTitle)
         syncAndWaitForIdle()
-        waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 45_000)
 
         addNote(noteTitle)
         syncAndWaitForIdle()
         waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
 
         navigateToTasks()
-        waitForTextContains("Conflict")
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 30_000)
     }
 }

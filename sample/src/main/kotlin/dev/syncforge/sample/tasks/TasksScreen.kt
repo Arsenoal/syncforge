@@ -98,6 +98,12 @@ private fun TasksScreenBody(
                 )
             }
 
+            Text(
+                text = "Tasks use gitLike { } — title/completed auto-merge when edits differ; " +
+                    "same-field clashes and server deletes defer to you.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             if (conflicts.isNotEmpty()) {
                 Text(
                     text = "Tap the conflict chip or Resolve on a conflicted task.",

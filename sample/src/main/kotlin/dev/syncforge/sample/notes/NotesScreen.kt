@@ -49,7 +49,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Notes use last-write-wins. Optional tagId links to the Tags tab (separate sync).",
+            text = "Notes use alwaysRemote() — server copy wins on conflict. tagId links to Tags (separate sync).",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

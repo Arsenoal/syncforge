@@ -10,6 +10,7 @@ import dev.syncforge.sample.notes.SyncForgeHandlers
 import dev.syncforge.sample.notes.NoteRepository
 import dev.syncforge.sample.tags.TagRepository
 import dev.syncforge.sample.demo.DemoActivityLog
+import dev.syncforge.sample.conflicts.sampleEntityConflicts
 import dev.syncforge.sample.tasks.SampleDatabase
 import dev.syncforge.sample.tasks.TaskRepository
 import dev.syncforge.sync.SyncManager
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalSyncForgeApi::class)
 class SampleApplication : Application(), Configuration.Provider {
 
     private lateinit var database: SampleDatabase
@@ -50,9 +52,7 @@ class SampleApplication : Application(), Configuration.Provider {
             registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
             pullPageSize = 50
             conflicts {
-                entity("tasks") { deferToUser() }
-                entity("notes") { lastWriteWins() }
-                entity("tags") { lastWriteWins() }
+                sampleEntityConflicts()
             }
             schedulePeriodicSyncOnStart()
         }

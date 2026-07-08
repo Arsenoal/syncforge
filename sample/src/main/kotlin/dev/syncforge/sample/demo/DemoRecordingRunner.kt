@@ -1,10 +1,8 @@
 package dev.syncforge.sample.demo
 
-import dev.syncforge.conflict.ConflictChoice
 import dev.syncforge.sample.BuildConfig
 import dev.syncforge.sample.SampleApplication
 import dev.syncforge.sample.tasks.DevSyncClient
-import dev.syncforge.sample.tasks.TaskEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
@@ -45,19 +43,16 @@ object DemoRecordingRunner {
 
         val task = app.taskRepository.observeTasks().first().firstOrNull()
         if (task != null) {
-            DemoActivityLog.log("Step 3/5 — server edit + local edit → conflict", highlight = true)
+            DemoActivityLog.log(
+                "Step 3/5 — server title edit + local checkbox → gitLike auto-merge",
+                highlight = true,
+            )
             DevSyncClient.simulateServerEdit(task, "${task.title} (server)")
             delay(1_500)
             app.taskRepository.toggleCompleted(task)
             delay(1_000)
             app.syncManager.sync()
             delay(4_000)
-            app.syncManager.resolveConflict(
-                entityType = TaskEntity.ENTITY_TYPE,
-                entityId = task.id,
-                choice = ConflictChoice.KeepLocal,
-            )
-            delay(2_500)
         }
 
         DemoActivityLog.log("Step 4/5 — clear local Room DB + cursor", highlight = true)

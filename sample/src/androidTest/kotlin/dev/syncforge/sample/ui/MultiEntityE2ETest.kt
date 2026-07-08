@@ -50,8 +50,8 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         toggleCheckboxForTask(taskTitle)
 
         tapText("Sync")
-        waitForTextContains("Conflict", timeoutMillis = 30_000)
-        waitForRowSyncState(taskTitle, "Conflict — tap Resolve")
+        waitForSyncToFinish()
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 45_000)
 
         addNote(noteTitle)
         tapText("Sync")
@@ -60,6 +60,6 @@ class MultiEntityE2ETest : SampleE2ETestBase() {
         waitForRowSyncState(noteTitle, "Synced", timeoutMillis = 60_000)
 
         navigateToTasks()
-        waitForTextContains("Conflict")
+        waitForRowSyncState(serverEditedTitle(taskTitle), "Synced", timeoutMillis = 30_000)
     }
 }

@@ -57,6 +57,19 @@ class InMemorySyncStore : SyncStore {
                 return@forEach
             }
 
+            if (
+                entry.changeType == ChangeType.UPDATE &&
+                existing != null &&
+                existing.serverVersion != entry.localVersion - 1
+            ) {
+                rejected += PushRejectionDto(
+                    outboxId = entry.id,
+                    code = "CONFLICT",
+                    message = "Server version ${existing.serverVersion} does not match expected base ${entry.localVersion - 1}",
+                )
+                return@forEach
+            }
+
             val nextVersion = versionCounter.getAndIncrement()
             val record = when (entry.changeType) {
                 ChangeType.DELETE -> Record(

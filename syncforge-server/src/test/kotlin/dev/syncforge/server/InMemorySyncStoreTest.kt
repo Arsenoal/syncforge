@@ -107,4 +107,50 @@ class InMemorySyncStoreTest {
         assertEquals(1, response.rejected.size)
         assertEquals("CONFLICT", response.rejected.single().code)
     }
+
+    @Test
+    fun push_rejectsStaleUpdateAfterServerForceEdit() {
+        val store = InMemorySyncStore()
+        store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 1,
+                    entityType = "tasks",
+                    entityId = "task-1",
+                    changeType = ChangeType.CREATE,
+                    payloadJson = """{"id":"task-1","title":"Original"}""",
+                    localVersion = 1,
+                    createdAtMillis = 1,
+                ),
+            ),
+            nowMillis = 100L,
+        )
+        assertTrue(
+            store.forceUpdate(
+                entityType = "tasks",
+                entityId = "task-1",
+                payloadJson = """{"id":"task-1","title":"Original (server edit)"}""",
+                nowMillis = 200L,
+            ),
+        )
+
+        val response = store.push(
+            listOf(
+                OutboxEntryDto(
+                    id = 2,
+                    entityType = "tasks",
+                    entityId = "task-1",
+                    changeType = ChangeType.UPDATE,
+                    payloadJson = """{"id":"task-1","title":"Original","completed":true}""",
+                    localVersion = 2,
+                    createdAtMillis = 300L,
+                ),
+            ),
+            nowMillis = 300L,
+        )
+
+        assertTrue(response.acknowledgedIds.isEmpty())
+        assertEquals(1, response.rejected.size)
+        assertEquals("CONFLICT", response.rejected.single().code)
+    }
 }

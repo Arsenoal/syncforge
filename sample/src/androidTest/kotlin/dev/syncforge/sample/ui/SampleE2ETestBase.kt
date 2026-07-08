@@ -281,6 +281,10 @@ abstract class SampleE2ETestBase {
     protected fun uniqueTitle(prefix: String): String =
         "$prefix ${System.currentTimeMillis()}"
 
+    /** Title after mock-server `POST /dev/simulate-edit` (appends ` (server edit)`). */
+    protected fun serverEditedTitle(originalTitle: String): String =
+        "$originalTitle (server edit)"
+
     private fun isMockServerHealthy(): Boolean =
         runCatching {
             val url = URL(

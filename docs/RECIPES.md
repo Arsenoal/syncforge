@@ -59,6 +59,56 @@ SyncForge.android(this) {
 
 ---
 
+## `:sample` conflict matrix (1.2)
+
+Reference wiring for three entity types on one `SyncManager` — copy from
+[`SampleConflictPolicies.kt`](../sample/src/main/kotlin/dev/syncforge/sample/conflicts/SampleConflictPolicies.kt)
+or call `sampleEntityConflicts()` from `SampleApplication`:
+
+| Entity | Strategy | Behaviour |
+|--------|----------|-----------|
+| **notes** | `alwaysRemote()` | Server-owned content; device accepts remote on pull |
+| **tags** | `lastWriteWins()` | Simple label rows; newest `updatedAtMillis` wins |
+| **tasks** | `gitLike { }` | Title and `completed` merge independently; same-field clash or remote delete → `deferToUser()` |
+
+```kotlin
+import dev.syncforge.api.ExperimentalSyncForgeApi
+import dev.syncforge.sample.conflicts.sampleEntityConflicts
+
+@OptIn(ExperimentalSyncForgeApi::class)
+SyncForge.android(context) {
+    baseUrl(BuildConfig.SYNC_BASE_URL)
+    registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
+    conflicts {
+        sampleEntityConflicts()
+    }
+}
+```
+
+**Tasks `gitLike` policy** (abbreviated — full `threeWayMerge` in `SampleConflictPolicies.kt`):
+
+```kotlin
+entity("tasks") {
+    gitLike<TaskEntity> {
+        threeWayMerge { base, local, remote ->
+            // Non-overlapping title vs completed edits → Merged(...)
+            // Same field edited on both sides → Unmergeable
+        }
+        onUnmergeable { deferToUser() }
+        onRemoteDelete { deferToUser() }  // delete-conflict E2E + resolution sheet
+    }
+}
+```
+
+**Demo flows in `:sample`:**
+
+- Server edit + local checkbox toggle → auto-merge (no conflict sheet)
+- Server delete + local edit → `deferToUser()` → **Resolve** sheet (Keep local / Accept remote)
+
+`:mock-server` rejects stale `UPDATE` pushes after `POST /dev/simulate-edit` so the server edit survives until pull (optimistic concurrency on `localVersion`).
+
+---
+
 ## Handle `deferToUser()` conflicts in Compose
 
 Use when the user must choose between local and remote versions — e.g. editing the same
@@ -448,9 +498,9 @@ class SampleApplication : Application(), Configuration.Provider {
             baseUrl(BuildConfig.SYNC_BASE_URL)
             registry(SyncForgeHandlers.registry(db.noteDao(), db.tagDao(), db.taskDao()))
             conflicts {
-                entity("tasks") { deferToUser() }
-                entity("notes") { lastWriteWins() }
+                entity("notes") { alwaysRemote() }
                 entity("tags") { lastWriteWins() }
+                entity("tasks") { deferToUser() } // :sample uses gitLike — see SampleConflictPolicies.kt
             }
             schedulePeriodicSyncOnStart()
         }
@@ -497,9 +547,9 @@ val syncForgeKoinModule = module {
                 ),
             )
             conflicts {
-                entity("tasks") { deferToUser() }
-                entity("notes") { lastWriteWins() }
+                entity("notes") { alwaysRemote() }
                 entity("tags") { lastWriteWins() }
+                entity("tasks") { deferToUser() } // :sample uses gitLike — see SampleConflictPolicies.kt
             }
             schedulePeriodicSyncOnStart()
         }
@@ -594,9 +644,9 @@ object SyncForgeModule {
         baseUrl(BuildConfig.SYNC_BASE_URL)
         registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
         conflicts {
-            entity("tasks") { deferToUser() }
-            entity("notes") { lastWriteWins() }
+            entity("notes") { alwaysRemote() }
             entity("tags") { lastWriteWins() }
+            entity("tasks") { deferToUser() } // :sample uses gitLike — see SampleConflictPolicies.kt
         }
         schedulePeriodicSyncOnStart()
     }

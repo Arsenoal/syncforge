@@ -138,7 +138,8 @@ class TasksViewModel(
                     "Mock-server POST /dev/simulate-edit — remote version bumped on server",
                     highlight = true,
                 )
-                _devMessage.value = "Server updated — edit locally, then Sync to trigger conflict"
+                _devMessage.value =
+                    "Server updated — edit a different field locally, then Sync (gitLike auto-merges non-overlapping edits)"
             }.onFailure { error ->
                 _devMessage.value = error.message ?: "Simulate edit failed"
             }

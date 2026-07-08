@@ -27,8 +27,9 @@ class TasksE2ETest : SampleE2ETestBase() {
     }
 
     @Test
-    fun conflictFlow_serverEditThenLocalEdit_allowsResolution() {
+    fun conflictFlow_serverEditThenLocalEdit_autoMerges() {
         val taskTitle = uniqueTitle("E2E Conflict")
+        val mergedTitle = serverEditedTitle(taskTitle)
         addTask(taskTitle)
         tapText("Sync")
         waitForSyncToFinish()
@@ -40,10 +41,8 @@ class TasksE2ETest : SampleE2ETestBase() {
         toggleCheckboxForTask(taskTitle)
 
         tapText("Sync")
-        waitForTextContains("Conflict", timeoutMillis = 30_000)
-
-        resolveConflictKeepLocal()
-
+        waitForSyncToFinish()
+        waitForRowSyncState(mergedTitle, "Synced", timeoutMillis = 45_000)
         waitForTextGone("Conflict — tap Resolve")
     }
 
