@@ -102,6 +102,7 @@ Companion modules:
 | `:syncforge-network-ktor` | Optional Ktor REST `SyncHttpClient` + `KtorSyncTransport` |
 | `:syncforge-transport-core` | Optional BaaS port — `SyncDeltaStore` + `DeltaStoreSyncTransport` |
 | `:syncforge-transport-supabase` | Supabase Postgres `SupabaseSyncDeltaStore` (PostgREST RPC) |
+| `:syncforge-transport-firebase` | Firebase Firestore `FirebaseSyncDeltaStore` (Cloud Functions HTTPS) |
 | `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
 | `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
 | `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |
@@ -433,6 +434,10 @@ SyncForge.android(this) {
 ### `:syncforge-transport-supabase`
 
 Ready-made [SupabaseSyncDeltaStore](../syncforge-transport-supabase/README.md) — PostgREST RPC to `syncforge_push` / `syncforge_pull` (SQL in `supabase/migrations/`). Wire with `DeltaStoreSyncTransport`; subscribe to Realtime `postgres_changes` on `sync_entity` for background pull.
+
+### `:syncforge-transport-firebase`
+
+Ready-made [FirebaseSyncDeltaStore](../syncforge-transport-firebase/README.md) — HTTPS calls to `syncforgePush` / `syncforgePull` Cloud Functions (TypeScript in `firebase/functions/`). Wire with `DeltaStoreSyncTransport`; subscribe to Firestore `sync_entity` snapshots via `FirebaseListenerPatterns` for background pull.
 
 ### `KtorSyncTransport` (commonMain)
 

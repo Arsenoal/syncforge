@@ -1,0 +1,12 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "sync_entity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "updatedAtMillis", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

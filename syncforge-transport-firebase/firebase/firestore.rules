@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Clients call HTTPS Cloud Functions for push/pull; direct writes are blocked.
+    match /sync_entity/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /metadata/{docId} {
+      allow read, write: if false;
+    }
+  }
+}
