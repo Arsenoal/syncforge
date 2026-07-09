@@ -107,19 +107,42 @@ fun verifyMavenCentralArtifacts(
     throw GradleException("Missing on Maven Central: ${missing.joinToString()}")
 }
 
+fun mavenCentralStagingConnectTimeoutMs(): Int =
+    System.getenv("MAVEN_CENTRAL_STAGING_CONNECT_TIMEOUT_MS")?.toIntOrNull() ?: 60_000
+
+fun mavenCentralStagingReadTimeoutMs(): Int =
+    System.getenv("MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS")?.toIntOrNull() ?: 300_000
+
+fun mavenCentralStagingMaxRetries(): Int =
+    System.getenv("MAVEN_CENTRAL_STAGING_MAX_RETRIES")?.toIntOrNull() ?: 3
+
+fun mavenCentralStagingRetrySleepMs(attempt: Int): Long =
+    (System.getenv("MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC")?.toIntOrNull() ?: 15) *
+        (attempt + 1) * 1000L
+
+fun isRetryableStagingError(error: Throwable): Boolean =
+    error is java.net.SocketTimeoutException ||
+        error is java.net.ConnectException ||
+        error is java.io.IOException
+
 class MavenCentralStagingClient(
     private val username: String,
     private val password: String,
+    private val logger: org.gradle.api.logging.Logger,
+    private val connectTimeoutMs: Int = mavenCentralStagingConnectTimeoutMs(),
+    private val readTimeoutMs: Int = mavenCentralStagingReadTimeoutMs(),
+    private val maxRetries: Int = mavenCentralStagingMaxRetries(),
 ) {
     private val authHeader: String =
         "Bearer ${Base64.getEncoder().encodeToString("$username:$password".toByteArray())}"
 
-    fun request(method: String, path: String): String {
+    private fun executeOnce(method: String, path: String): String {
         val connection = URI("$stagingApiBase$path").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = method
         connection.setRequestProperty("Authorization", authHeader)
-        connection.connectTimeout = 30_000
-        connection.readTimeout = 60_000
+        connection.instanceFollowRedirects = true
+        connection.connectTimeout = connectTimeoutMs
+        connection.readTimeout = readTimeoutMs
         val code = connection.responseCode
         val stream = if (code in 200..299) connection.inputStream else connection.errorStream
         val body = stream?.bufferedReader()?.use { it.readText() }?.trim().orEmpty()
@@ -129,12 +152,40 @@ class MavenCentralStagingClient(
         return body
     }
 
-    fun requestOrNull(method: String, path: String): String? =
-        try {
-            request(method, path)
-        } catch (_: GradleException) {
-            null
+    fun request(method: String, path: String): String {
+        var lastError: Throwable? = null
+        for (attempt in 0 until maxRetries) {
+            try {
+                return executeOnce(method, path)
+            } catch (error: Throwable) {
+                lastError = error
+                if (attempt < maxRetries - 1 && isRetryableStagingError(error)) {
+                    val sleepMs = mavenCentralStagingRetrySleepMs(attempt)
+                    logger.lifecycle(
+                        "Staging API $method $path failed (${error.javaClass.simpleName}: ${error.message}) " +
+                            "— retry ${attempt + 2}/$maxRetries in ${sleepMs / 1000}s " +
+                            "(readTimeout=${readTimeoutMs}ms)",
+                    )
+                    Thread.sleep(sleepMs)
+                } else {
+                    break
+                }
+            }
         }
+        throw GradleException(
+            "Staging API $method $path failed after $maxRetries attempt(s)",
+            lastError,
+        )
+    }
+
+    /** Returns null only when the server reports no staging upload (HTTP 404). */
+    fun requestOrEmpty(method: String, path: String): String? {
+        return try {
+            request(method, path)
+        } catch (error: GradleException) {
+            if (error.message?.contains("HTTP 404") == true) null else throw error
+        }
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -309,19 +360,24 @@ tasks.register("finalizeMavenCentralStaging") {
             ?: error("MAVEN_CENTRAL_USERNAME is required")
         val password = System.getenv("MAVEN_CENTRAL_PASSWORD")
             ?: error("MAVEN_CENTRAL_PASSWORD is required")
-        val client = MavenCentralStagingClient(username, password)
+        val client = MavenCentralStagingClient(username, password, logger)
         val finalizeCurrentIp = System.getenv("FINALIZE_CURRENT_IP")?.toBooleanStrictOrNull() ?: true
         val strict = System.getenv("STRICT")?.toBooleanStrictOrNull() ?: false
         val dropInvalid = System.getenv("DROP_INVALID_ON_FAILURE")?.toBooleanStrictOrNull() ?: true
         val dropAllOpen = System.getenv("DROP_ALL_OPEN_STAGING")?.toBooleanStrictOrNull() ?: false
 
         if (finalizeCurrentIp) {
-            logger.lifecycle("Finalizing staging upload for namespace $namespace (current CI IP)...")
-            val body = client.requestOrNull("POST", "/manual/upload/defaultRepository/$namespace")
+            logger.lifecycle(
+                "Finalizing staging upload for namespace $namespace (current CI IP) " +
+                    "(connectTimeout=${mavenCentralStagingConnectTimeoutMs()}ms, " +
+                    "readTimeout=${mavenCentralStagingReadTimeoutMs()}ms, " +
+                    "retries=${mavenCentralStagingMaxRetries()})...",
+            )
+            val body = client.requestOrEmpty("POST", "/manual/upload/defaultRepository/$namespace")
             if (body != null) {
                 logger.lifecycle(body)
             } else {
-                val message = "No current-IP staging upload to finalize (ok before a fresh publish)."
+                val message = "No current-IP staging upload to finalize (HTTP 404 — ok if publish already transferred)."
                 if (strict) error(message) else logger.lifecycle(message)
             }
         }

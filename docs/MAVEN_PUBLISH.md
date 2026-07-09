@@ -245,6 +245,7 @@ git push origin v1.1.0
 | Artifact missing after publish | Wait for Central sync (`verifyMavenCentralArtifacts`), or check Sonatype **Component Coordinates** before clicking **Publish** |
 | Deployment **FAILED** with "already exists" | Maven Central does not allow re-uploading the same version — bump `syncforge.version`, tag a new release, and run **Publish Release** again |
 | CI publish succeeded but **Deployments** is empty | Re-run **Actions → Publish Release** (workflow_dispatch). It drops stale staging, publishes all artifacts, and runs the OSSRH finalize script automatically |
+| `finalizeMavenCentralStaging` **Read timed out** | Sonatype staging API can be slow after large KMP uploads. Re-run **Publish Release** (finalize step only needs credentials) or locally: `MAVEN_CENTRAL_USERNAME=… MAVEN_CENTRAL_PASSWORD=… ./gradlew finalizeMavenCentralStaging`. Defaults: 300s read timeout, 4 retries (override via `MAVEN_CENTRAL_STAGING_*` env vars). |
 | Plugin not found | `pluginManagement { repositories { mavenCentral(); gradlePluginPortal(); google() } }` |
 | Signing secret empty in CI | Use `SIGNING_IN_MEMORY_KEY_B64` on `github.com/Arsenoal/syncforge` → Settings → Secrets; name must be exact |
 | `Unable to read secret key from file` | CI converts armored key → binary via `gpg --dearmor`; store armored key in secrets, not binary |
