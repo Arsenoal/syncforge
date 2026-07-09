@@ -94,7 +94,9 @@ tasks.register("webE2e") {
                 workingDir(sampleWebDir)
                 environment("PATH", pathEnv)
                 environment("MOCK_SERVER_BASE_URL", baseUrl)
-                environment("CHROME_PATH", "/usr/bin/google-chrome")
+                System.getenv("CHROME_PATH")?.takeIf { it.isNotBlank() }?.let { chromePath ->
+                    environment("CHROME_PATH", chromePath)
+                }
                 environment("NODE_PATH", sampleWebDir.resolve("node_modules").absolutePath)
                 commandLine(nodeToolchain.node, "e2e/web-smoke-runner.mjs")
             }

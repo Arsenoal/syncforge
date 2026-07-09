@@ -145,6 +145,10 @@ your app on a different port (e.g. `8081`) — CORS on mock-server allows cross-
 ./gradlew webE2e                                 # headless smoke (default mock-server port 18080)
 ```
 
+**CI:** nightly workflow [`.github/workflows/web-e2e.yml`](../.github/workflows/web-e2e.yml)
+(schedule + `workflow_dispatch`). Not gated on every PR — same pattern as multi-device Android E2E.
+Requires Chrome/Chromium on the runner (`CHROME_PATH`); GitHub Actions uses `browser-actions/setup-chrome`.
+
 ### Production backends
 
 Do **not** use `anyHost()` in production. Configure explicit allowed origins on your Ktor/Spring

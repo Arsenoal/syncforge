@@ -63,7 +63,7 @@ Verify locally:
 | **1.6-01 primary target** | **`js` (Kotlin/JS IR)** |
 | **1.6-01 secondary** | Document `wasmJs` transport path; full persistence after SQLDelight ≥2.1 evaluation |
 | **BOM / publish** | No web artifacts until 1.6-01 acceptance |
-| **CI** | `verifyWebSpike` + `verifyWebCompile` gate compile; browser runtime E2E deferred to 1.6-06 |
+| **CI** | `verifyWebSpike` + `verifyWebCompile` on PR; runtime `webE2e` nightly ([web-e2e.yml](../.github/workflows/web-e2e.yml)) |
 
 ## Risks for 1.6-01+
 
@@ -82,6 +82,7 @@ Verify locally:
 3. ~~**1.6-03**~~ — `createKtorSyncTransport` browser factory (`createWebKtorSyncTransport` + `ktor-client-js`) ✅
 4. ~~**1.6-04**~~ — `:sample-web` push/pull against `:mock-server` ✅
 5. ~~**1.6-05**~~ — [WEB_SETUP.md](WEB_SETUP.md) + MODULES.md stability row ✅
+6. ~~**1.6-06**~~ — `webE2e` nightly CI (headless Chrome + puppeteer-core) ✅
 
 ## Related
 

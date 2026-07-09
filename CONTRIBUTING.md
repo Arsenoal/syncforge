@@ -28,6 +28,7 @@ Useful tasks:
 | `./gradlew verifyReleaseSignOff` | JVM + Android tests, consumer smoke (mavenLocal) only |
 | `./gradlew verifyConsumerSmokeMavenCentral` | Consumer app from Maven Central only |
 | `./gradlew androidE2e` | Emulator E2E (Linux CI) |
+| `./gradlew webE2e` | Browser push/pull smoke (headless Chrome; nightly CI) |
 | `./gradlew publishAllToMavenLocal` | Local Maven publish for integration |
 
 See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for consumer setup.

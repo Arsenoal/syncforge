@@ -813,7 +813,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 | 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine ✅ |
 | 1.6-04 | **`:sample-web`** — minimal Compose/Web or Kotlin/JS page           | P1       | Push + pull against `:mock-server` (same acceptance as `:sample-desktop`) ✅ |
 | 1.6-05 | **`WEB_SETUP.md`** + MODULES.md stability row                       | P1       | Gradle consumer snippet; CORS notes for dev mock-server ✅ |
-| 1.6-06 | **`webE2e` CI** — headless browser smoke (Playwright or Karma)      | P2       | Nightly; optional gate for 1.6.0 tag |
+| 1.6-06 | **`webE2e` CI** — headless browser smoke (Playwright or Karma)      | P2       | Nightly; optional gate for 1.6.0 tag ✅ |
 | 1.6-07 | **Conflict/debug UI on web** — share 1.3-05 CMP components          | P2       | Defer if 1.3-05 not yet on Wasm |
 
 ### 1.6.0 acceptance criteria (add-on release)
@@ -887,7 +887,7 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 - [ ] Entity sync mode unchanged for existing consumers (opt-in for new mode)
 - [ ] All 1.x experimental APIs either stable or removed with replacement
 - [ ] REST v1 supported for minimum 12 months after v2 introduction (if v2 ships)
-- [ ] Full CI matrix: Android E2E, iOS E2E, desktop smoke, consumer-smoke, multi-device (+ optional `webE2e` from 1.6 add-on)
+- [x] Full CI matrix: Android E2E, iOS E2E, desktop smoke, consumer-smoke, multi-device; `webE2e` nightly ([web-e2e.yml](../.github/workflows/web-e2e.yml))
 
 ---
 

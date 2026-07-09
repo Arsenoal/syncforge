@@ -867,7 +867,7 @@ Includes **dev CORS** (`installSyncServerDevCors()`) for browser samples — see
 ```
 
 Kotlin/JS browser sample proving `SyncForge.web { }` against `:mock-server` (push + pull).
-Headless smoke: `./gradlew webE2e`. Setup details: [WEB_SETUP.md](WEB_SETUP.md).
+Headless smoke: `./gradlew webE2e` (nightly CI: [web-e2e.yml](../.github/workflows/web-e2e.yml)). Setup: [WEB_SETUP.md](WEB_SETUP.md).
 
 ### `:sample`
 

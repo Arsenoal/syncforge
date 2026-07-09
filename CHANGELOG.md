@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`webE2e` nightly CI (1.6-06)** — [`.github/workflows/web-e2e.yml`](.github/workflows/web-e2e.yml): headless Chrome (`browser-actions/setup-chrome`) + `:sample-web` push/pull smoke; `workflow_dispatch` for manual runs
 - **`WEB_SETUP.md` (1.6-05)** — browser Gradle consumer snippet, webpack/SQL.js bundling, CORS notes (`:mock-server` dev + production guidance), explicit 1.6.x limitations; MODULES.md `SyncForge.web` stability row
 - **`:sample-web` (1.6-04)** — Kotlin/JS browser sample with `WebSampleController` (`SyncForge.web { }`), push + pull smoke (`?smoke=1`, `webE2e`); dev CORS on `:mock-server`
 - **Browser Ktor transport (1.6-03)** — `createWebKtorSyncTransport` + built-in `ktor-client-js` in `:syncforge` js (no `:syncforge-network-ktor` required); shared `buildSyncForgeHttpClient` / `HttpStatusMapper` in core

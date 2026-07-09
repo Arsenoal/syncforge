@@ -33,4 +33,5 @@ DerivedData/
 xcuserdata/
 *.moved-aside
 *.hmap
-*.ipasample-web/node_modules/
+*.ipa
+sample-web/node_modules/

@@ -72,7 +72,7 @@ See [WEB_SETUP.md → Explicit limitations](WEB_SETUP.md#explicit-limitations-16
 ./gradlew webE2e                                 # headless smoke (default mock-server port 18080)
 ```
 
-Runtime browser smoke: [`:sample-web`](../sample-web) (`?smoke=1` or `./gradlew webE2e`); Playwright CI gate in **1.6-06**.
+Runtime browser smoke: [`:sample-web`](../sample-web) (`?smoke=1` or `./gradlew webE2e`); nightly CI in [web-e2e.yml](../.github/workflows/web-e2e.yml) (**1.6-06**).
 
 ## Explicit transport (optional)
 
