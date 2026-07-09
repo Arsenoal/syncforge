@@ -70,7 +70,7 @@ Verify locally:
 | Risk | Mitigation |
 |------|------------|
 | Webpack + SQL.js worker bundling | `:sample-web` copies `sql-wasm.wasm` + Node polyfills — see `sample-web/webpack.config.d/` |
-| CORS against `:mock-server` | `installSyncServerDevCors()` on `:mock-server` (1.6-04); production notes in 1.6-05 |
+| CORS against `:mock-server` | `installSyncServerDevCors()` on `:mock-server`; production notes in [WEB_SETUP.md](WEB_SETUP.md) |
 | SQLDelight async queries | All web DB access via `awaitAs*` extensions |
 | Larger wasm bundle | Prefer `js` for first shippable add-on |
 | No background sync guarantee | Document in BEST_PRACTICES + 1.6 limitations |
@@ -80,7 +80,8 @@ Verify locally:
 1. ~~**1.6-01**~~ — `js` + `webMain` on `:syncforge` / `:syncforge-persistence` (experimental API) ✅
 2. ~~**1.6-02**~~ — `SyncForge.web { }` DSL (persistence + cursor + transport) ✅ — [WEB_DSL.md](WEB_DSL.md)
 3. ~~**1.6-03**~~ — `createKtorSyncTransport` browser factory (`createWebKtorSyncTransport` + `ktor-client-js`) ✅
-4. **1.6-04** — `:sample-web` push/pull against `:mock-server`
+4. ~~**1.6-04**~~ — `:sample-web` push/pull against `:mock-server` ✅
+5. ~~**1.6-05**~~ — [WEB_SETUP.md](WEB_SETUP.md) + MODULES.md stability row ✅
 
 ## Related
 

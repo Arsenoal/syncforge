@@ -48,6 +48,7 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `AndroidSyncForgeDsl.auth { }` (built-in register/login) | **Stable** | Wires `SyncManager.register`/`login`/`logout`; see [AUTH_API.md](AUTH_API.md). |
 | `SyncForge.ios { }`, `IosBackgroundSync`, `registerIosBackgroundSyncTasks` | **Stable** | iOS DSL + BGTaskScheduler helpers (1.3-02); SQLDelight outbox, UserDefaults cursor, NWPathMonitor. |
 | `SyncForge.desktop { }`, `SyncForge.macos { }` | **Stable** | JVM desktop + native macOS DSLs (1.3-03); macOS delegates to iOS defaults. |
+| `SyncForge.web { }`, `createWebKtorSyncTransport`, `WebVisibilitySyncTrigger` | **Experimental** | Kotlin/JS browser DSL (1.6); SQLDelight web-worker + `localStorage` cursor; see [WEB_SETUP.md](WEB_SETUP.md). |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
 | `SyncManager` — `status`, `authState`, `session`, `register`/`login`/`logout`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync + built-in auth contract (1.1). |
 | `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
@@ -90,6 +91,8 @@ syncforge/
     ├── iosMain/              ← SyncForge.ios DSL, Darwin Ktor, iOS network/cursor
     ├── macosMain/            ← SyncForge.macos DSL (delegates to ios; shared Darwin services)
     ├── jvmMain/              ← SyncForge.desktop DSL, FileSyncCursorStore, OkHttp transport
+    ├── webMain/              ← SyncForge.web DSL, BrowserNetworkMonitor, localStorage cursor, Ktor JS transport
+    ├── jsMain/               ← depends on webMain + syncPersistenceMain (browser `js` target)
     └── jvmTest/              ← SQLDelight + FileSyncCursorStore tests (JDBC in-memory driver)
 ```
 
@@ -113,7 +116,8 @@ Companion modules:
 | `:backend-starter-graphql` | Ktor GraphQL reference backend (`POST /graphql`) |
 | `:mock-server` | JVM Ktor dev server — contract + `/dev/*` conflict demos |
 | `:sample` | Android Compose demo app |
-| `:sample-ios-shared` | iOS sample framework (`IosSampleController`; SKIE-enabled) |
+| `:sample-ios-shared` | iOS + JS sample handlers (`IosSampleController`; SKIE-enabled on Apple) |
+| `:sample-web` | Kotlin/JS browser sample (`SyncForge.web { }`; push + pull smoke) |
 | `ios-sample/` | SwiftUI Xcode app wired to `:sample-ios-shared` |
 
 There is no separate published artifact per package. The table below maps **logical
@@ -148,6 +152,7 @@ packages** (folders under `dev.syncforge`) to their responsibility.
 | `IosBackgroundSync`, `registerIosBackgroundSyncTasks` | Stable | BGTaskScheduler registration + periodic sync (pair with `schedulePeriodicSyncOnStart()`) |
 | `SyncForge.desktop { }` | Stable | JVM desktop DSL — SQLDelight, file cursor, OkHttp transport; `databaseName()` for isolated DB files |
 | `SyncForge.macos { }` | Stable | Native macOS DSL — same defaults as iOS (`macosArm64` / `macosX64`) |
+| `SyncForge.web { }` | Experimental | Browser DSL — SQLDelight web-worker, `localStorage` cursor, Ktor JS transport; see [WEB_SETUP.md](WEB_SETUP.md) |
 | `SyncForge.create()` / `createWithRetry()` / `builder { }` | Experimental | Low-level factory and fluent builder |
 | `SyncForgeBuilder` | Experimental | Auto-derives `entityTypes` from handlers |
 
@@ -603,7 +608,8 @@ sync()
 | `SharedPreferencesSyncCursorStore` | Android persistence |
 | `UserDefaultsSyncCursorStore` | iOS / macOS persistence |
 | `FileSyncCursorStore` | JVM desktop persistence (`~/.syncforge/`) |
-| `SyncCursorStoreFactory` | Per-platform `create()` helper (Context, suiteName, or directory) |
+| `LocalStorageSyncCursorStore` | Browser `localStorage` cursor (webMain; keyed by `databaseName`) |
+| `SyncCursorStoreFactory` | Per-platform `create()` helper (Context, suiteName, directory, or database name on web) |
 
 Cursor advances from `PullResult.serverTimestampMillis` on successful pull/sync.
 
@@ -851,6 +857,17 @@ See [backend-starter-graphql/README.md](../backend-starter-graphql/README.md).
 
 JVM Ktor dev server on port `8080` (override with `PORT` env var). Same contract as
 `:backend-starter` plus `POST /graphql` and `POST /dev/simulate-edit` / `POST /dev/reset` for conflict demos.
+Includes **dev CORS** (`installSyncServerDevCors()`) for browser samples — see [WEB_SETUP.md](WEB_SETUP.md#cors-and-dev-backend).
+
+### `:sample-web`
+
+```bash
+./gradlew :mock-server:run
+./gradlew :sample-web:jsBrowserDevelopmentRun
+```
+
+Kotlin/JS browser sample proving `SyncForge.web { }` against `:mock-server` (push + pull).
+Headless smoke: `./gradlew webE2e`. Setup details: [WEB_SETUP.md](WEB_SETUP.md).
 
 ### `:sample`
 

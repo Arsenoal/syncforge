@@ -24,14 +24,9 @@ kotlin {
 }
 ```
 
-`:syncforge-persistence` on JS needs the SQL.js worker npm packages (copy from [`:web-spike`](../web-spike/build.gradle.kts)):
-
-```kotlin
-jsMain.dependencies {
-    implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-    implementation(devNpm("@cashapp/sqldelight-sqljs-worker", "2.0.2"))
-}
-```
+`:syncforge-persistence` on JS needs SQL.js worker npm packages, webpack polyfills, and
+`sql-wasm.wasm` copy — full consumer snippet in [WEB_SETUP.md](WEB_SETUP.md#gradle-consumer-snippet).
+Reference: [`:sample-web`](../sample-web/build.gradle.kts) + [`webpack.config.d/`](../sample-web/webpack.config.d/).
 
 ## Bootstrap
 
@@ -61,10 +56,7 @@ suspend fun main() {
 
 ## Limitations (1.6.x)
 
-- **Storage:** Outbox/conflicts live in SQL.js **in-memory** inside a worker — data is lost on full page reload. IndexedDB-backed persistence is future work.
-- **CORS:** `:mock-server` enables dev CORS via `installSyncServerDevCors()`; production backends need explicit origins — see **1.6-05** `WEB_SETUP.md`.
-- **BOM:** Web artifacts are experimental; not required for Android-primary consumers.
-- **Wasm:** Full persistence on `wasmJs` blocked until SQLDelight ≥2.1 — see [WEB_SPIKE.md](WEB_SPIKE.md).
+See [WEB_SETUP.md → Explicit limitations](WEB_SETUP.md#explicit-limitations-16x) for the full table (storage, CORS, background sync, BOM, Wasm).
 
 ## Verify compile
 

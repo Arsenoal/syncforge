@@ -14,6 +14,9 @@ docs/
 ├── ANDROID_SETUP.md          ← Android DSL, SQLDelight default, Room migration
 ├── IOS_SETUP.md              ← iOS DSL, SQLDelight defaults, Swift integration
 ├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL
+├── WEB_SETUP.md              ← Kotlin/JS browser DSL, webpack, CORS (1.6 add-on)
+├── WEB_DSL.md                ← SyncForge.web { } API reference
+├── WEB_SPIKE.md              ← Web platform spike go/no-go (js vs wasm)
 ├── RECIPES.md                ← How-to: merge, deferToUser, hierarchical FK, debug
 ├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore (1.4)
 ├── TRACING.md                ← Opt-in OpenTelemetry spans (1.5)

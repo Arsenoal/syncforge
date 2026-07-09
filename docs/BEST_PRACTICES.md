@@ -154,7 +154,7 @@ Details: [HIERARCHICAL_SYNC.md](HIERARCHICAL_SYNC.md),
 | **Layer** | Offline sync engine (outbox + push/pull) | Hosted/partial sync + live queries | Cache + repository fetch/store |
 | **Backend** | You implement REST push/pull | Often Postgres + their service | Your API |
 | **Room** | Stays your source of truth | Varies by integration | Works with any local store |
-| **JS/Web SDK** | Planned **1.6 add-on** (`SyncForge.web { }`, `:sample-web`) — see [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md#16x--web-add-on-optional) | Yes | N/A |
+| **JS/Web SDK** | **1.6 add-on (experimental)** — `SyncForge.web { }`, `:sample-web`; see [WEB_SETUP.md](WEB_SETUP.md) | Yes | N/A |
 | **Best when** | KMP/Android, own API, want outbox + conflict UI | Minimal backend + partial sync | Network/cache orchestration |
 
 SyncForge and Store can complement each other: Store for fetch/cache, SyncForge for durable
