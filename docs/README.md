@@ -11,6 +11,7 @@ The **documentation index**, learning paths, demo GIF, and quick-start guides li
 docs/
 ├── README.md                 ← You are here (folder index; main hub is ../README.md)
 ├── GETTING_STARTED.md        ← Zero → working offline-first app (~10 min)
+├── UPGRADE_1_1_TO_2_0.md     ← Maven Central 1.1.0 → 2.0.0 migration (catalog, BOM, scope)
 ├── ANDROID_SETUP.md          ← Android DSL, SQLDelight default, Room migration
 ├── IOS_SETUP.md              ← iOS DSL, SQLDelight defaults, Swift integration
 ├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL

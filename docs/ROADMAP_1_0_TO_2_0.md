@@ -848,6 +848,28 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 | **Remove legacy**                           | `useRoomPersistence` gone since 1.0; clean deprecated auth/debug shapes | Yes                                     |
 | **Plugin-generated DI modules**             | KSP emits Koin/Hilt module stubs from `@SyncForgeEntity`                | No — additive                           |
 
+### 2.0.0 locked scope (July 2026)
+
+**Policy:** `2.0.0` is the **first Maven Central publish** since `1.1.0`. It ships the **1.2–1.6 monorepo backlog** plus API graduation below. No new sync loop — entity push/pull remains the default path.
+
+| Theme | 2.0.0 decision | Notes |
+|-------|----------------|-------|
+| **Maven Central full artifact set** | **P0 — ship** | Core, KMP natives, optional store/network/transport/integration modules, catalog, Gradle plugin |
+| **Version catalog alignment** | **P0 — ship** | `:syncforge-catalog` is the consumer pin; **`syncforge-bom` not published** at 2.0 (removed from repo build; historical `1.0.0` / `1.1.0` BOM remains on Central) |
+| **Stable KMP platform DSLs** | **P0 — ship** | Android, iOS, desktop, macOS stable since 1.3; unchanged at 2.0 |
+| **`gitLike { }` / `crdt { }` graduation** | **P0 — ship** | Remove `@ExperimentalSyncForgeApi` opt-in requirement; APIs unchanged |
+| **1.2–1.6 feature backlog** | **P0 — ship** | Conflicts, transports, observability, etc. — see [CHANGELOG](../CHANGELOG.md) `[1.2.0]`–`[1.6.0]` |
+| **REST API v1** | **P0 — frozen** | `POST /sync/push`, `GET /sync/pull` unchanged; no v2 in 2.0.0 |
+| **Browser `js` / `SyncForge.web { }`** | **Monorepo-only** | Not uploaded to Maven Central; integrate via git / composite / `publishToMavenLocal` |
+| **Op-log / CRDT document channel** (`:syncforge-crdt`) | **Deferred → 2.1+** | Optional second sync mode; not required for 2.0.0 GA |
+| **REST API v2** | **Deferred → 2.1+** | Only if op-log channel needs new endpoints |
+| **KSP-generated Koin/Hilt modules** | **Deferred → 2.1+** | Additive; recipes in RECIPES.md today |
+| **iOS SPM / XCFramework (1.3-04)** | **Deferred → 2.0.1** | Gate opens at 2.0; pipeline stub today — KMP framework path remains default |
+| **Debug / tracing / web DSL** | **Keep experimental** | `SyncDebug*`, `SyncTracer`, `SyncForge.web { }`, low-level builders stay `@ExperimentalSyncForgeApi` |
+| **1.6-07 web conflict CMP UI** | **Deferred** | Optional P2 |
+
+**Upgrade path:** [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) (1.1.0 Maven Central → 2.0.0).
+
 ### 2.0 explicit non-goals
 
 - Replacing the app’s chosen entity store — SyncForge integrates via `EntityStore` / handlers; it does not own app schema
@@ -881,10 +903,10 @@ Optional **second sync mode** for CRDT-heavy or real-time products, while keepin
 
 ### 2.0.0 acceptance criteria
 
-- [ ] Migration guide 1.5 → 2.0 with codemods or deprecation timeline
-- [ ] Entity sync mode unchanged for existing consumers (opt-in for new mode)
-- [ ] All 1.x experimental APIs either stable or removed with replacement
-- [ ] REST v1 supported for minimum 12 months after v2 introduction (if v2 ships)
+- [x] Migration guide 1.1 → 2.0 — [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) (scope locked July 2026)
+- [x] Entity sync mode unchanged for existing consumers (opt-in for new mode deferred to 2.1+)
+- [x] Experimental API policy locked — graduate `gitLike` / `crdt`; keep debug/tracing/web/builder experimental (see [locked scope](#200-locked-scope-july-2026))
+- [x] REST v1 only at 2.0.0 — v2 deferred; 12-month v1 support window applies when v2 ships in a future major
 - [x] Full CI matrix: Android E2E, iOS E2E, desktop smoke, consumer-smoke, multi-device; `webE2e` nightly ([web-e2e.yml](../.github/workflows/web-e2e.yml))
 
 Sign-off: [§ 2.0.0 sign-off checklist](#200-sign-off-checklist).
@@ -1062,14 +1084,14 @@ CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
-| 1 | 2.0 scope locked — P0 themes chosen; op-log/REST v2 deferred or scheduled | Roadmap § [2.0.0 — Major release vision](#200--major-release-vision); issue/milestone sign-off | ⬜ |
-| 2 | [2.0.0 acceptance criteria](#2000-acceptance-criteria) met | Rows below + this checklist | ⬜ |
-| 3 | **Upgrade guide** `1.1.0` → `2.0.0` (breaking changes, catalog migration, removed BOM) | `UPGRADE_2_0.md` or `GETTING_STARTED` § migration; codemods/deprecation timeline if any | ⬜ |
+| 1 | 2.0 scope locked — P0 themes chosen; op-log/REST v2 deferred or scheduled | § [2.0.0 locked scope](#200-locked-scope-july-2026) | ✅ |
+| 2 | [2.0.0 acceptance criteria](#2000-acceptance-criteria) met | Rows below + this checklist | ⬜ (implementation pending) |
+| 3 | **Upgrade guide** `1.1.0` → `2.0.0` (breaking changes, catalog migration, removed BOM) | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) | ✅ drafted |
 | 4 | Entity sync (1.x path) unchanged for default consumers | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest`; no required op-log/CRDT module | ⬜ in `verifyReleaseSignOff` |
-| 5 | Experimental API policy documented | `MODULES.md` stability table — each `@ExperimentalSyncForgeApi` surface: **graduate**, **keep experimental**, or **remove** with replacement | ⬜ |
-| 6 | `gitLike { }` / `crdt { }` graduation decision | `CONFLICT_RESOLUTION.md` + stability table; opt-in removal only if graduated | ⬜ |
+| 5 | Experimental API policy documented | `MODULES.md` stability table — policy in [locked scope](#200-locked-scope-july-2026); table update at 2.0 cut | ⬜ implement at cut |
+| 6 | `gitLike { }` / `crdt { }` graduation decision | Graduate at 2.0.0 per locked scope; update `CONFLICT_RESOLUTION.md` + `StableApiSurfaceTest` at cut | ⬜ implement at cut |
 | 7 | `SyncForge.web { }` distribution policy | Monorepo/composite only; documented in [WEB_SETUP.md](WEB_SETUP.md); **not** in `mavenCentralRequiredArtifacts` | ✅ by design |
-| 8 | REST contract policy | [REST API evolution](#rest-api-evolution) + `REST_API.md`; v1 minimum support window if v2 ships | ⬜ |
+| 8 | REST contract policy | v1 frozen at 2.0.0; v2 deferred per [locked scope](#200-locked-scope-july-2026) | ✅ |
 | 9 | Security review — auth, `TokenStore`, transport defaults | `AUTH_API.md`, encrypted storage tests, TLS/redirect defaults documented | ⬜ |
 | 10 | Ecosystem docs current | `GETTING_STARTED` (catalog), `RECIPES.md`, transport guides (Supabase/Firebase/GraphQL/custom), `TRACING.md`, Spring starter | ✅ on `main` |
 | 11 | `verifyReleaseSignOff` green | `./gradlew verifySignOffMatrix` | ⬜ at `2.0.0` cut |
