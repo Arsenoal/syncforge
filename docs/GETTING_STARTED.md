@@ -2,8 +2,8 @@
 
 Get a working offline-first Android app with SyncForge in **under 10 minutes**.
 
-> **All features:** [README Feature catalog](../README.md#feature-catalog-200) — samples for every
-> 2.0.0 capability (iOS, desktop, conflicts, transports, auth, tracing).
+> **All features:** [README Feature catalog](../README.md#feature-catalog) — samples for iOS,
+> desktop, conflicts, transports, auth, tracing, and more.
 
 By the end you will have:
 

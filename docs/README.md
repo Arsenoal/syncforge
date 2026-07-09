@@ -1,8 +1,10 @@
 # Documentation folder
 
-The **documentation index**, [Feature catalog](../README.md#feature-catalog-200), learning paths,
+The **documentation index**, [Feature catalog](../README.md#feature-catalog), learning paths,
 demo GIF, and quick-start guides live on the [repository README](../README.md) — that file is what
 GitHub shows on the project homepage.
+
+**Current release:** `v2.0.0` on Maven Central — [Changelog § 2.0.0](../CHANGELOG.md#200---2026-07-09).
 
 ---
 
@@ -10,11 +12,11 @@ GitHub shows on the project homepage.
 
 | I need… | Go to |
 |---------|-------|
-| **Every feature + a code sample** | [README → Feature catalog](../README.md#feature-catalog-200) |
+| **Every feature + a code sample** | [README → Feature catalog](../README.md#feature-catalog) |
 | **First integration (~10 min)** | [GETTING_STARTED.md](GETTING_STARTED.md) |
 | **Copy-paste for one task** | [RECIPES.md](RECIPES.md) |
 | **Look up a type or package** | [MODULES.md](MODULES.md) |
-| **Upgrade Maven consumers** | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) |
+| **v2.0.0 release notes** | [CHANGELOG.md § 2.0.0](../CHANGELOG.md#200---2026-07-09) |
 
 ---
 
@@ -24,33 +26,34 @@ GitHub shows on the project homepage.
 docs/
 ├── README.md                 ← You are here (folder index; main hub is ../README.md)
 ├── GETTING_STARTED.md        ← Zero → working offline-first app (~10 min)
-├── UPGRADE_1_1_TO_2_0.md     ← Maven Central 1.1.0 → 2.0.0 migration (catalog, BOM, scope)
 ├── ANDROID_SETUP.md          ← Android DSL, SQLDelight default, Room migration
 ├── IOS_SETUP.md              ← iOS DSL, SQLDelight defaults, Swift integration
 ├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL
-├── WEB_SETUP.md              ← Kotlin/JS browser DSL, webpack, CORS (1.6 add-on)
+├── WEB_SETUP.md              ← Kotlin/JS browser DSL, webpack, CORS
 ├── WEB_DSL.md                ← SyncForge.web { } API reference
 ├── WEB_SPIKE.md              ← Web platform spike go/no-go (js vs wasm)
 ├── RECIPES.md                ← How-to: merge, deferToUser, transports, DI, debug
-├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore (1.4)
-├── TRACING.md                ← Opt-in OpenTelemetry spans (1.5)
-├── RATE_LIMITING.md          ← Backoff policies, 429 handling (1.5)
-├── AUDIT_EXPORT.md           ← Conflict audit CSV/JSON export (1.5)
-├── HIERARCHICAL_SYNC.md      ← Parent/child FK recipes, orphan policies (1.5)
+├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore
+├── TRACING.md                ← Opt-in OpenTelemetry spans
+├── RATE_LIMITING.md          ← Backoff policies, 429 handling
+├── AUDIT_EXPORT.md           ← Conflict audit CSV/JSON export
+├── HIERARCHICAL_SYNC.md      ← Parent/child FK recipes, orphan policies
 ├── CONFLICT_RESOLUTION.md    ← Strategies, lifecycle, Compose UI, decision guide
 ├── BEST_PRACTICES.md         ← Entity design, strategy choices, performance
 ├── KMP_MIGRATION.md          ← Room → SQLDelight, iOS targets, expect/actual plan
 ├── MODULES.md                ← Package-by-package API reference
 ├── REST_API.md               ← Backend push/pull contract + transport adapter semantics
 ├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
-├── COMPOSE_UI.md             ← CMP conflict UI (1.3)
-├── SWIFT_INTEROP.md          ← SKIE / Swift consumer patterns (1.3)
-├── ROADMAP.md                ← Phases, limitations, future work
-├── ROADMAP_1_0_TO_2_0.md     ← Detailed plan: 1.0.0 through 2.0.0 (sign-off checklists)
+├── COMPOSE_UI.md             ← CMP conflict UI
+├── SWIFT_INTEROP.md          ← SKIE / Swift consumer patterns
+├── ROADMAP.md                ← Future work
 ├── RELEASE.md                ← Maintainer release process
 ├── MAVEN_PUBLISH.md          ← Maven Central publish + verify workflow
 └── images/                   ← README demo GIF (+ recording guide)
 ```
+
+Historical planning and migration guides (`ROADMAP_1_0_TO_2_0.md`, `UPGRADE_1_1_TO_2_0.md`) remain
+in the repo for maintainers but are not linked from the consumer README.
 
 ---
 
@@ -73,6 +76,6 @@ docs/
 When adding a feature, update in this order:
 
 1. [CHANGELOG.md](../CHANGELOG.md)
-2. [README.md → Feature catalog](../README.md#feature-catalog-200) — one sample + table row
+2. [README.md → Feature catalog](../README.md#feature-catalog) — one sample + table row
 3. Relevant guide (Getting Started / Recipes / Conflict Resolution)
 4. [MODULES.md](MODULES.md) API reference

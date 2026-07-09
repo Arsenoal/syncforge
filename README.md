@@ -1,6 +1,6 @@
 # SyncForge documentation
 
-**Version:** `2.0.0` · **Maven Central:** `2.0.0` pending publish (latest live: `1.1.0` — [upgrade guide](docs/UPGRADE_1_1_TO_2_0.md))
+**Version:** `2.0.0` · **Maven Central:** [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge) · tag [`v2.0.0`](https://github.com/Arsenoal/syncforge/releases/tag/v2.0.0)
 
 SyncForge is an offline-first sync library for Android with Kotlin Multiplatform targets for
 iOS, JVM desktop, and native macOS. Your app entities live in Room (Android) or your own
@@ -31,14 +31,10 @@ an outbox; push/pull talk to your backend over a pluggable transport.
 | **Parent/child entities & orphan FKs**         | [Hierarchical sync](docs/HIERARCHICAL_SYNC.md)                                                 |
 | **Add login/register (built-in auth)**         | [Auth API](docs/AUTH_API.md)                                                                   |
 | **See what's planned next**                    | [Roadmap](docs/ROADMAP.md)                                                                     |
-| **Plan releases 1.0 → 2.0**                    | [Roadmap 1.0–2.0](docs/ROADMAP_1_0_TO_2_0.md)                                                  |
-| **Track 1.0 release blockers (P0)**            | [Roadmap 1.0–2.0 § 1.0.0](docs/ROADMAP_1_0_TO_2_0.md#100-sign-off-checklist)                   |
 | **Swift / SKIE interop (iOS)**                 | [Swift interop](docs/SWIFT_INTEROP.md)                                                       |
 | **Compose conflict UI (CMP)**                  | [Compose UI](docs/COMPOSE_UI.md)                                                             |
-| **Cut a release (manual)**                     | [Release process](docs/RELEASE.md)                                                           |
-| **Maven Central publish (2.0+)**               | [Maven Publish](docs/MAVEN_PUBLISH.md)                                                         |
+| **What's in v2.0.0**                           | [Changelog](CHANGELOG.md#200---2026-07-09)                                                       |
 | **Record README demo GIF**                     | [docs/images/README.md](docs/images/README.md)                                                 |
-| **Track release changes**                      | [Changelog](CHANGELOG.md)                                                                      |
 
 ---
 
@@ -117,7 +113,7 @@ sequenceDiagram
 
 ---
 
-## Feature catalog (2.0.0)
+## Feature catalog
 
 Every major capability with a minimal copy-paste sample. Deep dives: [Recipes](docs/RECIPES.md) · [Module reference](docs/MODULES.md).
 
@@ -287,7 +283,7 @@ authToken { tokenStore.accessToken }
 ```kotlin
 SyncForge.android(this) {
     schedulePeriodicSyncOnStart()  // WorkManager periodic sync
-    minSyncInterval(Duration.parse("PT5M"))  // client throttle (1.5+)
+    minSyncInterval(Duration.parse("PT5M"))  // client throttle
     backoffPolicy(SyncBackoffPolicy.exponential())  // retry shaping
 }
 
@@ -412,8 +408,6 @@ plugins {
 }
 ```
 
-Upgrading from `1.1.0`: [UPGRADE_1_1_TO_2_0.md](docs/UPGRADE_1_1_TO_2_0.md).
-
 ---
 
 ## Add to your project
@@ -511,8 +505,7 @@ val syncManager = SyncForge.ios {
 curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/2.0.0/syncforge-catalog-2.0.0.toml" | head -1
 ```
 
-Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the
-[Sonatype Central Portal](https://central.sonatype.com).
+Expect `HTTP/2 200`.
 
 ---
 
@@ -522,15 +515,13 @@ Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the
 |-----|-------|
 | [GETTING_STARTED.md](docs/GETTING_STARTED.md) | Zero → working app (~10 min) |
 | [RECIPES.md](docs/RECIPES.md) | Copy-paste how-tos for every feature above |
-| [UPGRADE_1_1_TO_2_0.md](docs/UPGRADE_1_1_TO_2_0.md) | Maven Central `1.1.0` → `2.0.0` |
 | [ANDROID_SETUP.md](docs/ANDROID_SETUP.md) · [IOS_SETUP.md](docs/IOS_SETUP.md) · [DESKTOP_SETUP.md](docs/DESKTOP_SETUP.md) | Platform DSL setup |
 | [WEB_SETUP.md](docs/WEB_SETUP.md) · [WEB_DSL.md](docs/WEB_DSL.md) | Browser add-on (experimental) |
 | [CONFLICT_RESOLUTION.md](docs/CONFLICT_RESOLUTION.md) · [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md) | Conflicts & relationships |
 | [AUTH_API.md](docs/AUTH_API.md) · [REST_API.md](docs/REST_API.md) · [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) | Auth, HTTP contract, transports |
 | [TRACING.md](docs/TRACING.md) · [RATE_LIMITING.md](docs/RATE_LIMITING.md) · [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md) | Operate & observe |
 | [MODULES.md](docs/MODULES.md) · [BEST_PRACTICES.md](docs/BEST_PRACTICES.md) | API reference & design guide |
-| [MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md) · [RELEASE.md](docs/RELEASE.md) | Release engineering |
-| [ROADMAP.md](docs/ROADMAP.md) · [ROADMAP_1_0_TO_2_0.md](docs/ROADMAP_1_0_TO_2_0.md) | Planning & sign-off |
+| [CHANGELOG.md](CHANGELOG.md#200---2026-07-09) · [ROADMAP.md](docs/ROADMAP.md) | v2.0.0 release notes & future work |
 
 ---
 
@@ -573,7 +564,7 @@ Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the
 |----------------|---------|
 | [`SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt) | DSL wiring, `sampleEntityConflicts()`, runtime `updateConflictPolicy()` |
 | [`SampleConflictPolicies.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/SampleConflictPolicies.kt) | `gitLike`, LWW, `alwaysRemote` reference policies |
-| [`ConflictSettingsScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/ConflictSettingsScreen.kt) | Live strategy picker (1.2 catalog) |
+| [`ConflictSettingsScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/ConflictSettingsScreen.kt) | Live strategy picker |
 | [`TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt) | `enqueueChange` + `sync()` |
 | [`TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt) | Conflict sheet, server edit/delete demos |
 | [`NotesScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/notes/NotesScreen.kt) | Second entity + optional `tagId` FK |
@@ -647,7 +638,7 @@ val syncManager = SyncForge.ios {
 Implement `POST /sync/push` and `GET /sync/pull` per [REST API](docs/REST_API.md). Runnable
 starters: `./gradlew :mock-server:run` · `./gradlew :backend-starter:run` · `./gradlew :backend-starter-spring:bootRun`
 
-See the [Feature catalog](#feature-catalog-200) for per-capability samples.
+See the [Feature catalog](#feature-catalog) for per-capability samples.
 
 ---
 

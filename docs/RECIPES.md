@@ -3,8 +3,8 @@
 Practical copy-paste examples for common SyncForge tasks. Assumes you have completed
 [Getting Started](GETTING_STARTED.md).
 
-**Overview:** the [README Feature catalog](../README.md#feature-catalog-200) lists every 2.0.0
-capability with a minimal sample and links here for full recipes.
+**Overview:** the [README Feature catalog](../README.md#feature-catalog) lists every capability
+with a minimal sample and links here for full recipes.
 
 ---
 
