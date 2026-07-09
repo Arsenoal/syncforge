@@ -33,7 +33,6 @@ include(
     ":syncforge-integration-hilt",
     ":syncforge-integration-opentelemetry",
     ":syncforge-android-deps",
-    ":syncforge-bom",
     ":syncforge-catalog",
     ":syncforge-server",
     ":backend-starter",

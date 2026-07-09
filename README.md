@@ -119,8 +119,8 @@ sequenceDiagram
 
 ## Add to your project
 
-Artifacts: `studio.syncforge:syncforge`, BOM, Gradle plugin `studio.syncforge.android`, and KMP
-iOS/macOS/JVM variants.
+Artifacts: `studio.syncforge:syncforge`, version catalog `studio.syncforge:syncforge-catalog`,
+Gradle plugin `studio.syncforge.android`, and KMP iOS/macOS/JVM variants.
 
 **Requirements:** Kotlin 2.1+, JVM 17 · Android minSdk 24 · iOS 14+ / Xcode 15+ for Apple targets.
 
@@ -136,6 +136,14 @@ pluginManagement {
         mavenCentral()
     }
 }
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:1.1.0")
+        }
+    }
+}
 ```
 
 `app/build.gradle.kts`:
@@ -144,12 +152,11 @@ pluginManagement {
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("studio.syncforge.android") version "1.1.0"
+    alias(syncforge.plugins.syncforge.android)
 }
 
 dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:1.1.0"))
-    implementation("studio.syncforge:syncforge")
+    implementation(syncforge.core)
 }
 ```
 
@@ -170,7 +177,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("com.google.devtools.ksp")
-    id("studio.syncforge.android") version "1.1.0"
+    alias(syncforge.plugins.syncforge.android)
 }
 
 kotlin {
@@ -183,8 +190,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            implementation(platform("studio.syncforge:syncforge-bom:1.1.0"))
-            implementation("studio.syncforge:syncforge")
+            implementation(syncforge.core)
         }
     }
 }
@@ -203,7 +209,7 @@ val syncManager = SyncForge.ios {
 ### Verify Maven Central
 
 ```bash
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.1.0/syncforge-bom-1.1.0.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/1.1.0/syncforge-catalog-1.1.0.toml" | head -1
 ```
 
 Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the

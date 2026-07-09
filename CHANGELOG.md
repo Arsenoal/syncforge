@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Web add-on distribution (1.6)** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional Maven artifacts for web
 - **Roadmap distribution** — stripped BOM from `ROADMAP_1_0_TO_2_0.md` / `ROADMAP.md`; version catalog (`:syncforge-catalog`) is the documented consumer alignment path
+- **`:syncforge-bom` removed** — Maven BOM module and `verifyBomConstraints` dropped from the build; `:syncforge-catalog` + `verifyCatalogArtifacts` is the alignment check (historical `syncforge-bom` artifacts remain on Maven Central)
 
 ### Added
 

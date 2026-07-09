@@ -108,8 +108,7 @@ Companion modules:
 | `:syncforge-transport-supabase` | Supabase Postgres `SupabaseSyncDeltaStore` (PostgREST RPC) |
 | `:syncforge-transport-firebase` | Firebase Firestore `FirebaseSyncDeltaStore` (Cloud Functions HTTPS) |
 | `:syncforge-transport-graphql` | GraphQL-over-HTTP `GraphQlSyncTransport` (`syncPush` / `syncPull`) |
-| `:syncforge-bom` | Maven BOM — aligns all SyncForge library artifact versions |
-| `:syncforge-catalog` | Published Gradle version catalog — same pins as BOM + Android plugin |
+| `:syncforge-catalog` | Published Gradle version catalog — pins all library artifacts + Android plugin |
 | `:syncforge-server` | Shared Ktor sync routes, `SyncHandlers`, `SyncStore`, `JdbcSyncStore` |
 | `:backend-starter` | Minimal Ktor reference backend (contract routes only) |
 | `:backend-starter-spring` | Spring Boot reference backend (in-memory or JDBC store) |
@@ -886,11 +885,11 @@ See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) 
 
 **1.1.0 (Wire-up) — GA:**
 
-- ✅ `SyncHttpClient` + `RestSyncTransport` + `:syncforge-network-ktor` (optional BOM entry)
+- ✅ `SyncHttpClient` + `RestSyncTransport` + `:syncforge-network-ktor` (optional catalog entry)
 - ✅ `EntityStore` + `@SyncForgeStore` KSP + `:syncforge-store-room` / `:syncforge-store-inmemory`
 - ✅ Encrypted `TokenStore` (Android/iOS), `CharArray` auth overloads, built-in auth stable
 - ✅ `DataStoreSyncCursorStore` (Android); iOS UserDefaults + desktop file fallback documented
-- ✅ `:syncforge-integration-koin` / `:syncforge-integration-hilt` (optional BOM entries)
+- ✅ `:syncforge-integration-koin` / `:syncforge-integration-hilt` (optional catalog entries)
 - ✅ Maven Central — `1.1.0` published (14 artifacts + consumer smoke verified)
 - ✅ Tag `v1.1.0` — see [ROADMAP_1_0_TO_2_0.md § 1.1.0 sign-off](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist)
 

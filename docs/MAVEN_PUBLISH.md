@@ -147,13 +147,12 @@ Or point your app at the repo with Gradle `includeBuild("../syncforge")` / compo
 | `studio.syncforge:syncforge-ksp` | KSP processor |
 | `studio.syncforge:syncforge-persistence` | SQLDelight persistence |
 | `studio.syncforge:syncforge-android-deps` | Room / WorkManager / serialization bundle |
-| `studio.syncforge:syncforge-network-ktor` | Optional Ktor REST adapter (BOM-listed, not transitive) |
+| `studio.syncforge:syncforge-network-ktor` | Optional Ktor REST adapter (catalog-listed, not transitive) |
 | `studio.syncforge:syncforge-store-room` | Optional Room → `EntityStore` adapter |
 | `studio.syncforge:syncforge-store-inmemory` | Optional in-memory `EntityStore` for tests |
 | `studio.syncforge:syncforge-integration-koin` | Optional Koin DI helpers |
 | `studio.syncforge:syncforge-integration-hilt` | Optional Hilt DI helpers |
-| `studio.syncforge:syncforge-bom` | Version alignment BOM (core + optional modules above) |
-| `studio.syncforge:syncforge-catalog` | Gradle version catalog — same pins as BOM + `studio.syncforge.android` plugin |
+| `studio.syncforge:syncforge-catalog` | Gradle version catalog — pins core + optional modules + `studio.syncforge.android` plugin |
 | `studio.syncforge:syncforge-gradle-plugin` | Gradle plugin implementation (Maven `pluginMaven`) |
 | `studio.syncforge.android:studio.syncforge.android.gradle.plugin` | Plugin marker for `id("studio.syncforge.android")` |
 
@@ -175,7 +174,7 @@ Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates.
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-bom/1.1.0/syncforge-bom-1.1.0.pom" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/1.1.0/syncforge-catalog-1.1.0.toml" | head -1
 ```
 
 ### Consumer smoke against Central
@@ -216,7 +215,7 @@ git push origin v1.0.0
 
 | Step | Action |
 |------|--------|
-| Release prep | ✅ Repo bumped to `1.1.0`; `CHANGELOG [1.1.0]`; BOM optional artifacts verified |
+| Release prep | ✅ Repo bumped to `1.1.0`; `CHANGELOG [1.1.0]`; catalog optional artifacts verified |
 | Pre-tag | ✅ `./gradlew verifySignOffMatrix` |
 | Tag | ✅ `v1.1.0` pushed |
 | Publish | ✅ Publish Release + portal Publish (both VALIDATED deployments) |

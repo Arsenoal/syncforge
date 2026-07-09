@@ -82,20 +82,10 @@ dependencies {
 
 Optional modules use the same pin, e.g. `implementation(syncforge.transport.supabase)`.
 
-**BOM (alternative)** — same version alignment via `platform(...)`:
-
-```kotlin
-dependencies {
-    implementation(platform("studio.syncforge:syncforge-bom:1.2.0"))
-    implementation("studio.syncforge:syncforge")
-}
-```
-
 | Coordinate | You declare it? | Notes |
 |------------|-----------------|-------|
 | `studio.syncforge:syncforge` | **Yes** | Main KMP library (`syncforge.core` in catalog) |
 | `studio.syncforge:syncforge-catalog` | Optional | Published version catalog — pins all library + plugin versions |
-| `studio.syncforge:syncforge-bom` | Optional | Maven BOM — same pins as catalog |
 | `studio.syncforge:syncforge-annotations` | No | Transitive via `syncforge` |
 | `studio.syncforge:syncforge-persistence` | No | Transitive runtime |
 | `studio.syncforge:syncforge-ksp` | No | Added by `studio.syncforge.android` plugin |

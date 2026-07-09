@@ -7,7 +7,7 @@ plugins {
 group = providers.gradleProperty("syncforge.group").get()
 version = providers.gradleProperty("syncforge.version").get()
 
-/** Library aliases published for consumers (mirrors syncforge-bom constraints). */
+/** Library aliases published for consumers (verified by verifyCatalogArtifacts). */
 val catalogLibraries = listOf(
     "core" to "syncforge",
     "annotations" to "syncforge-annotations",

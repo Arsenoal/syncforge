@@ -23,7 +23,6 @@ val mavenCentralRequiredArtifacts = listOf(
     "syncforge-store-inmemory",
     "syncforge-integration-koin",
     "syncforge-integration-hilt",
-    "syncforge-bom",
     "syncforge-catalog",
     "syncforge-ksp",
     "syncforge-gradle-plugin",

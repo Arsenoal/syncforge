@@ -8,7 +8,7 @@ Verifies the documented consumer setup:
 
 - `syncforge-catalog` imported in `settings.gradle.kts` (Maven Central or `mavenLocal()`)
 - `alias(syncforge.plugins.syncforge.android)` — plugin version from catalog
-- `implementation(syncforge.core)` — no BOM required
+- `implementation(syncforge.core)` — version catalog pins all coordinates
 - KSP handler codegen via the plugin (no manual `ksp("syncforge-ksp")`)
 
 ### Version pins (two contexts)

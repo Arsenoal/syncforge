@@ -27,7 +27,6 @@ val publishableModules = setOf(
     "syncforge-integration-hilt",
     "syncforge-integration-opentelemetry",
     "syncforge-android-deps",
-    "syncforge-bom",
     "syncforge-catalog",
 )
 

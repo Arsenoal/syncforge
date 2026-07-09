@@ -1,8 +1,7 @@
 # SyncForge version catalog
 
 Published Gradle version catalog for SyncForge consumers. Pins every library artifact
-and the `studio.syncforge.android` plugin to a single `syncforge` version — alternative
-to `syncforge-bom` without `platform(...)`.
+and the `studio.syncforge.android` plugin to a single `syncforge` version.
 
 ## Import
 

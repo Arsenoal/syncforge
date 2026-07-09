@@ -2,7 +2,7 @@ package dev.syncforge.webspike
 
 /**
  * Markers referenced by [docs/WEB_SPIKE.md] — compile-time proof that shared KMP code
- * links on browser targets (1.6-00 spike; not shipped in BOM).
+ * links on browser targets (1.6-00 spike; not published to Maven Central).
  */
 object WebSpikeMarkers {
     const val SPIKE_VERSION = "1.6-00"
