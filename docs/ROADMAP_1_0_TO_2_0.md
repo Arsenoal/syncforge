@@ -1088,8 +1088,8 @@ CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e
 | 2 | [2.0.0 acceptance criteria](#2000-acceptance-criteria) met | Rows below + this checklist | ⬜ (implementation pending) |
 | 3 | **Upgrade guide** `1.1.0` → `2.0.0` (breaking changes, catalog migration, removed BOM) | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) | ✅ drafted |
 | 4 | Entity sync (1.x path) unchanged for default consumers | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest`; no required op-log/CRDT module | ⬜ in `verifyReleaseSignOff` |
-| 5 | Experimental API policy documented | `MODULES.md` stability table — policy in [locked scope](#200-locked-scope-july-2026); table update at 2.0 cut | ⬜ implement at cut |
-| 6 | `gitLike { }` / `crdt { }` graduation decision | Graduate at 2.0.0 per locked scope; update `CONFLICT_RESOLUTION.md` + `StableApiSurfaceTest` at cut | ⬜ implement at cut |
+| 5 | Experimental API policy documented | `MODULES.md` stability table — policy in [locked scope](#200-locked-scope-july-2026) | ✅ |
+| 6 | `gitLike { }` / `crdt { }` graduation decision | Graduated on `main`; `CONFLICT_RESOLUTION.md` + `StableApiSurfaceTest` | ✅ |
 | 7 | `SyncForge.web { }` distribution policy | Monorepo/composite only; documented in [WEB_SETUP.md](WEB_SETUP.md); **not** in `mavenCentralRequiredArtifacts` | ✅ by design |
 | 8 | REST contract policy | v1 frozen at 2.0.0; v2 deferred per [locked scope](#200-locked-scope-july-2026) | ✅ |
 | 9 | Security review — auth, `TokenStore`, transport defaults | `AUTH_API.md`, encrypted storage tests, TLS/redirect defaults documented | ⬜ |

@@ -1,6 +1,5 @@
 package dev.syncforge.conflict
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.SyncedEntity
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
@@ -95,7 +94,6 @@ class ConflictEntityBuilder {
      * Git-like three-way merge using [MergeBaseStore] snapshots (see [MergeBaseStore]).
      * When no merge base exists yet, [threeWayMerge] receives `base = local` (two-way fallback).
      */
-    @ExperimentalSyncForgeApi
     fun <T : SyncedEntity> gitLike(
         block: GitLikeEntityBuilder<T>.() -> Unit,
     ) {
@@ -106,7 +104,6 @@ class ConflictEntityBuilder {
      * Field-level CRDT merge for [@Serializable][kotlinx.serialization.Serializable] entities.
      * Unconfigured JSON fields fall back to last-write-wins by entity [SyncedEntity.updatedAtMillis].
      */
-    @ExperimentalSyncForgeApi
     fun <T : SyncedEntity> crdt(
         entitySerializer: KSerializer<T>,
         block: CrdtEntityBuilder<T>.() -> Unit,
@@ -116,7 +113,6 @@ class ConflictEntityBuilder {
 }
 
 /** Reified overload for [@Serializable][kotlinx.serialization.Serializable] entities. */
-@ExperimentalSyncForgeApi
 inline fun <reified T : SyncedEntity> ConflictEntityBuilder.crdt(
     noinline block: CrdtEntityBuilder<T>.() -> Unit,
 ) {

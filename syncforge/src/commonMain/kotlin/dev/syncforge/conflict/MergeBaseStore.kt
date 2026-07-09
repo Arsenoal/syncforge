@@ -1,14 +1,11 @@
 package dev.syncforge.conflict
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
-
 /**
  * Persists the last successfully synced entity JSON per `(entityType, entityId)`.
  *
  * Written on push acknowledgement and non-conflict pull apply; removed on entity delete.
  * Powers git-like three-way merge in 1.2+.
  */
-@ExperimentalSyncForgeApi
 interface MergeBaseStore {
 
     suspend fun get(entityType: String, entityId: String): MergeBaseSnapshot?
@@ -18,7 +15,6 @@ interface MergeBaseStore {
     suspend fun remove(entityType: String, entityId: String)
 }
 
-@ExperimentalSyncForgeApi
 object NoOpMergeBaseStore : MergeBaseStore {
 
     override suspend fun get(entityType: String, entityId: String): MergeBaseSnapshot? = null

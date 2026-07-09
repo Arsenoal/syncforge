@@ -7,13 +7,18 @@ import dev.syncforge.auth.AuthState
 import dev.syncforge.compose.SyncStatusUiModel
 import dev.syncforge.compose.toUiModel
 import dev.syncforge.conflict.ConflictChoice
+import dev.syncforge.conflict.ConflictEntityBuilder
 import dev.syncforge.conflict.ConflictPolicy
 import dev.syncforge.conflict.ConflictStrategies
 import dev.syncforge.conflict.ConflictStrategyKind
+import dev.syncforge.conflict.ThreeWayMergeResult
 import dev.syncforge.conflict.conflictPolicy
+import kotlinx.serialization.Serializable
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.Change
+import dev.syncforge.model.SyncState
 import dev.syncforge.model.SyncStatus
+import kotlinx.serialization.serializer
 import dev.syncforge.sync.SyncManager
 import dev.syncforge.sync.SyncWorkScheduler
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +48,34 @@ class StableApiSurfaceTest {
     fun conflictChoiceAndDefaultPolicyAreStable() {
         assertNotNull(ConflictPolicy.Default)
         assertEquals(ConflictChoice.KeepLocal, ConflictChoice.KeepLocal)
+    }
+
+    @Test
+    fun gitLikeAndCrdtConflictBuildersAreStable() {
+        val policy = conflictPolicy {
+            entity("tasks") {
+                gitLike<StableConflictTask> {
+                    threeWayMerge { _, local, _ -> ThreeWayMergeResult.Merged(local) }
+                }
+            }
+            entity("tags") {
+                crdt(serializer<StableConflictTags>()) {
+                    field("labels") { orSet() }
+                }
+            }
+        }
+        assertNotNull(policy.strategyFor("tasks"))
+        assertNotNull(policy.strategyFor("tags"))
+    }
+
+    @Test
+    fun conflictEntityBuilderGitLikeAndCrdtHaveNoExperimentalAnnotation() {
+        val gitLikeMethod = ConflictEntityBuilder::class.java.methods.single { it.name == "gitLike" }
+        val crdtMethod = ConflictEntityBuilder::class.java.methods.single {
+            it.name == "crdt" && it.parameterCount == 2
+        }
+        assertNull(gitLikeMethod.getAnnotation(ExperimentalSyncForgeApi::class.java))
+        assertNull(crdtMethod.getAnnotation(ExperimentalSyncForgeApi::class.java))
     }
 
     @Test
@@ -144,4 +177,22 @@ class StableApiSurfaceTest {
         assertNotNull(logoutResult)
         assertNotNull(session)
     }
+
+    @Serializable
+    private data class StableConflictTask(
+        override val id: String,
+        override val localVersion: Long = 0L,
+        override val updatedAtMillis: Long,
+        override val syncState: SyncState = SyncState.SYNCED,
+        val title: String,
+    ) : SyncedEntity
+
+    @Serializable
+    private data class StableConflictTags(
+        override val id: String,
+        override val localVersion: Long = 0L,
+        override val updatedAtMillis: Long,
+        override val syncState: SyncState = SyncState.SYNCED,
+        val labels: List<String> = emptyList(),
+    ) : SyncedEntity
 }

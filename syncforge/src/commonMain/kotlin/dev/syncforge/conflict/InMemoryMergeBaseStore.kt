@@ -1,13 +1,11 @@
 package dev.syncforge.conflict
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * In-memory [MergeBaseStore] for tests. Does not survive process death.
  */
-@ExperimentalSyncForgeApi
 class InMemoryMergeBaseStore : MergeBaseStore {
 
     private val mutex = Mutex()

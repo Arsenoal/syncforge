@@ -1,12 +1,10 @@
 package dev.syncforge.conflict
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.SyncedEntity
 
 /**
  * DSL builder for [ConflictEntityBuilder.gitLike].
  */
-@ExperimentalSyncForgeApi
 class GitLikeEntityBuilder<T : SyncedEntity> {
 
     private var threeWayMerge: ((T, T, T) -> ThreeWayMergeResult<T>)? = null

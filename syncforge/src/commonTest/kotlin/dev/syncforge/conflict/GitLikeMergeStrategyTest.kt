@@ -1,5 +1,3 @@
-@file:OptIn(dev.syncforge.api.ExperimentalSyncForgeApi::class)
-
 package dev.syncforge.conflict
 
 import dev.syncforge.entity.PullApplyOutcome

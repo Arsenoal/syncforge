@@ -40,7 +40,6 @@ Configure strategies in the `conflicts { }` block inside `SyncForge.android { }`
 `SyncForge.ios` / `SyncForge.desktop`):
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 SyncForge.android(context) {
     conflicts {
         default(ConflictStrategies.lastWriteWins())  // optional — this is the default
@@ -61,7 +60,7 @@ SyncForge.android(context) {
 | `alwaysRemote()` | `ACCEPT_REMOTE` | Server row replaces local | No | No |
 | `merge { }` | `MERGE` | Custom two-way field combine | No | No |
 | `gitLike { }` | `GIT_LIKE` | Three-way merge; fallback on clash | Only if fallback is `deferToUser()` | Only when deferred |
-| `crdt { }` *(experimental)* | `CRDT` | Per-field CRDT merge | No | No |
+| `crdt { }` | `CRDT` | Per-field CRDT merge | No | No |
 | `deferToUser()` | `DEFER_TO_USER` | Stored until `resolveConflict()` | **Yes** | **Yes** |
 
 **Default:** every entity type uses `lastWriteWins()` unless overridden.
@@ -71,7 +70,7 @@ SyncForge.android(context) {
 `syncManager.updateConflictPolicy()` to swap policies at runtime (see
 [`updateConflictPolicy`](../syncforge/src/commonMain/kotlin/dev/syncforge/sync/SyncManager.kt)).
 
-`gitLike { }` and `crdt { }` are marked `@ExperimentalSyncForgeApi` until 2.0 graduation.
+`gitLike { }` and `crdt { }` are **stable** as of 2.0.0 (no `@OptIn` required).
 
 ---
 
@@ -268,7 +267,7 @@ On defer:
 
 **Best for:** same-field clashes, delete vs update, high-value data.
 
-### `crdt { }` *(experimental)*
+### `crdt { }`
 
 Per-field CRDT registers (`LwwRegister`, `OrSet`, `GCounter`) for additive merges. See
 [`CrdtMergeStrategy`](../syncforge/src/commonMain/kotlin/dev/syncforge/conflict/CrdtMergeStrategy.kt)

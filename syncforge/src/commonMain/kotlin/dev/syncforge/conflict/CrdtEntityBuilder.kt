@@ -1,6 +1,5 @@
 package dev.syncforge.conflict
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.conflict.crdt.CrdtJsonFieldMerger
 import dev.syncforge.conflict.crdt.GCounterJsonFieldMerger
 import dev.syncforge.conflict.crdt.LwwRegisterJsonFieldMerger
@@ -12,7 +11,6 @@ import kotlinx.serialization.json.Json
 /**
  * DSL builder for [ConflictEntityBuilder.crdt].
  */
-@ExperimentalSyncForgeApi
 class CrdtEntityBuilder<T : SyncedEntity>(
     private val entitySerializer: KSerializer<T>,
     private val json: Json = Json { ignoreUnknownKeys = true },
@@ -35,7 +33,6 @@ class CrdtEntityBuilder<T : SyncedEntity>(
 }
 
 /** Per-field CRDT kind inside [CrdtEntityBuilder.field]. */
-@ExperimentalSyncForgeApi
 class CrdtFieldBuilder {
     internal var merger: CrdtJsonFieldMerger? = null
 

@@ -54,6 +54,8 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
 | `ConflictPolicy`, `ConflictStrategies`, `ConflictChoice`, `resolveConflict` | **Stable** | Conflict-resolution API. |
+| `gitLike { }`, `crdt { }`, `ThreeWayMergeResult`, `MergeBaseStore` | **Stable** | Graduated at 2.0.0; three-way merge + field CRDT strategies (1.2+) |
+| `ConflictStrategyKind`, `updateConflictPolicy()`, `conflictPolicyFromKinds()` | **Stable** | Per-entity strategy catalog + runtime policy updates (1.2+) |
 | `SyncDebug`, `SyncHealth`, `SyncEvent` | **Experimental** | Developer observability. |
 | `SyncTracer`, `SyncSpan`, `SyncSpanName` | **Experimental** | Opt-in structured tracing (1.5-01). |
 | `SyncDebugLauncher`, `SyncDebugPanel` | **Experimental** | Debug Compose UI (Android). |
@@ -533,6 +535,43 @@ conflicts {
 | `alwaysRemote()` | Accept server version |
 | `deferToUser()` | Persist conflict in SQLDelight; surface via `SyncManager.conflicts` |
 | `merge { }` | Custom field-level merge via `MergeScope` helpers |
+| `gitLike { }` | Three-way merge using [MergeBaseStore](#mergebasestore) snapshots; `onUnmergeable` / `onRemoteDelete` fallbacks |
+| `crdt { }` | Per-field CRDT merge (`orSet`, `gCounter`, `lwwRegister`) for `@Serializable` entities |
+
+### `gitLike { }` example
+
+```kotlin
+entity("tasks") {
+    gitLike<TaskEntity> {
+        threeWayMerge { base, local, remote ->
+            if (sameFieldClash(base, local, remote)) {
+                ThreeWayMergeResult.Unmergeable
+            } else {
+                ThreeWayMergeResult.Merged(mergeFields(base, local, remote))
+            }
+        }
+        onUnmergeable { deferToUser() }
+        onRemoteDelete { deferToUser() }
+    }
+}
+```
+
+### `crdt { }` example
+
+```kotlin
+entity("tags") {
+    crdt<TagEntity> {
+        field("labels") { orSet() }
+        onRemoteDelete { deferToUser() }
+    }
+}
+```
+
+See [CONFLICT_RESOLUTION.md](CONFLICT_RESOLUTION.md) for strategy selection and E2E coverage.
+
+### `MergeBaseStore`
+
+Persists last-synced JSON per `(entityType, entityId)` for three-way merge. Updated automatically on push ack and non-conflict pull apply. `InMemoryMergeBaseStore` is provided for tests.
 
 ### `MergeScope` helpers
 

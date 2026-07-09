@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalSyncForgeApi::class)
 class SampleApplication : Application(), Configuration.Provider {
 
     private lateinit var database: SampleDatabase
