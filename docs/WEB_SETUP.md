@@ -86,18 +86,11 @@ kotlin {
 }
 ```
 
-### Published coordinates (when web artifacts ship in BOM)
+### Maven Central / BOM
 
-Web targets are **experimental** and not yet required BOM entries for Android-primary consumers.
-When published, pin versions via `:syncforge-bom` or `:syncforge-catalog` the same way as other
-SyncForge libraries:
-
-```kotlin
-jsMain.dependencies {
-    implementation("studio.syncforge:syncforge:<version>")
-    implementation("studio.syncforge:syncforge-persistence:<version>")
-}
-```
+Web `js` targets are **not published** to Maven Central or listed in `:syncforge-bom`. The 1.6
+add-on is **monorepo-only** — use a composite build, git submodule, or `publishToMavenLocal` for
+experiments. Android-primary consumers do not need the `js` target.
 
 ---
 
@@ -192,7 +185,7 @@ yourself when testing from a browser SPA.
 | **Persistence** | SQL.js storage is **in-memory per tab session** inside a worker; outbox/conflicts are lost on full page reload. IndexedDB-backed persistence is future work |
 | **Storage quotas** | Browser storage limits apply to `localStorage` (cursor) and worker memory; large outboxes are not tuned for web yet |
 | **Background sync** | No Service Worker / periodic sync guarantee — use `syncOnTabVisible()`, `online` events, or explicit `sync()` |
-| **BOM / publish** | Web artifacts are an optional 1.6 add-on; Android-primary apps do not need the `js` target |
+| **Maven / BOM** | Web `js` artifacts are **not** published to Maven Central or BOM — monorepo / composite / `publishToMavenLocal` only |
 | **Wasm** | Full persistence on `wasmJs` blocked until SQLDelight ≥2.1 — see [WEB_SPIKE.md](WEB_SPIKE.md) |
 | **Compose Web** | Conflict/debug CMP components on web deferred to **1.6-07** |
 

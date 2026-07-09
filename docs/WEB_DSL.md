@@ -56,7 +56,7 @@ suspend fun main() {
 
 ## Limitations (1.6.x)
 
-See [WEB_SETUP.md → Explicit limitations](WEB_SETUP.md#explicit-limitations-16x) for the full table (storage, CORS, background sync, BOM, Wasm).
+See [WEB_SETUP.md → Explicit limitations](WEB_SETUP.md#explicit-limitations-16x) for the full table (storage, CORS, background sync, Maven publish scope, Wasm).
 
 ## Verify compile
 

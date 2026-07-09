@@ -1,6 +1,6 @@
 # Web platform spike (1.6-00)
 
-Go/no-go for SyncForge browser support. Spike modules **do not ship in the BOM** until [1.6-01](ROADMAP_1_0_TO_2_0.md#16x--web-add-on-optional) is green.
+Go/no-go for SyncForge browser support. Spike and web add-on modules are **monorepo-only** — not published to Maven Central or BOM.
 
 ## Spike modules
 
@@ -62,7 +62,7 @@ Verify locally:
 |----------|--------|
 | **1.6-01 primary target** | **`js` (Kotlin/JS IR)** |
 | **1.6-01 secondary** | Document `wasmJs` transport path; full persistence after SQLDelight ≥2.1 evaluation |
-| **BOM / publish** | No web artifacts until 1.6-01 acceptance |
+| **Maven / BOM** | Web `js` not published — monorepo / composite / `publishToMavenLocal` only |
 | **CI** | `verifyWebSpike` + `verifyWebCompile` on PR; runtime `webE2e` nightly ([web-e2e.yml](../.github/workflows/web-e2e.yml)) |
 
 ## Risks for 1.6-01+

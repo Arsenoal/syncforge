@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Web add-on distribution (1.6)** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional BOM/Maven artifacts for web
+
 ### Added
 
 - **`webE2e` nightly CI (1.6-06)** — [`.github/workflows/web-e2e.yml`](.github/workflows/web-e2e.yml): headless Chrome (`browser-actions/setup-chrome`) + `:sample-web` push/pull smoke; `workflow_dispatch` for manual runs

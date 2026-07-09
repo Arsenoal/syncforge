@@ -807,7 +807,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 
 | ID     | Job                                                                 | Priority | Notes |
 |--------|---------------------------------------------------------------------|----------|-------|
-| 1.6-00 | **Web platform spike** — Wasm vs JS, persistence + Ktor engine PoC  | P0       | Go/no-go doc; does not ship in BOM until 1.6-01+ green ✅ |
+| 1.6-00 | **Web platform spike** — Wasm vs JS, persistence + Ktor engine PoC  | P0       | Go/no-go doc; monorepo-only (no Maven/BOM publish) ✅ |
 | 1.6-01 | **KMP `js` and/or `wasmJs` targets** on `:syncforge` + persistence | P0       | `webMain` source set; experimental `@ExperimentalSyncForgeApi` ✅ |
 | 1.6-02 | **`SyncForge.web { }` DSL** — browser persistence + cursor + transport | P0    | IndexedDB/SQLDelight-web or documented in-memory + localStorage cursor fallback ✅ |
 | 1.6-03 | **Ktor browser HTTP client** — `createKtorSyncTransport` for web      | P0       | `ktor-client-js` or wasm fetch engine ✅ |
@@ -820,7 +820,6 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 
 - [x] `SyncForge.web { }` documented and compiles on at least one browser target (Wasm or JS)
 - [x] `:sample-web` runs push + pull against `:mock-server` locally
-- [ ] Published as **optional** BOM artifacts (e.g. `syncforge-web` or platform-specific variants) — not required for Android-primary consumers
 - [x] BEST_PRACTICES.md FAQ row updated from “not in scope” to “1.6 add-on”
 - [x] Explicit limitations documented: no background sync guarantee, storage quotas, CORS/dev-server setup ([WEB_SETUP.md](WEB_SETUP.md))
 
@@ -829,6 +828,7 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 - Replacing native mobile/desktop samples — web is additive
 - Service Worker–only offline sync without the shared outbox engine
 - Publishing a separate TypeScript/npm SDK (Kotlin/JS/Wasm interop is the path; TS BYO REST remains valid at 1.0)
+- **Maven Central / BOM publish** for web `js` artifacts — integrate via git clone, composite build, or `publishToMavenLocal` only
 - Blocking **2.0.0** on web stability
 
 ---
