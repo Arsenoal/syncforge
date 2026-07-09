@@ -200,7 +200,7 @@ Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-githu
 
 ## 1.6.0 status (Web add-on)
 
-**Monorepo GA-ready** · **Codename:** *Web add-on*
+**Monorepo GA** · **Codename:** *Web add-on* · tag `v1.6.0`
 
 | Track | Status |
 |-------|--------|
@@ -210,7 +210,7 @@ Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-githu
 | **Docs** — `WEB_SETUP.md`, `WEB_DSL.md`, MODULES stability row | ✅ |
 | **CI** — `webE2e` nightly ([`web-e2e.yml`](../.github/workflows/web-e2e.yml)) | ✅ |
 | **Distribution** — monorepo / `publishToMavenLocal` only; no Maven Central for `js` | ✅ by design |
-| **Git tag `v1.6.0`** | ⬜ pending |
+| **Git tag `v1.6.0`** | ✅ `v1.6.0` on `01eec03` |
 
 Sign-off: [ROADMAP_1_0_TO_2_0.md § 1.6.0](ROADMAP_1_0_TO_2_0.md#160-sign-off-checklist).
 

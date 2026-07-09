@@ -1032,10 +1032,10 @@ Nightly: [`.github/workflows/web-e2e.yml`](../.github/workflows/web-e2e.yml) (`w
 | 7 | No Maven Central publish for web `js` artifacts | § [1.6 explicit non-goals](#16-explicit-non-goals); roadmap distribution policy | ✅ by design |
 | 8 | Version alignment via catalog only (`:syncforge-bom` removed) | `:syncforge-catalog:verifyCatalogArtifacts` | ✅ in `verifyReleaseSignOff` |
 | 9 | `verifyReleaseSignOff` green | `./gradlew verifyReleaseSignOff` | ✅ |
-| 10 | Docs freeze for 1.6 | `CHANGELOG`, `WEB_SETUP.md`, `WEB_DSL.md`, `MODULES.md`, `BEST_PRACTICES.md` FAQ | ⬜ pending `[1.6.0]` changelog section |
-| 11 | Git tag `v1.6.0` | `git tag v1.6.0 && git push origin v1.6.0` | ⬜ pending |
+| 10 | Docs freeze for 1.6 | `CHANGELOG`, `WEB_SETUP.md`, `WEB_DSL.md`, `MODULES.md`, `BEST_PRACTICES.md` FAQ | ✅ `CHANGELOG [1.6.0]` |
+| 11 | Git tag `v1.6.0` | `git tag v1.6.0 && git push origin v1.6.0` | ✅ tag `v1.6.0` on `01eec03` |
 
-**1.6.0 verdict:** Monorepo GA-ready. Tag `v1.6.0` when rows 10–11 are complete; no Maven Central staging required. **1.6-07** remains optional P2 follow-up.
+**1.6.0 verdict:** Monorepo GA. Tag `v1.6.0` shipped; no Maven Central staging required. **1.6-07** remains optional P2 follow-up.
 
 ### 2.0.0 sign-off checklist
 
