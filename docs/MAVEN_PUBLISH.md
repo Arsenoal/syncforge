@@ -103,12 +103,12 @@ Full maintainer flow: [RELEASE.md](RELEASE.md). Summary:
 2. Bump `syncforge.version` + `CHANGELOG.md` on `main`, tag, and push:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 3. **Create the GitHub Release manually** in the repository UI (tag push does not create one).
-4. **Actions → Publish Release → Run workflow** — enter the tag (e.g. `v1.2.0` or `v2.0.0`). The job checks out that tag and runs on `macos-latest`:
+4. **Actions → Publish Release → Run workflow** — tag defaults to `v2.0.0`; confirm or enter the release tag. The job checks out that tag and runs on `macos-latest`:
    - **All versions:** compiles Android, JVM, iOS Simulator, macOS targets; runs JVM tests
    - **`< 2.0.0`:** Maven Central and iOS SPM upload **skipped** (policy notice in job log)
    - **`>= 2.0.0`:** publishes library artifacts via `publishAllToMavenCentral` and `publishIosSpmArtifacts` (when 1.3-04 is implemented)

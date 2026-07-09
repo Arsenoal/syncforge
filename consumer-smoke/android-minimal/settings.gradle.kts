@@ -15,7 +15,7 @@ pluginManagement {
         eachPlugin {
             if (requested.id.id == "studio.syncforge.android") {
                 val version = providers.gradleProperty("syncforge.version")
-                    .orElse("1.1.0")
+                    .orElse("2.0.0")
                     .get()
                 useModule("studio.syncforge.android:studio.syncforge.android.gradle.plugin:$version")
             }
@@ -38,7 +38,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("syncforge") {
-            val catalogVersion = providers.gradleProperty("syncforge.version").orElse("1.2.0")
+            val catalogVersion = providers.gradleProperty("syncforge.version").orElse("2.0.0")
             from("studio.syncforge:syncforge-catalog:${catalogVersion.get()}")
         }
     }
