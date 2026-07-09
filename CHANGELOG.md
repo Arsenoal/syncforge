@@ -7,59 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+Nothing yet — next public Maven Central rollout is **`2.0.0`** (ships the 1.2–1.6 backlog). See [ROADMAP_1_0_TO_2_0.md § 2.0.0 sign-off](docs/ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist).
 
-- **Web add-on distribution (1.6)** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional Maven artifacts for web
-- **Roadmap distribution** — stripped BOM from `ROADMAP_1_0_TO_2_0.md` / `ROADMAP.md`; version catalog (`:syncforge-catalog`) is the documented consumer alignment path
-- **`:syncforge-bom` removed** — Maven BOM module and `verifyBomConstraints` dropped from the build; `:syncforge-catalog` + `verifyCatalogArtifacts` is the alignment check (historical `syncforge-bom` artifacts remain on Maven Central)
+## [1.6.0] - 2026-07-09
+
+**Web add-on** — optional Kotlin/JS browser target (`SyncForge.web { }`, `:sample-web`). Monorepo-only: not published to Maven Central until **2.0.0**. Integrate via git clone, composite build, or `publishToMavenLocal`.
 
 ### Added
 
-- **`webE2e` nightly CI (1.6-06)** — [`.github/workflows/web-e2e.yml`](.github/workflows/web-e2e.yml): headless Chrome (`browser-actions/setup-chrome`) + `:sample-web` push/pull smoke; `workflow_dispatch` for manual runs
-- **`WEB_SETUP.md` (1.6-05)** — browser Gradle consumer snippet, webpack/SQL.js bundling, CORS notes (`:mock-server` dev + production guidance), explicit 1.6.x limitations; MODULES.md `SyncForge.web` stability row
-- **`:sample-web` (1.6-04)** — Kotlin/JS browser sample with `WebSampleController` (`SyncForge.web { }`), push + pull smoke (`?smoke=1`, `webE2e`); dev CORS on `:mock-server`
-- **Browser Ktor transport (1.6-03)** — `createWebKtorSyncTransport` + built-in `ktor-client-js` in `:syncforge` js (no `:syncforge-network-ktor` required); shared `buildSyncForgeHttpClient` / `HttpStatusMapper` in core
-- **`SyncForge.web { }` DSL (1.6-02)** — suspend browser setup with `createWebSyncForgePersistence`, namespaced `localStorage` cursor, `BrowserNetworkMonitor`, optional `syncOnTabVisible()` via `WebVisibilitySyncTrigger`; [WEB_DSL.md](docs/WEB_DSL.md)
-- **KMP `js` + `webMain` (1.6-01)** — Kotlin/JS browser targets on `:syncforge`, `:syncforge-persistence`, `:syncforge-network-ktor`, `:syncforge-annotations`; SQLDelight `generateAsync` + web-worker driver; experimental `SyncForge.web { }` DSL stub; `verifyWebCompile` in `verifyReleaseSignOff`
 - **Web platform spike (1.6-00)** — `:web-spike` (Kotlin/JS + Ktor + SQLDelight web-worker) and `:web-spike-wasm` (wasmJs transport PoC); `verifyWebSpike`; [WEB_SPIKE.md](docs/WEB_SPIKE.md) go/no-go (**primary: `js`**, Wasm persistence deferred to SQLDelight ≥2.1)
-- **Audit log export (1.5-06)** — `ConflictAuditExporter` + `SyncDebug.exportConflictAudit()` (CSV/JSON); export buttons on Conflicts tab and `SyncHealthDiagnosticScreen`; [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md)
-- **Rate limiting + backoff policies (1.5-05)** — `SyncBackoffPolicy` (exponential/linear/fixed + jitter) on `SyncConfig`; `minSyncInterval` client throttle; HTTP 429 → retryable `SERVER` with `Retry-After` parsing; `SyncError.retryAfterMillis`; [RATE_LIMITING.md](docs/RATE_LIMITING.md)
-- **Hierarchical sync recipes (1.5-04)** — [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md): parent/child patterns, orphan FK policies, server `VALIDATION` + client cleanup; explicit limitations in [BEST_PRACTICES.md](docs/BEST_PRACTICES.md)
-- **Full SyncHealth dashboard UI (1.5-03)** — `SyncHealthDashboard` with status banner, metric tiles, latency bars, error breakdown; `SyncHealthDiagnosticScreen` for read-only release/support; `SyncDebugPanelMode.DIAGNOSTIC`
-- **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`
-- **Structured tracing hooks (1.5-01)** — opt-in `SyncTracer` / `SyncSpan` API (`syncforge.push`, `syncforge.pull`, `syncforge.conflict`, `syncforge.retry`); `tracing()` on Android DSL; `:syncforge-integration-opentelemetry` bridge; [TRACING.md](docs/TRACING.md)
-- **Custom transport guide (1.4-10)** — [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) for BYO `SyncTransport` / `SyncDeltaStore`; REST_API.md transport adapter section (same push/pull semantics, pluggable wire format)
-- **GraphQL schema + resolver recipes (1.4-09)** — `syncforge-server/graphql/syncforge-sync.graphql`, Ktor/Apollo/Spring resolver guides, `:backend-starter-graphql`, RECIPES.md sections for GraphQL transport, BYO `SyncDeltaStore`, and custom `SyncTransport`
-- **`:syncforge-transport-graphql` (1.4-08)** — `GraphQlSyncTransport` over GraphQL-over-HTTP (`syncPush` / `syncPull`); `:mock-server` and `:syncforge-server` `/graphql` facade for local push/pull
-- **Multi-device Android E2E (1.4-06)** — two-emulator phase tests (`MultiDeviceE2ETest`) with mock-server session coordination; task gitLike conflict + tag LWW scenarios; `androidMultiDeviceE2e` Gradle task + nightly CI workflow
-- **Backend contract test kit (1.4-07)** — `SyncPushPullContract` (REST DTO) + `SyncDeltaStoreContract` with `InMemorySyncBackend`; Supabase + Firebase + JDBC `SyncStore` run shared scenarios
-- **`:syncforge-catalog` (1.4-05)** — published Gradle version catalog pinning all SyncForge library artifacts and `studio.syncforge.android`; BOM-free consumer setup in GETTING_STARTED + consumer-smoke
-- **`:syncforge-transport-firebase` (1.4-04)** — `FirebaseSyncDeltaStore` via Cloud Functions HTTPS (`syncforgePush` / `syncforgePull`); Firestore schema + listener patterns
-- **`:syncforge-transport-supabase` (1.4-03)** — `SupabaseSyncDeltaStore` via PostgREST RPC (`syncforge_push` / `syncforge_pull`); SQL migration + Realtime patterns
-- **`SyncDeltaStore` + `DeltaStoreSyncTransport` (1.4-02)** — `:syncforge-transport-core` optional BOM artifact; BaaS storage port + single `SyncTransport` adapter for Firebase/Supabase/custom backends
-- **Spring Boot backend starter (1.4-01)** — `:backend-starter-spring` with `SyncHandlers`-backed REST routes, in-memory or `JdbcSyncStore`, Flyway schema, `docker-compose` Postgres quickstart; `JdbcSyncStore` in `:syncforge-server`
-- **Compose Multiplatform conflict UI (1.3-05)** — `SyncConflictChip` + `SyncConflictResolutionSheet` in `:syncforge` `composeMain` (Android, JVM, Apple); `:sample-desktop:runComposeConflictDemo`; [COMPOSE_UI.md](docs/COMPOSE_UI.md)
-- **`:sample` conflict policy settings (1.2-10)** — Policy tab with per-entity strategy dropdowns (notes/tags/tasks), DataStore persistence, `updateConflictPolicy()` on change; `ConflictSettingsE2ETest` validates runtime switch to defer-to-user
-- **`docs/SWIFT_INTEROP.md`** — SKIE Swift patterns: Flow collection, suspend/async, callbacks, error handling, reference table (1.3-07)
-
-### Fixed
-
-- **Android E2E conflict tests on CI** — `tapTaskLocalEdit` / `tapTagLocalEdit` wait and scroll to off-screen buttons after server-edit banner; `selectConflictKind` waits for policy persistence; tags conflict label is `Conflict` (not tasks' `Conflict — tap Resolve`)
-- **`multiEntity_taskConflict_noteStillSyncs` E2E flake** — `waitForRowSyncState` uses passive semantics reads inside `waitUntil` (avoids `performMeasureAndLayout` during layout)
-- **`KotlinFlowInterop.swift`** — reusable SKIE Flow collector; `ios-sample` observes status via `observeStatusLabel()` AsyncSequence
-- **`:sample-desktop`** — JVM CLI sample proving `SyncForge.desktop { }` against `:mock-server`; `desktopE2e` in CI (1.3-01)
+- **KMP `js` + `webMain` (1.6-01)** — Kotlin/JS browser targets on `:syncforge`, `:syncforge-persistence`, `:syncforge-network-ktor`, `:syncforge-annotations`; SQLDelight `generateAsync` + web-worker driver; experimental `SyncForge.web { }` DSL stub; `verifyWebCompile` in `verifyReleaseSignOff`
+- **`SyncForge.web { }` DSL (1.6-02)** — suspend browser setup with `createWebSyncForgePersistence`, namespaced `localStorage` cursor, `BrowserNetworkMonitor`, optional `syncOnTabVisible()` via `WebVisibilitySyncTrigger`; [WEB_DSL.md](docs/WEB_DSL.md)
+- **Browser Ktor transport (1.6-03)** — `createWebKtorSyncTransport` + built-in `ktor-client-js` in `:syncforge` js (no `:syncforge-network-ktor` required); shared `buildSyncForgeHttpClient` / `HttpStatusMapper` in core
+- **`:sample-web` (1.6-04)** — Kotlin/JS browser sample with `WebSampleController` (`SyncForge.web { }`), push + pull smoke (`?smoke=1`, `webE2e`); dev CORS on `:mock-server`
+- **`WEB_SETUP.md` (1.6-05)** — browser Gradle consumer snippet, webpack/SQL.js bundling, CORS notes (`:mock-server` dev + production guidance), explicit 1.6.x limitations; MODULES.md `SyncForge.web` stability row
+- **`webE2e` nightly CI (1.6-06)** — [`.github/workflows/web-e2e.yml`](.github/workflows/web-e2e.yml): headless Chrome (`browser-actions/setup-chrome`) + `:sample-web` push/pull smoke; `workflow_dispatch` for manual runs
 
 ### Changed
 
-- **Manual GitHub releases** — tag push no longer triggers Publish Release CI or creates GitHub Releases; maintainers draft releases in the UI and optionally run **Actions → Publish Release** (`workflow_dispatch`). See [RELEASE.md](docs/RELEASE.md).
-- **Maven Central publish gated to 2.0.0+** — pre-2.0 tags run macOS compile/test only; `publishAllToMavenCentral` skips Sonatype upload for 1.x (override: `-PallowPre2MavenCentralPublish=true` for maintainers). Integrate 1.x via git + `publishAllToMavenLocal`. See [MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
-- **iOS SPM / XCFramework gated to 2.0.0+** — `publishIosSpmArtifacts` placeholder with same version gate as Maven Central; until 2.0 use KMP frameworks per [IOS_SETUP.md](docs/IOS_SETUP.md) (1.3-04)
-- **No semver rollouts until 2.0.0** — development on `main` only; no new tags/GitHub Releases/Maven/SPM until `v2.0.0` ([RELEASE.md](docs/RELEASE.md))
+- **Web add-on distribution** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional Maven artifacts for web
+- **Roadmap distribution** — stripped BOM from `ROADMAP_1_0_TO_2_0.md` / `ROADMAP.md`; version catalog (`:syncforge-catalog`) is the documented consumer alignment path
+- **`:syncforge-bom` removed** — Maven BOM module and `verifyBomConstraints` dropped from the build; `:syncforge-catalog` + `verifyCatalogArtifacts` is the alignment check (historical `syncforge-bom` artifacts remain on Maven Central)
+
+## [1.5.0] - 2026-07-09
+
+**Operate** — observability and production hardening. Monorepo-only until **2.0.0** Maven Central publish.
+
+### Added
+
+- **Structured tracing hooks (1.5-01)** — opt-in `SyncTracer` / `SyncSpan` API (`syncforge.push`, `syncforge.pull`, `syncforge.conflict`, `syncforge.retry`); `tracing()` on Android DSL; `:syncforge-integration-opentelemetry` bridge; [TRACING.md](docs/TRACING.md)
+- **SyncHealth metrics expansion (1.5-02)** — rolling-window latency percentiles (p50/p95/p99) for sync/push/pull, conflict rate per pull, outbox depth + peak; `durationMillis` on `SyncEvent`
+- **Full SyncHealth dashboard UI (1.5-03)** — `SyncHealthDashboard` with status banner, metric tiles, latency bars, error breakdown; `SyncHealthDiagnosticScreen` for read-only release/support; `SyncDebugPanelMode.DIAGNOSTIC`
+- **Hierarchical sync recipes (1.5-04)** — [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md): parent/child patterns, orphan FK policies, server `VALIDATION` + client cleanup; explicit limitations in [BEST_PRACTICES.md](docs/BEST_PRACTICES.md)
+- **Rate limiting + backoff policies (1.5-05)** — `SyncBackoffPolicy` (exponential/linear/fixed + jitter) on `SyncConfig`; `minSyncInterval` client throttle; HTTP 429 → retryable `SERVER` with `Retry-After` parsing; `SyncError.retryAfterMillis`; [RATE_LIMITING.md](docs/RATE_LIMITING.md)
+- **Audit log export (1.5-06)** — `ConflictAuditExporter` + `SyncDebug.exportConflictAudit()` (CSV/JSON); export buttons on Conflicts tab and `SyncHealthDiagnosticScreen`; [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md)
+
+## [1.4.0] - 2026-07-09
+
+**Ecosystem** — Spring/GraphQL/Supabase/Firebase transports, version catalog, multi-device E2E. Monorepo-only until **2.0.0** Maven Central publish.
+
+### Added
+
+- **Spring Boot backend starter (1.4-01)** — `:backend-starter-spring` with `SyncHandlers`-backed REST routes, in-memory or `JdbcSyncStore`, Flyway schema, `docker-compose` Postgres quickstart; `JdbcSyncStore` in `:syncforge-server`
+- **`SyncDeltaStore` + `DeltaStoreSyncTransport` (1.4-02)** — `:syncforge-transport-core` optional catalog-listed artifact; BaaS storage port + single `SyncTransport` adapter for Firebase/Supabase/custom backends
+- **`:syncforge-transport-supabase` (1.4-03)** — `SupabaseSyncDeltaStore` via PostgREST RPC (`syncforge_push` / `syncforge_pull`); SQL migration + Realtime patterns
+- **`:syncforge-transport-firebase` (1.4-04)** — `FirebaseSyncDeltaStore` via Cloud Functions HTTPS (`syncforgePush` / `syncforgePull`); Firestore schema + listener patterns
+- **`:syncforge-catalog` (1.4-05)** — published Gradle version catalog pinning all SyncForge library artifacts and `studio.syncforge.android`; catalog-based consumer setup in GETTING_STARTED + consumer-smoke
+- **Multi-device Android E2E (1.4-06)** — two-emulator phase tests (`MultiDeviceE2ETest`) with mock-server session coordination; task gitLike conflict + tag LWW scenarios; `androidMultiDeviceE2e` Gradle task + nightly CI workflow
+- **Backend contract test kit (1.4-07)** — `SyncPushPullContract` (REST DTO) + `SyncDeltaStoreContract` with `InMemorySyncBackend`; Supabase + Firebase + JDBC `SyncStore` run shared scenarios
+- **`:syncforge-transport-graphql` (1.4-08)** — `GraphQlSyncTransport` over GraphQL-over-HTTP (`syncPush` / `syncPull`); `:mock-server` and `:syncforge-server` `/graphql` facade for local push/pull
+- **GraphQL schema + resolver recipes (1.4-09)** — `syncforge-server/graphql/syncforge-sync.graphql`, Ktor/Apollo/Spring resolver guides, `:backend-starter-graphql`, RECIPES.md sections for GraphQL transport, BYO `SyncDeltaStore`, and custom `SyncTransport`
+- **Custom transport guide (1.4-10)** — [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) for BYO `SyncTransport` / `SyncDeltaStore`; REST_API.md transport adapter section (same push/pull semantics, pluggable wire format)
+
+## [1.3.0] - 2026-07-08
+
+**Everywhere** — desktop sample, stable iOS/desktop DSLs, CMP conflict UI. Monorepo-only until **2.0.0** Maven Central publish; iOS SPM deferred to 2.0 (1.3-04).
+
+### Added
+
+- **`:sample-desktop` (1.3-01)** — JVM CLI sample proving `SyncForge.desktop { }` against `:mock-server`; `desktopE2e` in CI
+- **Compose Multiplatform conflict UI (1.3-05)** — `SyncConflictChip` + `SyncConflictResolutionSheet` in `:syncforge` `composeMain` (Android, JVM, Apple); `:sample-desktop:runComposeConflictDemo`; [COMPOSE_UI.md](docs/COMPOSE_UI.md)
+- **`docs/SWIFT_INTEROP.md` (1.3-07)** — SKIE Swift patterns: Flow collection, suspend/async, callbacks, error handling, reference table
+
+### Changed
+
 - **iOS DSL graduated to stable (1.3-02)** — `SyncForge.ios { }`, `IosBackgroundSync`, and `registerIosBackgroundSyncTasks` no longer require `@OptIn(ExperimentalSyncForgeApi::class)`; `persistence()` and `customize()` remain experimental (parity with Android)
 - **Desktop / macOS DSLs graduated to stable (1.3-03)** — `SyncForge.desktop { }` and `SyncForge.macos { }` no longer require opt-in; stable `databaseName()` on desktop DSL (Android parity); `persistence()` / `customize()` remain experimental
 - **`StableIosApiSurfaceSourceTest`**, **`StableDesktopApiSurfaceTest`**, **`StableMacosApiSurfaceSourceTest`** — CI guards for platform DSL stability
 - **`MODULES.md`** — iOS, desktop, and macOS platform rows marked Stable
 - **`:sample-desktop`** — uses stable `databaseName()` instead of experimental `persistence()` override
+- **Manual GitHub releases** — tag push no longer triggers Publish Release CI or creates GitHub Releases; maintainers draft releases in the UI and optionally run **Actions → Publish Release** (`workflow_dispatch`). See [RELEASE.md](docs/RELEASE.md).
+- **Maven Central publish gated to 2.0.0+** — pre-2.0 tags run macOS compile/test only; `publishAllToMavenCentral` skips Sonatype upload for 1.x (override: `-PallowPre2MavenCentralPublish=true` for maintainers). Integrate 1.x via git + `publishAllToMavenLocal`. See [MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md).
+- **iOS SPM / XCFramework gated to 2.0.0+** — `publishIosSpmArtifacts` placeholder with same version gate as Maven Central; until 2.0 use KMP frameworks per [IOS_SETUP.md](docs/IOS_SETUP.md) (1.3-04)
+- **No semver rollouts until 2.0.0** — development on `main` only; no new tags/GitHub Releases/Maven/SPM until `v2.0.0` ([RELEASE.md](docs/RELEASE.md))
+
+### Fixed
+
+- **`KotlinFlowInterop.swift`** — reusable SKIE Flow collector; `ios-sample` observes status via `observeStatusLabel()` AsyncSequence
 
 ## [1.2.0] - 2026-07-08
 
@@ -85,6 +109,7 @@ policy matrix with instrumented E2E coverage. No breaking changes to 1.0 / 1.1 s
 - **`SyncEntityJson`** — patch `localVersion` in serialized entity JSON when kotlinx.serialization omits default fields
 - **Trailing push in `SyncEngine.runFullSync()`** — second push when pull reconciliation enqueues new outbox work (e.g. git-like auto-merge)
 - **`:sample` conflict matrix** — `sampleEntityConflicts()`: notes `alwaysRemote()`, tags `lastWriteWins()`, tasks `gitLike` (`SampleConflictPolicies.kt`)
+- **`:sample` conflict policy settings (1.2-10)** — Policy tab with per-entity strategy dropdowns (notes/tags/tasks), DataStore persistence, `updateConflictPolicy()` on change; `ConflictSettingsE2ETest` validates runtime switch to defer-to-user
 - **`ConflictStrategyE2ETest`** — 11 instrumented tests (per-strategy + multi-entity isolation) via `./gradlew androidE2e` (28 tests total; 1.2-05)
 - **`CONFLICT_RESOLUTION.md` v2** — per-entity matrix, git-like flow, catalog, outbox reconcile, E2E map (1.2-06)
 - **Unit / integration tests** — `GitLikeMergeStrategyTest`, `CrdtMergeStrategyTest`, `ConflictStrategyPullApplierE2ETest`, `OutboxReconcileTest`, `MergeBasePullApplierTest`, `UpdateConflictPolicyTest`, CRDT primitive tests
@@ -99,10 +124,12 @@ policy matrix with instrumented E2E coverage. No breaking changes to 1.0 / 1.1 s
 - **Auto-merge sync state** — git-like merge + outbox reconcile no longer leaves rows stuck `Pending` when OCC expected a newer `localVersion` after mock-server simulate-edit
 - **Delete-conflict E2E** — stabilized Accept Remote resolution flow in `SampleScenariosE2ETest`
 - **Multi-entity E2E** — `row_sync_state_*` test tags and timeouts for independent note/tag sync under task conflicts
+- **Android E2E conflict tests on CI** — `tapTaskLocalEdit` / `tapTagLocalEdit` wait and scroll to off-screen buttons after server-edit banner; `selectConflictKind` waits for policy persistence; tags conflict label is `Conflict` (not tasks' `Conflict — tap Resolve`)
+- **`multiEntity_taskConflict_noteStillSyncs` E2E flake** — `waitForRowSyncState` uses passive semantics reads inside `waitUntil` (avoids `performMeasureAndLayout` during layout)
 
 ### Distribution
 
-- **Git tag `v1.2.0`** — triggers [Publish Release](.github/workflows/publish-release.yml) to Maven Central (`studio.syncforge`); version taken from tag
+- **Monorepo milestone** — shipped on `main`; first Maven Central publish for 1.2+ is **`2.0.0`** (see [RELEASE.md](docs/RELEASE.md))
 
 ## [1.1.0] - 2026-07-07
 
