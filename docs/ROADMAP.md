@@ -1,6 +1,8 @@
 # SyncForge roadmap
 
-**Current version:** `1.1.0` (stable — [Maven Central](https://central.sonatype.com/namespace/studio.syncforge), tag `v1.1.0`)
+**Maven Central:** `1.1.0` (stable — [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge), tag `v1.1.0`)
+
+**Monorepo (`main`):** `1.2.0` development line — 1.2–1.6 features shipped on `main`; git tags only until **2.0.0** Maven Central publish (see [distribution policy](ROADMAP_1_0_TO_2_0.md#distribution-notes-10--20)).
 
 ---
 
@@ -17,52 +19,42 @@
 
 ---
 
-## What the library can do today (v0.6.0)
+## What the library can do today (`main`, 1.2–1.6)
 
-### Production-oriented features
+### Core sync (stable since 1.0)
 
-- **Exponential backoff retry** — failed pushes retry up to `maxRetries` without rolling back transient network errors
-- **Permanent failure surfacing** — validation/auth errors and exhausted retries appear in `SyncStatus`
-- **Network reconnect sync** — auto-push when connectivity returns
-- **Offline status** — `SyncStatus.Offline` when queued but no network
-- **Pull pagination** — large delta sets fetched in pages via `pullPageSize`
-- **HTTP error mapping** — Ktor transport maps status codes to `SyncError.Code`
-- **Bearer auth** — `SyncAuthProvider` on `KtorSyncTransport`
-- **KSP handler generation** — `@SyncForgeEntity` + `@SyncForgeDao` → `*SyncHandler` + `SyncForgeHandlers`
-- **WorkManager** — periodic sync + one-off retry scheduling in sample app
+- **Outbox → push → pull** with retry/backoff, network reconnect, pull pagination, and `SyncStatus` surfacing
+- **`conflicts { }`** — per-entity LWW, merge, defer-to-user, alwaysLocal/Remote, **`gitLike { }`** three-way merge, experimental **`crdt { }`**
+- **`ConflictStrategyKind` catalog** — static and runtime policy updates (`updateConflictPolicy()`)
+- **KSP codegen** — `@SyncForgeEntity` + `@SyncForgeDao` → handlers; **`EntityStore`** + `@SyncForgeStore` adapters (`:syncforge-store-*`)
+- **Platform DSLs (stable)** — `SyncForge.android { }`, `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }`
+- **Experimental browser DSL** — `SyncForge.web { }` (Kotlin/JS; monorepo-only — [WEB_SETUP.md](WEB_SETUP.md))
 
-### Developer experience (v0.4.0+)
+### Transports & backends
 
-- **`SyncForge.android { }`** — ~10-line Application setup with Android defaults
-- **`SyncForgeBuilder`** — auto-derives entity types from handlers; no duplicated `SyncConfig`
-- **`conflicts { }` block** — per-entity strategies: LWW, merge, defer-to-user
-- **SQLDelight conflict store** — open conflicts persist across process death (all platforms)
-- **`SyncManager.resolveConflict()`** — user-driven resolution for deferred conflicts
-- **In-app debug console** — `SyncDebugLauncher` + `SyncDebugPanel` for outbox, health, events, conflicts
-- **Compose conflict UI** — `SyncConflictChip`, `SyncConflictResolutionSheet`
+- **REST** — injectable `SyncHttpClient` + `RestSyncTransport` (`:syncforge-network-ktor`)
+- **BaaS** — `SyncDeltaStore` + `DeltaStoreSyncTransport`; Supabase, Firebase, GraphQL optional modules
+- **Reference servers** — Ktor `:mock-server`, Spring `:backend-starter-spring`, GraphQL `:backend-starter-graphql`
+
+### Developer experience
+
+- **Version catalog** — `studio.syncforge:syncforge-catalog` pins all library artifacts + Android plugin
+- **DI helpers** — `:syncforge-integration-koin`, `:syncforge-integration-hilt`
+- **Debug & ops** — `SyncDebugPanel`, CMP conflict UI, SyncHealth dashboard + diagnostic screen, OpenTelemetry tracing hooks, audit export
+- **Samples** — `:sample` (Android), `ios-sample/`, `:sample-desktop`, `:sample-web`
 
 ### You still provide
 
-- Room schema + DAOs (handlers can be KSP-generated)
-- Backend matching [REST_API.md](REST_API.md)
-- Conflict resolution UI for `deferToUser()` entities (sample demonstrates this)
-- `SyncWorkerFactory` for background sync DI (sample wires via `SyncForgeAndroid.workManagerConfiguration`)
-
-### Kotlin Multiplatform (M1–M5)
-
-- **`SyncForge.ios { }`** — SQLDelight outbox/conflicts, UserDefaults cursor, NWPathMonitor
-- **`SyncForge.desktop { }`** — JVM desktop with SQLDelight, `FileSyncCursorStore`, OkHttp transport
-- **`SyncForge.macos { }`** — native macOS (`macosArm64` / `macosX64`) with iOS-parity defaults
-- **SQLDelight on Android** — default since 0.6.0; legacy `useRoomPersistence()` removed in 1.0
-- **SKIE** — improved Swift interop (`Flow`, suspend) on `:syncforge` and `:sample-ios-shared`
-- **`ios-sample/`** — SwiftUI Xcode reference app (tasks + notes + tags; see [iOS sample parity](#ios-sample-parity-090-))
+- Your entity store (Room DAO, custom `EntityStore`, etc.) and backend matching [REST_API.md](REST_API.md)
+- Conflict resolution UI for `deferToUser()` entities (samples demonstrate this)
+- `SyncWorkerFactory` for background sync DI on Android
 
 ### Not yet included
 
-- Browser / web sample shipped as optional **1.6 add-on** — [`:sample-web`](../sample-web/), [WEB_SETUP.md](WEB_SETUP.md)
-- Standalone iOS distribution (Swift Package Manager / XCFramework — iOS still via KMP today)
-- Shake-to-open debug console
-- Full sync health metrics dashboard (basic `SyncHealth` exists today)
+- **Maven Central publish** for 1.2+ artifacts (gated to **2.0.0**; use `publishToMavenLocal` or composite build until then)
+- **Standalone iOS distribution** (Swift Package Manager / XCFramework — gated to 2.0; KMP framework path today)
+- **1.6-07** — conflict/debug CMP UI on web (deferred; Wasm path optional)
+- **1.3-06** — shake-to-open debug console
 
 ---
 
@@ -151,7 +143,8 @@
 | `0.6.x` – `0.9.x` | SQLDelight default, KMP samples, Maven Central RC |
 | `1.0.0` | Stable public API + semver guarantees |
 | `1.1.x` – `1.5.x` | EntityStore, encrypted TokenStore, per-entity conflict strategies + gitLike merge, DI, CRDT, platform parity, GraphQL/Supabase transports, observability |
-| `2.0.0` | Optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
+| `1.6.x` | Optional web add-on — `SyncForge.web { }`, `:sample-web`, `webE2e` CI (monorepo-only; no Maven publish) |
+| `2.0.0` | Maven Central for 1.x backlog, optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
 
 **Detailed plan from 1.0.0 through 2.0.0:** [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md)
 
@@ -190,6 +183,39 @@ See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-rel
 
 Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-github-issues-breakdown) · sign-off: [§ 1.1.0 acceptance](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist).
 
-## Next: 1.2.x (Conflict evolution)
+---
 
-Per-entity conflict strategies and git-like merge — see [ROADMAP_1_0_TO_2_0.md § 1.2.x](ROADMAP_1_0_TO_2_0.md#12x--conflict-evolution-per-entity-strategies--git-like-merge).
+## 1.2.x – 1.5.x status (monorepo)
+
+**On `main` (unreleased on Maven Central).** See [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]` for the full list.
+
+| Version | Codename | Headline | Status |
+|---------|----------|----------|--------|
+| **1.2.0** | *Merge-smart* | `gitLike { }`, CRDT primitives, strategy catalog, runtime policy | ✅ on `main` |
+| **1.3.0** | *Everywhere* | `:sample-desktop`, stable iOS/desktop DSLs, CMP conflict UI | ✅ on `main` (SPM deferred to 2.0) |
+| **1.4.0** | *Ecosystem* | Spring/GraphQL/Supabase/Firebase transports, version catalog, multi-device E2E | ✅ on `main` |
+| **1.5.0** | *Operate* | Tracing, SyncHealth dashboard, hierarchical recipes, rate limiting, audit export | ✅ on `main` |
+
+---
+
+## 1.6.0 status (Web add-on)
+
+**Monorepo GA-ready** · **Codename:** *Web add-on*
+
+| Track | Status |
+|-------|--------|
+| **Spike + targets** — `js` primary path, `webMain`, `verifyWebSpike` / `verifyWebCompile` | ✅ |
+| **`SyncForge.web { }`** — persistence, cursor, Ktor JS transport | ✅ experimental |
+| **`:sample-web`** — push + pull against `:mock-server` | ✅ |
+| **Docs** — `WEB_SETUP.md`, `WEB_DSL.md`, MODULES stability row | ✅ |
+| **CI** — `webE2e` nightly ([`web-e2e.yml`](../.github/workflows/web-e2e.yml)) | ✅ |
+| **Distribution** — monorepo / `publishToMavenLocal` only; no Maven Central for `js` | ✅ by design |
+| **Git tag `v1.6.0`** | ⬜ pending |
+
+Sign-off: [ROADMAP_1_0_TO_2_0.md § 1.6.0](ROADMAP_1_0_TO_2_0.md#160-sign-off-checklist).
+
+## Next: 2.0.0 (*Converge*)
+
+First Maven Central publish for the 1.x backlog, stable KMP graduation, optional CRDT/op-log channel — see [ROADMAP_1_0_TO_2_0.md § 2.0.0](ROADMAP_1_0_TO_2_0.md#200--major-release-vision).
+
+Optional before 2.0: **1.6-07** (web conflict/debug CMP UI) or **1.3-06** (shake-to-open debug).

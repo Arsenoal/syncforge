@@ -52,7 +52,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **1.3.0** | *Everywhere*  | Q2 2027       | Desktop sample, iOS SPM, CMP conflict UI               |
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
 | **1.5.0** | *Operate*     | Q4 2027       | Tracing, metrics dashboard, hierarchical recipes       |
-| **1.6.0** | *Web add-on*  | 2028 (opt.)   | Browser target, `SyncForge.web { }`, `:sample-web`     |
+| **1.6.0** | *Web add-on*  | July 2026     | Browser target, `SyncForge.web { }`, `:sample-web` (monorepo; tag pending) ✅ |
 | **2.0.0** | *Converge*    | 2028          | Major API + optional sync modes                        |
 
 Windows are indicative for a small team or part-time maintenance.
@@ -819,6 +819,8 @@ Default recommendation: spike **Wasm** first if SQLDelight + Compose Web drivers
 - [x] BEST_PRACTICES.md FAQ row updated from “not in scope” to “1.6 add-on”
 - [x] Explicit limitations documented: no background sync guarantee, storage quotas, CORS/dev-server setup ([WEB_SETUP.md](WEB_SETUP.md))
 
+Sign-off: [§ 1.6.0 sign-off checklist](#160-sign-off-checklist).
+
 ### 1.6 explicit non-goals
 
 - Replacing native mobile/desktop samples — web is additive
@@ -1002,6 +1004,36 @@ Run automated checks locally:
 | 9 | Encrypted tokens + cursor migration | `TokenStoreTest`, `SyncCursorStoreTest` | ✅ in `verifyReleaseSignOff` |
 
 **1.1.0 verdict:** GA. Tag `v1.1.0` on Maven Central; 14 required POMs + consumer smoke verified locally.
+
+### 1.6.0 sign-off checklist
+
+**Monorepo add-on release** — does not publish browser `js` artifacts to Maven Central and does not block **2.0.0**. Optional job **1.6-07** (web conflict/debug CMP UI) is explicitly deferred.
+
+Run automated checks locally:
+
+```bash
+./gradlew verifyReleaseSignOff          # includes verifyWebSpike, verifyWebCompile, :sample-web:compileKotlinJs
+./gradlew :syncforge-catalog:verifyCatalogArtifacts
+./gradlew webE2e                        # headless Chrome push/pull smoke (same as nightly CI)
+```
+
+Nightly: [`.github/workflows/web-e2e.yml`](../.github/workflows/web-e2e.yml) (`workflow_dispatch` for manual runs).
+
+| # | Criterion | Verification | Status (1.6.0 monorepo, July 2026) |
+|---|-----------|--------------|--------------------------------------|
+| 1 | All 1.6 P0/P1 jobs complete (1.6-00 … 1.6-06) | Roadmap § 1.6.x feature table | ✅ |
+| 2 | 1.6.0 acceptance criteria met | § [1.6.0 acceptance criteria](#160-acceptance-criteria-add-on-release) | ✅ |
+| 3 | `SyncForge.web { }` documented + compiles on `js` | [WEB_DSL.md](WEB_DSL.md), `verifyWebCompile` | ✅ in `verifyReleaseSignOff` |
+| 4 | `:sample-web` push + pull against `:mock-server` | `webE2e` / `?smoke=1` | ✅ |
+| 5 | Consumer setup documented (CORS, SQL.js/webpack, limitations) | [WEB_SETUP.md](WEB_SETUP.md), MODULES stability row | ✅ |
+| 6 | Web CI smoke | `web-e2e.yml` nightly + `webE2e` Gradle task | ✅ |
+| 7 | No Maven Central publish for web `js` artifacts | § [1.6 explicit non-goals](#16-explicit-non-goals); roadmap distribution policy | ✅ by design |
+| 8 | Version alignment via catalog only (`:syncforge-bom` removed) | `:syncforge-catalog:verifyCatalogArtifacts` | ✅ in `verifyReleaseSignOff` |
+| 9 | `verifyReleaseSignOff` green | `./gradlew verifyReleaseSignOff` | ✅ |
+| 10 | Docs freeze for 1.6 | `CHANGELOG`, `WEB_SETUP.md`, `WEB_DSL.md`, `MODULES.md`, `BEST_PRACTICES.md` FAQ | ⬜ pending `[1.6.0]` changelog section |
+| 11 | Git tag `v1.6.0` | `git tag v1.6.0 && git push origin v1.6.0` | ⬜ pending |
+
+**1.6.0 verdict:** Monorepo GA-ready. Tag `v1.6.0` when rows 10–11 are complete; no Maven Central staging required. **1.6-07** remains optional P2 follow-up.
 
 ### 2.0.0 sign-off checklist
 
