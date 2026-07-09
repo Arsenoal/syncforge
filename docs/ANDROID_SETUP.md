@@ -2,6 +2,65 @@
 
 Configure SyncForge on Android using `SyncForge.android(context) { }`.
 
+**Requirements:** Kotlin 2.1+, JVM 17, minSdk 24.
+
+---
+
+## Dependencies
+
+Import the published version catalog (recommended — pins library + plugin to `2.0.0`):
+
+```kotlin
+// settings.gradle.kts
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:2.0.0")
+        }
+    }
+}
+```
+
+```kotlin
+// app/build.gradle.kts
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    alias(syncforge.plugins.syncforge.android)
+}
+
+dependencies {
+    implementation(syncforge.core)
+    // Optional — same catalog version pin:
+    // implementation(syncforge.store.room)
+    // implementation(syncforge.integration.koin)
+    // implementation(syncforge.transport.graphql)
+}
+```
+
+The `studio.syncforge.android` plugin adds KSP, `syncforge-network-ktor` (default REST transport),
+and Room compiler when your sources use `@SyncForgeDao`.
+
+Verify artifacts resolve:
+
+```bash
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/2.0.0/syncforge-catalog-2.0.0.toml" | head -1
+```
+
+Expect `HTTP/2 200`.
+
 ---
 
 ## Quick start (default — SQLDelight since 0.6.0)

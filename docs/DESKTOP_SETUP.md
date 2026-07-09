@@ -1,8 +1,41 @@
 # Desktop setup guide
 
-Run SyncForge on JVM desktop (Linux, macOS, Windows) via `SyncForge.desktop { }` (**stable** since 1.3 — no module-wide `@OptIn` required for the desktop DSL).
+Run SyncForge on JVM desktop (Linux, macOS, Windows) via `SyncForge.desktop { }` (**stable** — no
+module-wide `@OptIn` required for the desktop DSL).
 
 **Requirements:** JDK 17+, Kotlin 2.1+
+
+Reference app: [`:sample-desktop`](../sample-desktop/).
+
+---
+
+## Dependencies
+
+```kotlin
+// settings.gradle.kts — version catalog (same pin as Android/iOS)
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:2.0.0")
+        }
+    }
+}
+```
+
+```kotlin
+// desktop/build.gradle.kts (or jvm() source set in KMP)
+plugins {
+    alias(libs.plugins.kotlinJvm)
+    id("com.google.devtools.ksp")  // if using @SyncForgeEntity in this module
+}
+
+dependencies {
+    implementation(syncforge.core)
+    implementation(syncforge.network.ktor)
+}
+```
+
+Monorepo quick run: `./gradlew :sample-desktop:run --args="--smoke"` (with `:mock-server` running).
 
 ---
 
@@ -51,15 +84,15 @@ Minimal JVM app proving `SyncForge.desktop { }` against `:mock-server` (push + p
 ./gradlew :mock-server:run
 # another terminal:
 ./gradlew :sample-desktop:run --args="--smoke"
+```
 
-Compose conflict UI demo (1.3-05):
+Compose conflict UI demo:
 
 ```bash
 ./gradlew :sample-desktop:runComposeConflictDemo
 ```
 
 See [COMPOSE_UI.md](COMPOSE_UI.md).
-```
 
 Full CI-style check (starts mock-server automatically):
 

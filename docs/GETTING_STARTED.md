@@ -2,8 +2,9 @@
 
 Get a working offline-first Android app with SyncForge in **under 10 minutes**.
 
-> **All features:** [README Feature catalog](../README.md#feature-catalog) — samples for iOS,
-> desktop, conflicts, transports, auth, tracing, and more.
+> **All features:** [FEATURES.md](FEATURES.md) — samples for iOS, desktop, conflicts,
+> transports, auth, tracing, and more. Platform Gradle setup: [ANDROID_SETUP.md](ANDROID_SETUP.md),
+> [IOS_SETUP.md](IOS_SETUP.md), [DESKTOP_SETUP.md](DESKTOP_SETUP.md).
 
 By the end you will have:
 

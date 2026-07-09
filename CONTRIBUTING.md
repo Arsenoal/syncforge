@@ -1,7 +1,7 @@
 # Contributing to SyncForge
 
 Thanks for your interest in SyncForge. Feedback, bug reports, docs fixes, and
-pull requests are welcome — especially before the **1.0** stable release.
+pull requests are welcome.
 
 ## Ways to help
 

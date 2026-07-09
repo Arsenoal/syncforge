@@ -1,17 +1,74 @@
 # iOS setup guide
 
-Configure SyncForge on Apple platforms using `SyncForge.ios { }` (**stable** since 1.3 — no module-wide `@OptIn` required for the iOS DSL or BGTask helpers).
+Configure SyncForge on Apple platforms using `SyncForge.ios { }` (**stable** — no module-wide
+`@OptIn` required for the iOS DSL or BGTask helpers).
 
 **Requirements:** Kotlin 2.1+, Xcode 15+, iOS 14+ deployment target (Network framework).
 
-### Distribution (1.x → 2.0)
-
 | Channel | Status |
 |---------|--------|
-| **KMP frameworks** (Gradle → Xcode) | **Supported now** — Option A/B below |
-| **Swift Package Manager / XCFramework** | **Not published until `v2.0.0`** (roadmap 1.3-04; gated like Maven Central) |
+| **KMP frameworks** (Gradle → Xcode) | **Supported** — see Gradle setup below |
+| **Swift Package Manager / XCFramework** | Planned follow-up (`2.0.1+`); use Gradle frameworks today |
 
-Until SPM ships, build frameworks locally or via the Xcode Run Script. See [RELEASE.md](RELEASE.md) for publish policy.
+Reference apps: [`:sample-ios-shared`](../sample-ios-shared/) · [`:ios-sample`](../ios-sample/README.md).
+
+---
+
+## Gradle setup
+
+Import the version catalog in the **root** `settings.gradle.kts` of your KMP project:
+
+```kotlin
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:2.0.0")
+        }
+    }
+}
+```
+
+Shared module that owns entities and `SyncForge.ios { }`:
+
+```kotlin
+// shared/build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    id("com.android.library")
+    id("com.google.devtools.ksp")
+    alias(syncforge.plugins.syncforge.android)
+}
+
+kotlin {
+    androidTarget()
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.binaries.framework {
+            baseName = "SyncForgeShared"
+            isStatic = true
+        }
+    }
+    sourceSets {
+        commonMain.dependencies {
+            implementation(syncforge.core)
+            implementation(syncforge.network.ktor)  // default Ktor REST transport
+        }
+    }
+}
+```
+
+Link the framework in Xcode and call Kotlin from Swift — see [SWIFT_INTEROP.md](SWIFT_INTEROP.md).
 
 ---
 

@@ -5,8 +5,11 @@ Run SyncForge in the browser via `SyncForge.web { }` (**experimental** — requi
 
 **Requirements:** Kotlin 2.1+, JDK 17+ (Gradle), a browser target (`js(IR) { browser() }`)
 
-Related: [WEB_DSL.md](WEB_DSL.md) (API reference), [WEB_SPIKE.md](WEB_SPIKE.md) (platform go/no-go),
+**Distribution:** Browser `js` artifacts are **not** on Maven Central — integrate via git clone,
+composite build, or `publishToMavenLocal`. See [FEATURES.md](FEATURES.md) and
 [:sample-web](../sample-web/) (reference app).
+
+Related: [WEB_DSL.md](WEB_DSL.md) (API reference), [WEB_SPIKE.md](WEB_SPIKE.md) (platform go/no-go).
 
 ---
 
