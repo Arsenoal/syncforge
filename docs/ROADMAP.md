@@ -216,6 +216,6 @@ Sign-off: [ROADMAP_1_0_TO_2_0.md § 1.6.0](ROADMAP_1_0_TO_2_0.md#160-sign-off-ch
 
 ## Next: 2.0.0 (*Converge*)
 
-First Maven Central publish for the 1.x backlog, stable KMP graduation, optional CRDT/op-log channel — see [ROADMAP_1_0_TO_2_0.md § 2.0.0](ROADMAP_1_0_TO_2_0.md#200--major-release-vision).
+First Maven Central publish for the 1.x backlog, stable KMP graduation, optional CRDT/op-log channel — see [ROADMAP_1_0_TO_2_0.md § 2.0.0 vision](ROADMAP_1_0_TO_2_0.md#200--major-release-vision) and [§ 2.0.0 sign-off checklist](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist).
 
 Optional before 2.0: **1.6-07** (web conflict/debug CMP UI) or **1.3-06** (shake-to-open debug).
