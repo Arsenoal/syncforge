@@ -1106,7 +1106,7 @@ CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e
 | 15 | `ROADMAP.md` current version → `2.0.0` on Central | Header + 2.0 status row | ✅ |
 | 16 | Consumer doc pins at `2.0.0` | `GETTING_STARTED`, `README`, `syncforge-catalog` README examples | ✅ |
 | 17 | `:syncforge-catalog` lists every publishable library + plugin | `verifyCatalogArtifacts`; matches [publish-convention](../gradle/publish-convention.gradle.kts) `publishableModules` | ✅ on `main` |
-| 18 | `mavenCentralRequiredArtifacts` complete | [maven-central.gradle.kts](../gradle/maven-central.gradle.kts) includes all Central-facing modules (e.g. `syncforge-integration-opentelemetry` if published) | ⬜ audit at cut |
+| 18 | `mavenCentralRequiredArtifacts` complete | [maven-central.gradle.kts](../gradle/maven-central.gradle.kts) + `verifyMavenCentralArtifactList` (19 POMs: 16 libraries + `syncforge-android`/`syncforge-jvm` + plugin; excludes `js`/SPM) | ✅ |
 
 #### Maven Central publish (`v2.0.0` only)
 

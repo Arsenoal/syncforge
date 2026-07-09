@@ -6,14 +6,15 @@ import java.util.Base64
 val mavenCentralRepoBase = "https://repo1.maven.org/maven2/studio/syncforge"
 val stagingApiBase = "https://ossrh-staging-api.central.sonatype.com"
 
-/** Required Maven Central coordinates for a complete consumer-facing release. */
-val mavenCentralRequiredArtifacts = listOf(
+/**
+ * Root artifact IDs for every library module published via [publishAllToMavenCentral].
+ * Keep aligned with [publishableModules] in publish-convention.gradle.kts.
+ */
+val publishableLibraryArtifactIds = listOf(
     "syncforge",
-    "syncforge-android",
-    "syncforge-jvm",
     "syncforge-annotations",
+    "syncforge-ksp",
     "syncforge-persistence",
-    "syncforge-android-deps",
     "syncforge-network-ktor",
     "syncforge-transport-core",
     "syncforge-transport-supabase",
@@ -23,10 +24,33 @@ val mavenCentralRequiredArtifacts = listOf(
     "syncforge-store-inmemory",
     "syncforge-integration-koin",
     "syncforge-integration-hilt",
+    "syncforge-integration-opentelemetry",
+    "syncforge-android-deps",
     "syncforge-catalog",
-    "syncforge-ksp",
+)
+
+/** Extra platform POMs for the core KMP module (metadata + Android + JVM). */
+val mavenCentralPlatformArtifactIds = listOf(
+    "syncforge-android",
+    "syncforge-jvm",
+)
+
+/** Gradle plugin marker published from the included :syncforge-gradle-plugin build. */
+val mavenCentralGradlePluginArtifactIds = listOf(
     "syncforge-gradle-plugin",
 )
+
+/**
+ * Required Maven Central coordinates checked by verifyMavenCentralArtifacts.
+ * One root POM per publishable library + core platform variants + Gradle plugin.
+ *
+ * Intentionally excludes browser `js` and native Apple targets — `js` is monorepo-only;
+ * iOS/macOS ship via SPM / XCFramework (publishIosSpmArtifacts).
+ */
+val mavenCentralRequiredArtifacts =
+    publishableLibraryArtifactIds +
+        mavenCentralPlatformArtifactIds +
+        mavenCentralGradlePluginArtifactIds
 
 fun Project.readGradlePropertiesVersion(propertiesFile: java.io.File): String {
     val props = java.util.Properties()
@@ -195,6 +219,56 @@ fun Project.mavenCentralVerifySleepSec(): Int =
 fun Project.resolveVerifyMavenCentralVersion(): String =
     providers.gradleProperty("verifyMavenCentralVersion").orNull?.trim()?.takeIf { it.isNotEmpty() }
         ?: readGradlePropertiesVersion(rootProject.file("gradle.properties"))
+
+tasks.register("verifyMavenCentralArtifactList") {
+    group = "verification"
+    description =
+        "Fails unless mavenCentralRequiredArtifacts covers every publishable library, " +
+            "core platform variants, and the Gradle plugin."
+    doLast {
+        val publishableModules = setOf(
+            "syncforge",
+            "syncforge-annotations",
+            "syncforge-ksp",
+            "syncforge-persistence",
+            "syncforge-network-ktor",
+            "syncforge-transport-core",
+            "syncforge-transport-supabase",
+            "syncforge-transport-firebase",
+            "syncforge-transport-graphql",
+            "syncforge-store-room",
+            "syncforge-store-inmemory",
+            "syncforge-integration-koin",
+            "syncforge-integration-hilt",
+            "syncforge-integration-opentelemetry",
+            "syncforge-android-deps",
+            "syncforge-catalog",
+        )
+        val required = mavenCentralRequiredArtifacts.toSet()
+        val missingLibraries = publishableModules - required
+        check(missingLibraries.isEmpty()) {
+            "mavenCentralRequiredArtifacts missing publishable libraries: ${missingLibraries.joinToString()}"
+        }
+        val missingPlatforms = mavenCentralPlatformArtifactIds.toSet() - required
+        check(missingPlatforms.isEmpty()) {
+            "mavenCentralRequiredArtifacts missing platform POMs: ${missingPlatforms.joinToString()}"
+        }
+        val missingPlugin = mavenCentralGradlePluginArtifactIds.toSet() - required
+        check(missingPlugin.isEmpty()) {
+            "mavenCentralRequiredArtifacts missing Gradle plugin: ${missingPlugin.joinToString()}"
+        }
+        val unexpected = required - publishableModules - mavenCentralPlatformArtifactIds.toSet() -
+            mavenCentralGradlePluginArtifactIds.toSet()
+        check(unexpected.isEmpty()) {
+            "mavenCentralRequiredArtifacts has unexpected entries: ${unexpected.joinToString()}"
+        }
+        logger.lifecycle(
+            "mavenCentralRequiredArtifacts covers ${publishableModules.size} libraries + " +
+                "${mavenCentralPlatformArtifactIds.size} platform POMs + Gradle plugin " +
+                "(${required.size} total).",
+        )
+    }
+}
 
 tasks.register("verifyMavenCentralArtifacts") {
     group = "verification"

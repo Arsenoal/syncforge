@@ -103,6 +103,7 @@ tasks.register("verifyReleaseSignOff") {
         ":sample:compileDebugKotlin",
         ":sample:compileDebugAndroidTestKotlin",
         ":syncforge-catalog:verifyCatalogArtifacts",
+        "verifyMavenCentralArtifactList",
         "verifyConsumerSmoke",
         "verifyWebSpike",
         "verifyWebCompile",
