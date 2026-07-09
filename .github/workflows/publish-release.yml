@@ -94,6 +94,10 @@ jobs:
           FINALIZE_CURRENT_IP: "false"
           DROP_ALL_OPEN_STAGING: "true"
           DROP_INVALID_ON_FAILURE: "true"
+          MAVEN_CENTRAL_STAGING_CONNECT_TIMEOUT_MS: "60000"
+          MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS: "600000"
+          MAVEN_CENTRAL_STAGING_MAX_RETRIES: "5"
+          MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC: "20"
         run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
 
       - name: Prepare GPG signing key
@@ -194,8 +198,8 @@ jobs:
           DROP_INVALID_ON_FAILURE: "true"
           STRICT: "true"
           MAVEN_CENTRAL_STAGING_CONNECT_TIMEOUT_MS: "60000"
-          MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS: "300000"
-          MAVEN_CENTRAL_STAGING_MAX_RETRIES: "4"
+          MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS: "600000"
+          MAVEN_CENTRAL_STAGING_MAX_RETRIES: "5"
           MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC: "20"
         run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
 

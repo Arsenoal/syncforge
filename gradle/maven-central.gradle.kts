@@ -111,10 +111,10 @@ fun mavenCentralStagingConnectTimeoutMs(): Int =
     System.getenv("MAVEN_CENTRAL_STAGING_CONNECT_TIMEOUT_MS")?.toIntOrNull() ?: 60_000
 
 fun mavenCentralStagingReadTimeoutMs(): Int =
-    System.getenv("MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS")?.toIntOrNull() ?: 300_000
+    System.getenv("MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS")?.toIntOrNull() ?: 600_000
 
 fun mavenCentralStagingMaxRetries(): Int =
-    System.getenv("MAVEN_CENTRAL_STAGING_MAX_RETRIES")?.toIntOrNull() ?: 3
+    System.getenv("MAVEN_CENTRAL_STAGING_MAX_RETRIES")?.toIntOrNull() ?: 5
 
 fun mavenCentralStagingRetrySleepMs(attempt: Int): Long =
     (System.getenv("MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC")?.toIntOrNull() ?: 15) *

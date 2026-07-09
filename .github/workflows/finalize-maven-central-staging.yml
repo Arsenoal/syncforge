@@ -1,0 +1,48 @@
+name: Finalize Maven Central Staging
+
+# Retry transferring an OSSRH staging upload to Central Portal without re-publishing.
+# Use when Publish Release succeeded through publishAllToMavenCentral but finalize timed out.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  finalize:
+    name: Transfer staging upload to Central Portal
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Transfer staging upload to Central Portal
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          FINALIZE_CURRENT_IP: "true"
+          DROP_INVALID_ON_FAILURE: "true"
+          STRICT: "true"
+          MAVEN_CENTRAL_STAGING_CONNECT_TIMEOUT_MS: "60000"
+          MAVEN_CENTRAL_STAGING_READ_TIMEOUT_MS: "600000"
+          MAVEN_CENTRAL_STAGING_MAX_RETRIES: "5"
+          MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC: "20"
+        run: ./gradlew finalizeMavenCentralStaging -PmavenCentralNamespace=studio.syncforge --no-daemon
+
+      - name: Post-finalize steps
+        run: |
+          echo "::notice title=Maven Central portal::Open Central Portal → Deployments. Publish EVERY deployment in VALIDATED state."
+          echo "::notice title=After Central sync::Actions → Verify Maven Central Release → Run workflow (version 2.0.0)."
