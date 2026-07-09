@@ -1,7 +1,20 @@
 # Documentation folder
 
-The **documentation index**, learning paths, demo GIF, and quick-start guides live on the
-[repository README](../README.md) — that file is what GitHub shows on the project homepage.
+The **documentation index**, [Feature catalog](../README.md#feature-catalog-200), learning paths,
+demo GIF, and quick-start guides live on the [repository README](../README.md) — that file is what
+GitHub shows on the project homepage.
+
+---
+
+## Quick navigation
+
+| I need… | Go to |
+|---------|-------|
+| **Every feature + a code sample** | [README → Feature catalog](../README.md#feature-catalog-200) |
+| **First integration (~10 min)** | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| **Copy-paste for one task** | [RECIPES.md](RECIPES.md) |
+| **Look up a type or package** | [MODULES.md](MODULES.md) |
+| **Upgrade Maven consumers** | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) |
 
 ---
 
@@ -18,9 +31,11 @@ docs/
 ├── WEB_SETUP.md              ← Kotlin/JS browser DSL, webpack, CORS (1.6 add-on)
 ├── WEB_DSL.md                ← SyncForge.web { } API reference
 ├── WEB_SPIKE.md              ← Web platform spike go/no-go (js vs wasm)
-├── RECIPES.md                ← How-to: merge, deferToUser, hierarchical FK, debug
+├── RECIPES.md                ← How-to: merge, deferToUser, transports, DI, debug
 ├── CUSTOM_TRANSPORT.md       ← BYO SyncTransport / SyncDeltaStore (1.4)
 ├── TRACING.md                ← Opt-in OpenTelemetry spans (1.5)
+├── RATE_LIMITING.md          ← Backoff policies, 429 handling (1.5)
+├── AUDIT_EXPORT.md           ← Conflict audit CSV/JSON export (1.5)
 ├── HIERARCHICAL_SYNC.md      ← Parent/child FK recipes, orphan policies (1.5)
 ├── CONFLICT_RESOLUTION.md    ← Strategies, lifecycle, Compose UI, decision guide
 ├── BEST_PRACTICES.md         ← Entity design, strategy choices, performance
@@ -28,11 +43,28 @@ docs/
 ├── MODULES.md                ← Package-by-package API reference
 ├── REST_API.md               ← Backend push/pull contract + transport adapter semantics
 ├── AUTH_API.md               ← Built-in register/login/refresh (Android flow + diagram)
+├── COMPOSE_UI.md             ← CMP conflict UI (1.3)
+├── SWIFT_INTEROP.md          ← SKIE / Swift consumer patterns (1.3)
 ├── ROADMAP.md                ← Phases, limitations, future work
 ├── ROADMAP_1_0_TO_2_0.md     ← Detailed plan: 1.0.0 through 2.0.0 (sign-off checklists)
+├── RELEASE.md                ← Maintainer release process
 ├── MAVEN_PUBLISH.md          ← Maven Central publish + verify workflow
 └── images/                   ← README demo GIF (+ recording guide)
 ```
+
+---
+
+## Sample code map
+
+| Module | Doc link | Features demonstrated |
+|--------|----------|------------------------|
+| `:sample` | [Feature catalog → Android](../README.md#platform-entry-points) | Multi-entity sync, `gitLike`, runtime policy, debug UI, Compose conflicts |
+| `:sample-ios-shared` | [IOS_SETUP.md](IOS_SETUP.md) | `SyncForge.ios { }`, handlers without Room |
+| `:sample-desktop` | [DESKTOP_SETUP.md](DESKTOP_SETUP.md) | `SyncForge.desktop { }`, in-memory `EntityStore` |
+| `:sample-web` | [WEB_SETUP.md](WEB_SETUP.md) | `SyncForge.web { }`, browser push/pull |
+| `:mock-server` | [REST_API.md](REST_API.md) | Contract routes + `/dev/simulate-edit` conflict demos |
+| `:backend-starter-spring` | [REST_API.md](REST_API.md) | Spring Boot + JDBC store |
+| `:backend-starter-graphql` | [RECIPES.md → GraphQL](RECIPES.md#graphql-sync-transport-client) | GraphQL sync schema |
 
 ---
 
@@ -41,6 +73,6 @@ docs/
 When adding a feature, update in this order:
 
 1. [CHANGELOG.md](../CHANGELOG.md)
-2. Relevant guide (Getting Started / Recipes / Conflict Resolution)
-3. [MODULES.md](MODULES.md) API reference
-4. [README.md](../README.md) — Start here table or sample scenario row (one line max per feature)
+2. [README.md → Feature catalog](../README.md#feature-catalog-200) — one sample + table row
+3. Relevant guide (Getting Started / Recipes / Conflict Resolution)
+4. [MODULES.md](MODULES.md) API reference

@@ -117,6 +117,305 @@ sequenceDiagram
 
 ---
 
+## Feature catalog (2.0.0)
+
+Every major capability with a minimal copy-paste sample. Deep dives: [Recipes](docs/RECIPES.md) · [Module reference](docs/MODULES.md).
+
+| Area | What you get | Sample module / doc |
+|------|----------------|---------------------|
+| **Core sync** | Outbox, push/pull, optimistic writes | `:sample` · [REST API](docs/REST_API.md) |
+| **Android DSL** | SQLDelight outbox, WorkManager, Compose UI | `:sample` · [Android setup](docs/ANDROID_SETUP.md) |
+| **iOS / desktop / macOS** | Stable KMP DSLs, BGTaskScheduler, JVM desktop | `:sample-ios-shared`, `:sample-desktop` · [iOS](docs/IOS_SETUP.md) · [Desktop](docs/DESKTOP_SETUP.md) |
+| **Web (experimental)** | `SyncForge.web { }`, Ktor JS transport | `:sample-web` · [Web setup](docs/WEB_SETUP.md) |
+| **Conflict strategies** | LWW, defer, merge, `gitLike`, `crdt`, runtime policy | `:sample` · [Conflict resolution](docs/CONFLICT_RESOLUTION.md) |
+| **Entity store** | Room DAO, `@SyncForgeStore`, in-memory tests | [Recipes → BYO store](docs/RECIPES.md#byo-entity-store-syncforgestore) |
+| **Auth** | Built-in register/login/refresh, bearer tokens | [Auth API](docs/AUTH_API.md) |
+| **DI** | Koin + Hilt helpers | [Recipes → DI](docs/RECIPES.md#dependency-injection-koin--hilt) |
+| **Transports** | REST (default), GraphQL, Supabase, Firebase, custom | `:mock-server`, `:backend-starter-*` · [Custom transport](docs/CUSTOM_TRANSPORT.md) |
+| **Observability** | Debug console, SyncHealth, OpenTelemetry | [Tracing](docs/TRACING.md) · [Recipes → debug](docs/RECIPES.md#use-the-in-app-debug-console) |
+| **Hierarchical data** | Parent/child FK recipes | [Hierarchical sync](docs/HIERARCHICAL_SYNC.md) |
+| **Backend** | Ktor, Spring Boot, GraphQL reference servers | `:mock-server`, `:backend-starter-spring` |
+
+### Core sync loop
+
+Your UI writes to **your** database; SyncForge owns a separate outbox. Mutations enqueue; sync drains the outbox and applies remote deltas.
+
+```kotlin
+// Repository — instant local write + background sync
+taskDao.insert(task.copy(syncState = SyncState.PENDING))
+syncManager.enqueueChange(Change.create(TaskEntity.ENTITY_TYPE, task))
+syncManager.sync()  // or push() / pull() separately
+```
+
+Runnable backend locally: `./gradlew :mock-server:run` then point `baseUrl` at `http://10.0.2.2:8080` (emulator).
+
+### Platform entry points
+
+**Android** — [`SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt):
+
+```kotlin
+syncManager = SyncForge.android(this) {
+    baseUrl(BuildConfig.SYNC_BASE_URL)
+    registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
+    conflicts { sampleEntityConflicts() }
+    schedulePeriodicSyncOnStart()
+}
+```
+
+**iOS** — [`IosSampleController.kt`](sample-ios-shared/src/iosMain/kotlin/dev/syncforge/sample/ios/IosSampleController.kt):
+
+```kotlin
+SyncForge.ios {
+    baseUrl(baseUrl)
+    registry(handlers)
+    backgroundSyncTaskIdentifier("com.myapp.sync.refresh")
+    schedulePeriodicSyncOnStart()
+}
+```
+
+**JVM desktop** — [`DesktopSampleController.kt`](sample-desktop/src/main/kotlin/dev/syncforge/sample/desktop/DesktopSampleController.kt):
+
+```kotlin
+SyncForge.desktop {
+    baseUrl(baseUrl)
+    registry(EntityRegistry.of(taskHandler, noteHandler, tagHandler))
+    databaseName("my-app-sync.db")
+    schedulePeriodicSyncOnStart()
+}
+```
+
+**Browser (experimental, monorepo-only)** — [`WebSampleController.kt`](sample-web/src/jsMain/kotlin/dev/syncforge/sample/web/WebSampleController.kt):
+
+```kotlin
+SyncForge.web {
+    baseUrl(baseUrl)
+    registry(handlers)
+    syncOnTabVisible()  // optional pull when tab gains focus
+}
+```
+
+### Entities & KSP codegen
+
+Annotate entities and DAOs; build once — KSP generates handlers and `SyncForgeHandlers.registry(...)`.
+
+```kotlin
+@SyncForgeEntity(entityType = "tasks")
+@Entity(tableName = "tasks")
+@Serializable
+data class TaskEntity(/* id, fields, localVersion, updatedAtMillis, syncState */) : SyncedEntity
+
+@SyncForgeDao(entityClass = "com.example.tasks.TaskEntity")
+@Dao
+interface TaskDao { /* findById, insert, update, deleteById, observeAll */ }
+```
+
+**BYO store** (Realm, SQLDelight, in-memory) — `@SyncForgeStore` + optional `syncforge-store-room` / `syncforge-store-inmemory`:
+
+```kotlin
+@SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
+class TaskEntityStore(dao: TaskDao, db: AppDatabase) : RoomEntityStore<TaskEntity>(dao, db)
+
+registry(SyncForgeHandlers.registry(taskEntityStore))
+```
+
+### Conflict resolution
+
+Per-entity policies in `conflicts { }`. Reference matrix from [`SampleConflictPolicies.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/SampleConflictPolicies.kt):
+
+| Strategy | Sample use | Snippet |
+|----------|------------|---------|
+| `lastWriteWins()` | Simple rows (tags) | `entity("tags") { lastWriteWins() }` |
+| `alwaysRemote()` | Server-owned content (notes) | `entity("notes") { alwaysRemote() }` |
+| `deferToUser()` | User picks winner in UI | `entity("tasks") { deferToUser() }` |
+| `merge { }` | Field-level auto-merge | See [Recipes → merge](docs/RECIPES.md#custom-merge-with-merge--) |
+| `gitLike { }` | Independent field merges + defer on clash | See below |
+| `crdt { }` | CRDT field merge (counters, sets) | [Conflict resolution](docs/CONFLICT_RESOLUTION.md) |
+
+**`gitLike` three-way merge** (tasks in `:sample`):
+
+```kotlin
+entity("tasks") {
+    gitLike<TaskEntity> {
+        threeWayMerge { base, local, remote ->
+            // Non-overlapping title vs completed edits → Merged(...)
+            // Same field edited on both sides → Unmergeable
+        }
+        onUnmergeable { deferToUser() }
+        onRemoteDelete { deferToUser() }
+    }
+}
+```
+
+**Runtime policy swap** (settings screen in `:sample`):
+
+```kotlin
+syncManager.updateConflictPolicy(conflictPolicyFromSampleKinds(userSelectedKinds))
+```
+
+**Compose resolution UI** — conflict chip + sheet in [`TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt); helpers in [Recipes → deferToUser](docs/RECIPES.md#handle-defertouser-conflicts-in-compose).
+
+### Authentication
+
+**Built-in register/login** ([Auth API](docs/AUTH_API.md)):
+
+```kotlin
+SyncForge.android(this) {
+    baseUrl("https://api.example.com")
+    auth {
+        registerPath("/auth/register")
+        loginPath("/auth/login")
+        refreshPath("/auth/refresh")
+        tokenStore(encryptedTokenStore)
+    }
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+
+// ViewModel
+syncManager.login(email, password)   // CharArray — wiped after call
+syncManager.authState.collect { /* LoggedIn / LoggedOut */ }
+```
+
+**Bring your own tokens**:
+
+```kotlin
+authToken { tokenStore.accessToken }
+// or SyncAuthProvider.refreshing { ... } for 401 retry
+```
+
+### Background sync & scheduling
+
+```kotlin
+SyncForge.android(this) {
+    schedulePeriodicSyncOnStart()  // WorkManager periodic sync
+    minSyncInterval(Duration.parse("PT5M"))  // client throttle (1.5+)
+    backoffPolicy(SyncBackoffPolicy.exponential())  // retry shaping
+}
+
+// Application implements Configuration.Provider:
+override val workManagerConfiguration: Configuration
+    get() = SyncForgeAndroid.workManagerConfiguration { syncManager }
+```
+
+### UI & status observation
+
+```kotlin
+// Compose status banner
+syncManager.status.collectSyncStatusUiModel().collectAsState()
+
+// Open conflicts alongside status
+syncManager.conflicts.observeOpenConflicts().collectAsState(emptyList())
+```
+
+### Debug & production observability
+
+**In-app debug console** (debug builds) — tap **SF** overlay in `:sample`:
+
+```kotlin
+SyncDebugLauncher.attach(activity, syncManager)  // overlay + SyncDebugPanel
+```
+
+**OpenTelemetry tracing** ([Tracing](docs/TRACING.md)):
+
+```kotlin
+implementation(syncforge.integration.opentelemetry)  // catalog alias
+
+@OptIn(ExperimentalSyncForgeApi::class)
+SyncForge.android(this) {
+    tracing(OpenTelemetrySyncTracer(GlobalOpenTelemetry.getTracer("syncforge")))
+    registry(SyncForgeHandlers.registry(taskDao))
+}
+```
+
+**Audit export** — `syncManager.debug.exportConflictAudit(format = ConflictAuditFormat.Csv)` ([AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md)).
+
+### Ecosystem transports
+
+Default REST uses `syncforge-network-ktor` (pulled in by the Android plugin). Alternatives:
+
+```kotlin
+// GraphQL
+implementation(syncforge.transport.graphql)
+transport(GraphQlSyncTransport(GraphQlSyncConfig(endpointUrl = "https://api.example.com/graphql"), httpClient))
+
+// Supabase / Firebase delta store
+implementation(syncforge.transport.supabase)  // or transport.firebase
+transport(DeltaStoreSyncTransport(SupabaseSyncDeltaStore(config)))
+
+// Fully custom
+transport(MySyncTransport(...))
+```
+
+Reference servers: `./gradlew :mock-server:run` · `:backend-starter:run` · `:backend-starter-spring:bootRun` · `:backend-starter-graphql:run`
+
+### Dependency injection
+
+Optional artifacts — same wiring as `:sample`, packaged for Koin/Hilt:
+
+```kotlin
+// Koin
+implementation(syncforge.integration.koin)
+syncForgeModule { androidContext(this@App); syncManager { /* SyncForge.android { } */ } }
+
+// Hilt
+implementation(syncforge.integration.hilt)
+SyncForgeHilt.createSyncManager(context) { /* DSL */ }
+```
+
+### Inject shared HttpClient
+
+When your app already owns a Ktor client ([Recipes → httpClient](docs/RECIPES.md#inject-app-owned-ktor-httpclient)):
+
+```kotlin
+SyncForge.android(this) {
+    httpClient(buildSyncForgeHttpClient(OkHttp.create(), auth = authProvider, json = KtorSyncTransport.defaultJson))
+    auth(authProvider)
+    registry(handlers)
+}
+```
+
+### Hierarchical relationships
+
+SyncForge syncs flat entity rows; FKs are app-owned. Optional parent reference (`notes.tagId` → `tags`) in `:sample`:
+
+```kotlin
+@SyncForgeEntity(entityType = "notes")
+data class NoteEntity(
+    override val id: String,
+    val title: String,
+    val tagId: String?,  // optional FK — validate on write
+    // ...
+) : SyncedEntity
+```
+
+Orphan policies and server validation: [Hierarchical sync](docs/HIERARCHICAL_SYNC.md).
+
+### Version catalog (recommended pin)
+
+Import once — all library + plugin versions align:
+
+```kotlin
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("syncforge") {
+            from("studio.syncforge:syncforge-catalog:2.0.0")
+        }
+    }
+}
+
+dependencies {
+    implementation(syncforge.core)
+    implementation(syncforge.transport.graphql)      // optional
+    implementation(syncforge.integration.opentelemetry)  // optional
+}
+plugins {
+    alias(syncforge.plugins.syncforge.android)
+}
+```
+
+Upgrading from `1.1.0`: [UPGRADE_1_1_TO_2_0.md](docs/UPGRADE_1_1_TO_2_0.md).
+
+---
+
 ## Add to your project
 
 Artifacts: `studio.syncforge:syncforge`, version catalog `studio.syncforge:syncforge-catalog`,
@@ -219,23 +518,19 @@ Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the
 
 ## Documentation map
 
-```
-docs/
-├── README.md                 ← Folder index (main hub is this file)
-├── GETTING_STARTED.md        ← Zero → working offline-first app (~10 min)
-├── ANDROID_SETUP.md          ← Android DSL, SQLDelight default, Room migration
-├── IOS_SETUP.md              ← iOS DSL, SQLDelight defaults, Swift integration
-├── DESKTOP_SETUP.md          ← JVM desktop + native macOS DSL
-├── RECIPES.md                ← How-to: merge, deferToUser, debug, observe status
-├── CONFLICT_RESOLUTION.md    ← Strategies, lifecycle, Compose UI, decision guide
-├── BEST_PRACTICES.md         ← Entity design, strategy choices, performance
-├── KMP_MIGRATION.md          ← Room → SQLDelight, iOS targets, expect/actual plan
-├── MODULES.md                ← Package-by-package API reference
-├── REST_API.md               ← Backend push/pull contract
-├── AUTH_API.md               ← Built-in register/login/refresh
-├── ROADMAP.md                ← Phases, limitations, future work
-└── images/                   ← README demo GIF (+ recording guide)
-```
+| Doc | Topic |
+|-----|-------|
+| [GETTING_STARTED.md](docs/GETTING_STARTED.md) | Zero → working app (~10 min) |
+| [RECIPES.md](docs/RECIPES.md) | Copy-paste how-tos for every feature above |
+| [UPGRADE_1_1_TO_2_0.md](docs/UPGRADE_1_1_TO_2_0.md) | Maven Central `1.1.0` → `2.0.0` |
+| [ANDROID_SETUP.md](docs/ANDROID_SETUP.md) · [IOS_SETUP.md](docs/IOS_SETUP.md) · [DESKTOP_SETUP.md](docs/DESKTOP_SETUP.md) | Platform DSL setup |
+| [WEB_SETUP.md](docs/WEB_SETUP.md) · [WEB_DSL.md](docs/WEB_DSL.md) | Browser add-on (experimental) |
+| [CONFLICT_RESOLUTION.md](docs/CONFLICT_RESOLUTION.md) · [HIERARCHICAL_SYNC.md](docs/HIERARCHICAL_SYNC.md) | Conflicts & relationships |
+| [AUTH_API.md](docs/AUTH_API.md) · [REST_API.md](docs/REST_API.md) · [CUSTOM_TRANSPORT.md](docs/CUSTOM_TRANSPORT.md) | Auth, HTTP contract, transports |
+| [TRACING.md](docs/TRACING.md) · [RATE_LIMITING.md](docs/RATE_LIMITING.md) · [AUDIT_EXPORT.md](docs/AUDIT_EXPORT.md) | Operate & observe |
+| [MODULES.md](docs/MODULES.md) · [BEST_PRACTICES.md](docs/BEST_PRACTICES.md) | API reference & design guide |
+| [MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md) · [RELEASE.md](docs/RELEASE.md) | Release engineering |
+| [ROADMAP.md](docs/ROADMAP.md) · [ROADMAP_1_0_TO_2_0.md](docs/ROADMAP_1_0_TO_2_0.md) | Planning & sign-off |
 
 ---
 
@@ -264,22 +559,25 @@ docs/
 
 ---
 
-## Sample app
+## Sample apps
 
-| File                                                                                                        | What it demonstrates                                  |
-|-------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| [`sample/.../SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt)       | `SyncForge.android { }`, multi-entity `conflicts { }` |
-| [`sample/.../TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt)       | `enqueueChange` + `sync()`                            |
-| [`sample/.../TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt)             | Conflict sheet, server edit/delete demos              |
-| [`sample/.../NotesScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/notes/NotesScreen.kt)             | Second entity + optional `tagId` FK                   |
-| [`sample/.../navigation/SampleApp.kt`](sample/src/main/kotlin/dev/syncforge/sample/navigation/SampleApp.kt) | Bottom nav, SF debug overlay, demo log                |
+| Module | Platform | Demonstrates |
+|--------|----------|--------------|
+| [`:sample`](sample/) | Android Compose | Full feature matrix — conflicts, multi-entity, debug overlay, E2E tests |
+| [`:sample-ios-shared`](sample-ios-shared/) + [`:ios-sample`](ios-sample/) | iOS | `SyncForge.ios { }`, SKIE Swift interop |
+| [`:sample-desktop`](sample-desktop/) | JVM desktop | `SyncForge.desktop { }`, in-memory stores |
+| [`:sample-web`](sample-web/) | Kotlin/JS | `SyncForge.web { }`, push/pull smoke |
+| [`:mock-server`](mock-server/) | JVM Ktor | REST + GraphQL + `/dev/*` conflict demos |
 
-| Tab            | What it proves                                                                            |
-|----------------|-------------------------------------------------------------------------------------------|
-| **Tasks**      | `deferToUser()` conflicts; **Server edit** / **Server delete**; local delete + tombstones |
-| **Notes**      | `lastWriteWins()`; optional relationship to tags                                          |
-| **Tags**       | Third entity type in the same `SyncForgeHandlers.registry`                                |
-| **Demo panel** | Clear local Room + pull restore; live outbox/sync narration (debug builds)                |
+| `:sample` file | Feature |
+|----------------|---------|
+| [`SampleApplication.kt`](sample/src/main/kotlin/dev/syncforge/sample/SampleApplication.kt) | DSL wiring, `sampleEntityConflicts()`, runtime `updateConflictPolicy()` |
+| [`SampleConflictPolicies.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/SampleConflictPolicies.kt) | `gitLike`, LWW, `alwaysRemote` reference policies |
+| [`ConflictSettingsScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/conflicts/ConflictSettingsScreen.kt) | Live strategy picker (1.2 catalog) |
+| [`TaskRepository.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TaskRepository.kt) | `enqueueChange` + `sync()` |
+| [`TasksScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/tasks/TasksScreen.kt) | Conflict sheet, server edit/delete demos |
+| [`NotesScreen.kt`](sample/src/main/kotlin/dev/syncforge/sample/notes/NotesScreen.kt) | Second entity + optional `tagId` FK |
+| [`SampleApp.kt`](sample/src/main/kotlin/dev/syncforge/sample/navigation/SampleApp.kt) | Bottom nav, SF debug overlay, demo log |
 
 ---
 
@@ -349,16 +647,7 @@ val syncManager = SyncForge.ios {
 Implement `POST /sync/push` and `GET /sync/pull` per [REST API](docs/REST_API.md). Runnable
 starters: `./gradlew :mock-server:run` · `./gradlew :backend-starter:run` · `./gradlew :backend-starter-spring:bootRun`
 
----
-
-## Usage
-
-```kotlin
-syncManager.enqueueChange(Change.create("tasks", task))
-syncManager.sync()
-```
-
-Auth: **[Auth API](docs/AUTH_API.md)** · Advanced: **[Module reference](docs/MODULES.md)**
+See the [Feature catalog](#feature-catalog-200) for per-capability samples.
 
 ---
 

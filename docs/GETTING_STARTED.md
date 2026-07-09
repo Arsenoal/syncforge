@@ -2,6 +2,9 @@
 
 Get a working offline-first Android app with SyncForge in **under 10 minutes**.
 
+> **All features:** [README Feature catalog](../README.md#feature-catalog-200) — samples for every
+> 2.0.0 capability (iOS, desktop, conflicts, transports, auth, tracing).
+
 By the end you will have:
 
 - A sync-aware entity backed by **Room** (default path) or your own store (see [BYO store](#path-b--bring-your-own-store-syncforgestore))
