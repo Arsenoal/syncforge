@@ -7,7 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet — next public Maven Central rollout is **`2.0.0`** (ships the 1.2–1.6 backlog). See [ROADMAP_1_0_TO_2_0.md § 2.0.0 sign-off](docs/ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist).
+Nothing yet.
+
+## [2.0.0] - 2026-07-09
+
+**Converge** — first Maven Central publish since **`1.1.0`**. Rolls up the full **1.2–1.6** monorepo backlog (conflicts, platform parity, ecosystem transports, observability, web add-on sources) plus 2.0 API and distribution changes. Entity push/pull and REST v1 are unchanged.
+
+**Upgrade from `1.1.0`:** [UPGRADE_1_1_TO_2_0.md](docs/UPGRADE_1_1_TO_2_0.md) — import `syncforge-catalog:2.0.0`; drop `platform("syncforge-bom:…")`. Optional modules remain non-transitive. No server or handler migration for default consumers.
+
+### Added
+
+Shipped on Maven Central at `2.0.0` (previously monorepo-only on `main` since 1.2):
+
+- **[1.2.0] Merge-smart** — `gitLike { }`, `crdt { }`, merge-base store, `ConflictStrategyKind` catalog, runtime `updateConflictPolicy()`, outbox reconcile, KSP field-merge annotations; see [1.2.0](#120---2026-07-08)
+- **[1.3.0] Everywhere** — `:sample-desktop`, stable iOS/desktop/macOS DSLs, CMP conflict UI, `SWIFT_INTEROP.md`; see [1.3.0](#130---2026-07-08)
+- **[1.4.0] Ecosystem** — `SyncDeltaStore` + Supabase/Firebase/GraphQL transports, Spring starter, version catalog, multi-device E2E, contract test kit; see [1.4.0](#140---2026-07-09)
+- **[1.5.0] Operate** — tracing hooks, SyncHealth dashboard, hierarchical recipes, rate limiting, audit export; see [1.5.0](#150---2026-07-09)
+- **[1.6.0] Web add-on (sources only)** — KMP `js`, `SyncForge.web { }`, `:sample-web`, `webE2e` CI; browser artifacts **not** on Maven Central — see [1.6.0](#160---2026-07-09)
+- **`UPGRADE_1_1_TO_2_0.md`** — migration guide for `1.1.0` Maven Central consumers
+
+### Changed
+
+- **`gitLike { }` and `crdt { }` graduated to stable** — no `@OptIn(ExperimentalSyncForgeApi::class)` required; `MergeBaseStore` and `ThreeWayMergeResult` stable
+- **`:syncforge-bom` removed from build** — `:syncforge-catalog` + `verifyCatalogArtifacts` is the sole alignment check; historical `syncforge-bom` `1.0.0` / `1.1.0` artifacts remain on Central
+- **Version catalog is the documented consumer pin** — `studio.syncforge:syncforge-catalog:2.0.0` aligns plugin + all optional library artifacts
+
+### Distribution
+
+- **Maven Central `2.0.0`** — full KMP artifact set (core, natives, store/network/transport/integration modules, catalog, Gradle plugin `studio.syncforge.android`); publish via tag `v2.0.0` + [Publish Release](.github/workflows/publish-release.yml)
+- **iOS SPM / XCFramework** — deferred to **2.0.1** (`publishIosSpmArtifacts` stub); KMP framework path unchanged ([IOS_SETUP.md](docs/IOS_SETUP.md))
+- **Browser `js`** — monorepo / composite / `publishToMavenLocal` only ([WEB_SETUP.md](docs/WEB_SETUP.md))
 
 ## [1.6.0] - 2026-07-09
 
