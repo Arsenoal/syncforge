@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Web add-on distribution (1.6)** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional BOM/Maven artifacts for web
+- **Web add-on distribution (1.6)** — `js` / `SyncForge.web { }` stays monorepo-only; removed roadmap goal to publish optional Maven artifacts for web
+- **Roadmap distribution** — stripped BOM from `ROADMAP_1_0_TO_2_0.md` / `ROADMAP.md`; version catalog (`:syncforge-catalog`) is the documented consumer alignment path
 
 ### Added
 

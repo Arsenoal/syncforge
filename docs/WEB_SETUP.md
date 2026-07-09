@@ -86,9 +86,9 @@ kotlin {
 }
 ```
 
-### Maven Central / BOM
+### Maven Central
 
-Web `js` targets are **not published** to Maven Central or listed in `:syncforge-bom`. The 1.6
+Web `js` targets are **not published** to Maven Central. The 1.6
 add-on is **monorepo-only** — use a composite build, git submodule, or `publishToMavenLocal` for
 experiments. Android-primary consumers do not need the `js` target.
 
@@ -185,7 +185,7 @@ yourself when testing from a browser SPA.
 | **Persistence** | SQL.js storage is **in-memory per tab session** inside a worker; outbox/conflicts are lost on full page reload. IndexedDB-backed persistence is future work |
 | **Storage quotas** | Browser storage limits apply to `localStorage` (cursor) and worker memory; large outboxes are not tuned for web yet |
 | **Background sync** | No Service Worker / periodic sync guarantee — use `syncOnTabVisible()`, `online` events, or explicit `sync()` |
-| **Maven / BOM** | Web `js` artifacts are **not** published to Maven Central or BOM — monorepo / composite / `publishToMavenLocal` only |
+| **Maven publish** | Web `js` artifacts are **not** on Maven Central — monorepo / composite / `publishToMavenLocal` only |
 | **Wasm** | Full persistence on `wasmJs` blocked until SQLDelight ≥2.1 — see [WEB_SPIKE.md](WEB_SPIKE.md) |
 | **Compose Web** | Conflict/debug CMP components on web deferred to **1.6-07** |
 

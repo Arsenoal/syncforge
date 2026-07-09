@@ -1,6 +1,6 @@
 # Web platform spike (1.6-00)
 
-Go/no-go for SyncForge browser support. Spike and web add-on modules are **monorepo-only** — not published to Maven Central or BOM.
+Go/no-go for SyncForge browser support. Spike and web add-on modules are **monorepo-only** — not published to Maven Central.
 
 ## Spike modules
 
@@ -47,7 +47,7 @@ Verify locally:
 | Area | Result | Notes |
 |------|--------|-------|
 | **Ktor HTTP** | ✅ Compiles | `ktor-client-core` on wasmJs (fetch engine via Ktor 3) |
-| **SQLDelight** | ❌ Blocked at 2.0.2 | `runtime-wasm-js` artifact starts at **SQLDelight 2.1.0**; sharing `:syncforge-persistence` generated code on wasm requires BOM bump or wasm-only fork |
+| **SQLDelight** | ❌ Blocked at 2.0.2 | `runtime-wasm-js` artifact starts at **SQLDelight 2.1.0**; sharing `:syncforge-persistence` generated code on wasm requires SQLDelight version bump or wasm-only fork |
 | **Compose Multiplatform Web** | ⏸️ Deferred | Theoretical CMP Wasm path; not compile-tested in this spike |
 
 **Wasm is viable for transport-only experiments** but **not** for full outbox parity on current SQLDelight pin without upgrading to ≥2.1.
@@ -62,7 +62,7 @@ Verify locally:
 |----------|--------|
 | **1.6-01 primary target** | **`js` (Kotlin/JS IR)** |
 | **1.6-01 secondary** | Document `wasmJs` transport path; full persistence after SQLDelight ≥2.1 evaluation |
-| **Maven / BOM** | Web `js` not published — monorepo / composite / `publishToMavenLocal` only |
+| **Maven publish** | Web `js` not published — monorepo / composite / `publishToMavenLocal` only |
 | **CI** | `verifyWebSpike` + `verifyWebCompile` on PR; runtime `webE2e` nightly ([web-e2e.yml](../.github/workflows/web-e2e.yml)) |
 
 ## Risks for 1.6-01+

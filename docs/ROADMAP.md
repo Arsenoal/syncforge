@@ -131,7 +131,7 @@
 
 | Item | Description |
 |------|-------------|
-| **Maven Central** | ✅ `1.0.0` — `studio.syncforge` BOM, KMP targets, Gradle plugin |
+| **Maven Central** | ✅ `1.0.0` — `studio.syncforge` KMP targets, Gradle plugin, version catalog (1.4+) |
 | **Open-source license** | Choose and apply before public release |
 | **API stability** | Semver guarantees from 1.0 |
 | **Backend starter kits** | Reference servers (Ktor, Spring) |
@@ -185,7 +185,7 @@ See [ROADMAP_1_0_TO_2_0.md § 1.0.0](ROADMAP_1_0_TO_2_0.md#100--first-stable-rel
 | **Entity store** — `EntityStore`, `@SyncForgeStore`, `:syncforge-store-*` | ✅ |
 | **Security & auth** — encrypted `TokenStore`, `CharArray` login/register, stable auth API | ✅ |
 | **DX** — DI recipes (Koin/Hilt), DataStore cursor, BYO-store docs | ✅ |
-| **Release gate** — BOM optional artifacts, acceptance matrix, tag `v1.1.0` | ✅ |
+| **Release gate** — version catalog + acceptance matrix, tag `v1.1.0` | ✅ |
 | **Maven Central** | ✅ `1.1.0` — 14 artifacts + consumer smoke verified |
 
 Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-github-issues-breakdown) · sign-off: [§ 1.1.0 acceptance](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist).
