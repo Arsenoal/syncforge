@@ -1,6 +1,10 @@
 import groovy.json.JsonSlurper
 import java.net.HttpURLConnection
 import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
 import java.util.Base64
 
 val mavenCentralRepoBase = "https://repo1.maven.org/maven2/studio/syncforge"
@@ -120,10 +124,20 @@ fun mavenCentralStagingRetrySleepMs(attempt: Int): Long =
     (System.getenv("MAVEN_CENTRAL_STAGING_RETRY_SLEEP_SEC")?.toIntOrNull() ?: 15) *
         (attempt + 1) * 1000L
 
-fun isRetryableStagingError(error: Throwable): Boolean =
-    error is java.net.SocketTimeoutException ||
-        error is java.net.ConnectException ||
-        error is java.io.IOException
+fun isRetryableStagingError(error: Throwable): Boolean {
+    var current: Throwable? = error
+    while (current != null) {
+        if (current is java.net.SocketTimeoutException ||
+            current is java.net.ConnectException ||
+            current is java.io.IOException ||
+            current is java.net.http.HttpTimeoutException
+        ) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
+}
 
 class MavenCentralStagingClient(
     private val username: String,
@@ -136,16 +150,23 @@ class MavenCentralStagingClient(
     private val authHeader: String =
         "Bearer ${Base64.getEncoder().encodeToString("$username:$password".toByteArray())}"
 
+    private val httpClient: HttpClient =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(connectTimeoutMs.toLong()))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build()
+
     private fun executeOnce(method: String, path: String): String {
-        val connection = URI("$stagingApiBase$path").toURL().openConnection() as HttpURLConnection
-        connection.requestMethod = method
-        connection.setRequestProperty("Authorization", authHeader)
-        connection.instanceFollowRedirects = true
-        connection.connectTimeout = connectTimeoutMs
-        connection.readTimeout = readTimeoutMs
-        val code = connection.responseCode
-        val stream = if (code in 200..299) connection.inputStream else connection.errorStream
-        val body = stream?.bufferedReader()?.use { it.readText() }?.trim().orEmpty()
+        val request =
+            HttpRequest.newBuilder()
+                .uri(URI("$stagingApiBase$path"))
+                .timeout(Duration.ofMillis(readTimeoutMs.toLong()))
+                .header("Authorization", authHeader)
+                .method(method, HttpRequest.BodyPublishers.noBody())
+                .build()
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        val body = response.body()?.trim().orEmpty()
+        val code = response.statusCode()
         if (code !in 200..299) {
             throw GradleException("Staging API $method $path failed: HTTP $code $body")
         }
@@ -366,6 +387,7 @@ tasks.register("finalizeMavenCentralStaging") {
         val dropInvalid = System.getenv("DROP_INVALID_ON_FAILURE")?.toBooleanStrictOrNull() ?: true
         val dropAllOpen = System.getenv("DROP_ALL_OPEN_STAGING")?.toBooleanStrictOrNull() ?: false
 
+        var currentIpFinalized = false
         if (finalizeCurrentIp) {
             logger.lifecycle(
                 "Finalizing staging upload for namespace $namespace (current CI IP) " +
@@ -373,15 +395,29 @@ tasks.register("finalizeMavenCentralStaging") {
                     "readTimeout=${mavenCentralStagingReadTimeoutMs()}ms, " +
                     "retries=${mavenCentralStagingMaxRetries()})...",
             )
-            val body = client.requestOrEmpty("POST", "/manual/upload/defaultRepository/$namespace")
-            if (body != null) {
-                logger.lifecycle(body)
+            val currentIpResult =
+                runCatching {
+                    client.requestOrEmpty("POST", "/manual/upload/defaultRepository/$namespace")
+                }
+            if (currentIpResult.isSuccess) {
+                val body = currentIpResult.getOrNull()
+                if (body != null) {
+                    logger.lifecycle(body)
+                    currentIpFinalized = true
+                } else {
+                    logger.lifecycle(
+                        "No current-IP staging upload to finalize (HTTP 404 — will try orphan promotion).",
+                    )
+                }
             } else {
-                val message = "No current-IP staging upload to finalize (HTTP 404 — ok if publish already transferred)."
-                if (strict) error(message) else logger.lifecycle(message)
+                logger.warn(
+                    "Current-IP staging finalize failed (${currentIpResult.exceptionOrNull()?.message}); " +
+                        "continuing with orphan promotion...",
+                )
             }
         }
 
+        var orphanPromotionFailed = false
         runCatching {
             promoteOrphanedStagingUploads(
                 logger = logger,
@@ -391,7 +427,15 @@ tasks.register("finalizeMavenCentralStaging") {
                 dropAllOpenStaging = dropAllOpen,
             )
         }.onFailure { error ->
+            orphanPromotionFailed = true
             if (strict) throw error else logger.warn(error.message ?: "Staging orphan promotion skipped")
+        }
+
+        if (strict && finalizeCurrentIp && !currentIpFinalized && orphanPromotionFailed) {
+            error(
+                "Staging finalize failed: current-IP transfer did not succeed and orphan promotion failed. " +
+                    "Check Sonatype Central Portal → Deployments for existing VALIDATED uploads before re-publishing.",
+            )
         }
     }
 }

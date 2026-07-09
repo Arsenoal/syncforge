@@ -86,6 +86,15 @@ jobs:
       - name: Test JVM
         run: ./gradlew :syncforge:jvmTest :syncforge-persistence:jvmTest --no-daemon
 
+      - name: Overlay staging finalize script from main
+        if: steps.release.outputs.publish_distribution == 'true'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin main
+          git show FETCH_HEAD:gradle/maven-central.gradle.kts > gradle/maven-central.gradle.kts
+          grep -q 'mavenCentralStagingReadTimeoutMs' gradle/maven-central.gradle.kts
+          echo "Using staging finalize script from origin/main (not the release tag)."
+
       - name: Drop open staging repositories
         if: steps.release.outputs.publish_distribution == 'true'
         env:
@@ -207,6 +216,7 @@ jobs:
         if: steps.release.outputs.publish_distribution == 'true'
         run: |
           VERSION="${{ steps.release.outputs.version }}"
+          echo "::notice title=Finalize retry::If finalize timed out, start a NEW workflow (do not Re-run failed jobs). Use Actions → Finalize Maven Central Staging."
           echo "::notice title=Maven Central portal::Open Central Portal → Deployments. Publish EVERY deployment in VALIDATED state (usually two: ~39 + ~11 KMP components)."
           echo "::notice title=After Central sync::Actions → Verify Maven Central Release → Run workflow (version ${VERSION})."
           echo "::notice title=GitHub Release::Create the GitHub Release manually in the repository UI (see docs/RELEASE.md)."
