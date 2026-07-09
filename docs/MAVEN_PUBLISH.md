@@ -39,7 +39,7 @@ These live in [gradle.properties](../gradle.properties) and are applied by
 | `syncforge.pom.scm.developerConnection` | `scm:git:ssh://github.com/Arsenoal/syncforge.git` |
 | License | Apache 2.0 |
 
-Version is set from the git tag in CI (`v1.1.0` → `syncforge.version=1.1.0`).
+Version is set from the git tag in CI (`v2.0.0` → `syncforge.version=2.0.0`).
 
 ---
 
@@ -174,7 +174,7 @@ Then push so CI `verifyConsumerSmokeMavenCentral` validates the new coordinates.
 
 ```bash
 # Example — after Central sync (may take minutes)
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/1.1.0/syncforge-catalog-1.1.0.toml" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/2.0.0/syncforge-catalog-2.0.0.toml" | head -1
 ```
 
 ### Consumer smoke against Central

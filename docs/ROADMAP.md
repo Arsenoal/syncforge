@@ -1,8 +1,8 @@
 # SyncForge roadmap
 
-**Maven Central:** `1.1.0` (stable — [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge), tag `v1.1.0`)
+**Maven Central:** `2.0.0` pending publish (latest live: `1.1.0` — [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge))
 
-**Monorepo (`main`):** `1.2.0` development line — 1.2–1.6 features shipped on `main`; git tags only until **2.0.0** Maven Central publish (see [distribution policy](ROADMAP_1_0_TO_2_0.md#distribution-notes-10--20)).
+**Monorepo (`main`):** `2.0.0` — converges the 1.2–1.6 backlog for first Central upload since `1.1.0` (see [distribution policy](ROADMAP_1_0_TO_2_0.md#distribution-notes-10--20) · [sign-off checklist](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist)).
 
 ---
 

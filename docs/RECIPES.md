@@ -474,10 +474,10 @@ Full walkthrough: [Getting Started → Path B](GETTING_STARTED.md#path-b--bring-
 
 ```kotlin
 // app/build.gradle.kts — Room BYO-store bridge (Android)
-implementation("studio.syncforge:syncforge-store-room:1.1.0")
+implementation("studio.syncforge:syncforge-store-room:2.0.0")
 
 // tests — non-Room stack
-testImplementation("studio.syncforge:syncforge-store-inmemory:1.1.0")
+testImplementation("studio.syncforge:syncforge-store-inmemory:2.0.0")
 ```
 
 ### Custom store
@@ -549,8 +549,8 @@ Optional helpers:
 
 ```kotlin
 // Published coordinates (optional)
-implementation("studio.syncforge:syncforge-integration-koin:1.1.0")
-implementation("studio.syncforge:syncforge-integration-hilt:1.1.0")
+implementation("studio.syncforge:syncforge-integration-koin:2.0.0")
+implementation("studio.syncforge:syncforge-integration-hilt:2.0.0")
 ```
 
 ### What to inject (matches `:sample`)
@@ -597,7 +597,7 @@ class SampleApplication : Application(), Configuration.Provider {
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("studio.syncforge:syncforge-integration-koin:1.1.0")
+    implementation("studio.syncforge:syncforge-integration-koin:2.0.0")
     implementation("io.insert-koin:koin-android:4.0.1")
 }
 ```
@@ -681,7 +681,7 @@ plugins {
     id("com.google.devtools.ksp")
 }
 dependencies {
-    implementation("studio.syncforge:syncforge-integration-hilt:1.1.0")
+    implementation("studio.syncforge:syncforge-integration-hilt:2.0.0")
     implementation("com.google.dagger:hilt-android:2.56.1")
     ksp("com.google.dagger:hilt-android-compiler:2.56.1")
 }
@@ -1000,7 +1000,7 @@ without changing entity handlers or KSP codegen.
 ### Dependencies
 
 ```kotlin
-implementation("studio.syncforge:syncforge-transport-graphql:1.2.0")
+implementation("studio.syncforge:syncforge-transport-graphql:2.0.0")
 ```
 
 ### Wire the transport
@@ -1123,10 +1123,10 @@ GraphQL. Implement the storage port once; `DeltaStoreSyncTransport` maps it to `
 ### Dependencies
 
 ```kotlin
-implementation("studio.syncforge:syncforge-transport-core:1.2.0")
+implementation("studio.syncforge:syncforge-transport-core:2.0.0")
 // optional ready-made impls:
-implementation("studio.syncforge:syncforge-transport-supabase:1.2.0")
-implementation("studio.syncforge:syncforge-transport-firebase:1.2.0")
+implementation("studio.syncforge:syncforge-transport-supabase:2.0.0")
+implementation("studio.syncforge:syncforge-transport-firebase:2.0.0")
 ```
 
 ### Ready-made stores

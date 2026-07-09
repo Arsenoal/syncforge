@@ -1,6 +1,6 @@
 # SyncForge documentation
 
-**Version:** `1.2.0` (development on `main`) · **Maven Central:** `1.1.0` latest published — new Central uploads from **`v2.0.0`** ([policy](docs/MAVEN_PUBLISH.md#distribution-policy-1x--20))
+**Version:** `2.0.0` · **Maven Central:** `2.0.0` pending publish (latest live: `1.1.0` — [upgrade guide](docs/UPGRADE_1_1_TO_2_0.md))
 
 SyncForge is an offline-first sync library for Android with Kotlin Multiplatform targets for
 iOS, JVM desktop, and native macOS. Your app entities live in Room (Android) or your own
@@ -140,7 +140,7 @@ pluginManagement {
 dependencyResolutionManagement {
     versionCatalogs {
         create("syncforge") {
-            from("studio.syncforge:syncforge-catalog:1.1.0")
+            from("studio.syncforge:syncforge-catalog:2.0.0")
         }
     }
 }
@@ -209,7 +209,7 @@ val syncManager = SyncForge.ios {
 ### Verify Maven Central
 
 ```bash
-curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/1.1.0/syncforge-catalog-1.1.0.toml" | head -1
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/2.0.0/syncforge-catalog-2.0.0.toml" | head -1
 ```
 
 Expect `HTTP/2 200`. If you see `404`, publish the staging repo in the

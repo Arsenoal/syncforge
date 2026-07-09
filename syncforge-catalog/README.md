@@ -10,7 +10,7 @@ and the `studio.syncforge.android` plugin to a single `syncforge` version.
 dependencyResolutionManagement {
     versionCatalogs {
         create("syncforge") {
-            from("studio.syncforge:syncforge-catalog:1.2.0")
+            from("studio.syncforge:syncforge-catalog:2.0.0")
         }
     }
 }

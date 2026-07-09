@@ -64,7 +64,7 @@ pluginManagement {
 dependencyResolutionManagement {
     versionCatalogs {
         create("syncforge") {
-            from("studio.syncforge:syncforge-catalog:1.2.0")
+            from("studio.syncforge:syncforge-catalog:2.0.0")
         }
     }
 }
@@ -106,8 +106,8 @@ classpath via SyncForge's Android transitive deps. For BYO store, add only what 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("studio.syncforge:syncforge:1.1.0")
-            implementation("studio.syncforge:syncforge-network-ktor:1.1.0")  // default Ktor REST transport
+            implementation("studio.syncforge:syncforge:2.0.0")
+            implementation("studio.syncforge:syncforge-network-ktor:2.0.0")  // default Ktor REST transport
         }
     }
 }
@@ -121,8 +121,8 @@ Apply KSP on the module that owns `@SyncForgeEntity` and `@SyncForgeDao` or `@Sy
 
 ```kotlin
 dependencies {
-    implementation("studio.syncforge:syncforge:1.1.0")
-    implementation("studio.syncforge:syncforge-network-ktor:1.1.0")  // default Ktor REST transport
+    implementation("studio.syncforge:syncforge:2.0.0")
+    implementation("studio.syncforge:syncforge-network-ktor:2.0.0")  // default Ktor REST transport
 }
 ```
 
@@ -262,7 +262,7 @@ class TaskEntityStore : EntityStore<TaskEntity> {
 **Room via adapter** (`syncforge-store-room`):
 
 ```kotlin
-implementation("studio.syncforge:syncforge-store-room:1.1.0")
+implementation("studio.syncforge:syncforge-store-room:2.0.0")
 
 @Dao
 interface TaskDao : SyncForgeRoomDao<TaskEntity> { /* findById, insert, update, deleteById */ }
@@ -274,7 +274,7 @@ class TaskEntityStore(dao: TaskDao, db: AppDatabase) : RoomEntityStore<TaskEntit
 **In-memory (unit tests / prototyping)** (`syncforge-store-inmemory`):
 
 ```kotlin
-testImplementation("studio.syncforge:syncforge-store-inmemory:1.1.0")
+testImplementation("studio.syncforge:syncforge-store-inmemory:2.0.0")
 
 @SyncForgeStore(entityClass = "com.example.tasks.TaskEntity")
 class TaskEntityStore : InMemoryEntityStore<TaskEntity>()

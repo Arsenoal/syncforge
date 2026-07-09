@@ -9,7 +9,7 @@ Default is [SyncTracer.None](../syncforge/src/commonMain/kotlin/dev/syncforge/tr
 ## Quick start (Android)
 
 ```kotlin
-implementation("studio.syncforge:syncforge-integration-opentelemetry:1.2.0")
+implementation("studio.syncforge:syncforge-integration-opentelemetry:2.0.0")
 
 @OptIn(ExperimentalSyncForgeApi::class)
 SyncForge.android(this) {

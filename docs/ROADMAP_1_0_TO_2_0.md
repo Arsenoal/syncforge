@@ -1101,10 +1101,10 @@ CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
-| 13 | `syncforge.version=2.0.0` in `gradle.properties` | Tag + [publish-release.yml](../.github/workflows/publish-release.yml) version injection | ⬜ |
-| 14 | `CHANGELOG [2.0.0]` — full 1.2–1.6 backlog + 2.0 breaking notes | `CHANGELOG.md`; no stale `[Unreleased]` for shipped work | ⬜ |
-| 15 | `ROADMAP.md` current version → `2.0.0` on Central | Header + 2.0 status row | ⬜ |
-| 16 | Consumer doc pins at `2.0.0` | `GETTING_STARTED`, `README`, `syncforge-catalog` README examples | ⬜ |
+| 13 | `syncforge.version=2.0.0` in `gradle.properties` | Tag + [publish-release.yml](../.github/workflows/publish-release.yml) version injection | ✅ |
+| 14 | `CHANGELOG [2.0.0]` — full 1.2–1.6 backlog + 2.0 breaking notes | `CHANGELOG.md`; no stale `[Unreleased]` for shipped work | ✅ |
+| 15 | `ROADMAP.md` current version → `2.0.0` on Central | Header + 2.0 status row | ✅ |
+| 16 | Consumer doc pins at `2.0.0` | `GETTING_STARTED`, `README`, `syncforge-catalog` README examples | ✅ |
 | 17 | `:syncforge-catalog` lists every publishable library + plugin | `verifyCatalogArtifacts`; matches [publish-convention](../gradle/publish-convention.gradle.kts) `publishableModules` | ✅ on `main` |
 | 18 | `mavenCentralRequiredArtifacts` complete | [maven-central.gradle.kts](../gradle/maven-central.gradle.kts) includes all Central-facing modules (e.g. `syncforge-integration-opentelemetry` if published) | ⬜ audit at cut |
 
