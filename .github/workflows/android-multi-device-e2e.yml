@@ -38,21 +38,42 @@ jobs:
       - name: Install Android SDK packages
         uses: android-actions/setup-android@v3
 
+      # setup-android only installs cmdline-tools; system images must be installed
+      # before avdmanager. Package matches CI android-e2e (api-level 29, default, x86_64).
+      - name: Install emulator system image
+        run: |
+          set -euo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/cmdline-tools/bin:$PATH"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install \
+            "platform-tools" \
+            "emulator" \
+            "platforms;android-29" \
+            "system-images;android-29;default;x86_64"
+
       - name: Create AVDs
         run: |
-          echo "no" | avdmanager create avd -n Pixel_6_A -k "system-images;android-29;google_apis;x86_64" -d pixel_6 --force
-          echo "no" | avdmanager create avd -n Pixel_6_B -k "system-images;android-29;google_apis;x86_64" -d pixel_6 --force
+          set -euo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/cmdline-tools/bin:$PATH"
+          # "no" declines the custom hardware profile prompt
+          echo "no" | avdmanager create avd -n Pixel_6_A -k "system-images;android-29;default;x86_64" -d pixel_6 --force
+          echo "no" | avdmanager create avd -n Pixel_6_B -k "system-images;android-29;default;x86_64" -d pixel_6 --force
 
       - name: Start two emulators
         run: |
-          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          set -euo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           export PATH="$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
           nohup emulator -avd Pixel_6_A -port 5554 -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim > /tmp/emu-a.log 2>&1 &
           nohup emulator -avd Pixel_6_B -port 5556 -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim > /tmp/emu-b.log 2>&1 &
+          # Primary device (5554) then second serial
           adb wait-for-device
+          adb -s emulator-5554 wait-for-device
           adb -s emulator-5556 wait-for-device
           adb devices
-          for i in $(seq 1 60); do
+          for i in $(seq 1 90); do
             if adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | grep -q 1 && \
                adb -s emulator-5556 shell getprop sys.boot_completed 2>/dev/null | grep -q 1; then
               echo "Both emulators booted"
@@ -61,8 +82,8 @@ jobs:
             sleep 5
           done
           echo "Emulator boot timeout"
-          tail -30 /tmp/emu-a.log || true
-          tail -30 /tmp/emu-b.log || true
+          tail -50 /tmp/emu-a.log || true
+          tail -50 /tmp/emu-b.log || true
           exit 1
 
       - name: Run multi-device E2E
