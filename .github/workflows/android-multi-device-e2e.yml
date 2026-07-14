@@ -60,31 +60,94 @@ jobs:
           # "no" declines the custom hardware profile prompt
           echo "no" | avdmanager create avd -n Pixel_6_A -k "system-images;android-29;default;x86_64" -d pixel_6 --force
           echo "no" | avdmanager create avd -n Pixel_6_B -k "system-images;android-29;default;x86_64" -d pixel_6 --force
+          # Cap RAM so two instances fit on GitHub-hosted runners (default Pixel_6 is too heavy).
+          for avd in Pixel_6_A Pixel_6_B; do
+            cfg="${HOME}/.android/avd/${avd}.avd/config.ini"
+            if [ -f "$cfg" ]; then
+              sed -i '/^hw.ramSize=/d' "$cfg"
+              echo "hw.ramSize=1536" >> "$cfg"
+            fi
+          done
 
       - name: Start two emulators
         run: |
           set -euo pipefail
           export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           export PATH="$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-          nohup emulator -avd Pixel_6_A -port 5554 -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim > /tmp/emu-a.log 2>&1 &
-          nohup emulator -avd Pixel_6_B -port 5556 -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim > /tmp/emu-b.log 2>&1 &
-          # Primary device (5554) then second serial
-          adb wait-for-device
-          adb -s emulator-5554 wait-for-device
-          adb -s emulator-5556 wait-for-device
-          adb devices
-          for i in $(seq 1 90); do
-            if adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | grep -q 1 && \
-               adb -s emulator-5556 shell getprop sys.boot_completed 2>/dev/null | grep -q 1; then
-              echo "Both emulators booted"
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "Emulator boot timeout"
-          tail -50 /tmp/emu-a.log || true
-          tail -50 /tmp/emu-b.log || true
-          exit 1
+
+          echo "=== Preflight ==="
+          which emulator
+          emulator -version | head -5
+          emulator -accel-check || true
+          ls -la "${HOME}/.android/avd/" || true
+          test -e /dev/kvm && echo "KVM present" || echo "WARNING: /dev/kvm missing"
+          adb start-server
+
+          EMU_OPTS=(
+            -no-snapshot-save
+            -no-snapshot-load
+            -no-window
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -memory 1536
+            -cores 2
+            -partition-size 2048
+          )
+
+          dump_logs() {
+            echo "=== adb devices ==="
+            adb devices -l || true
+            echo "=== emu A log (tail) ==="
+            tail -80 /tmp/emu-a.log || true
+            echo "=== emu B log (tail) ==="
+            tail -80 /tmp/emu-b.log || true
+          }
+
+          # Wait until serial appears in adb, then until boot completed. Fail if process dies.
+          wait_for_boot() {
+            local serial="$1" log="$2" pid="$3" label="$4"
+            local max_secs=300
+            local elapsed=0
+            echo "Waiting for ${label} (${serial}, pid ${pid})…"
+            while [ "$elapsed" -lt "$max_secs" ]; do
+              if ! kill -0 "$pid" 2>/dev/null; then
+                echo "ERROR: ${label} process exited early"
+                dump_logs
+                exit 1
+              fi
+              if adb devices | grep -qE "^${serial}[[:space:]]+device"; then
+                if adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | grep -q 1; then
+                  echo "${label} booted (${elapsed}s)"
+                  return 0
+                fi
+              fi
+              sleep 5
+              elapsed=$((elapsed + 5))
+              if [ $((elapsed % 30)) -eq 0 ]; then
+                echo "…still waiting for ${label} (${elapsed}s)"
+                adb devices || true
+              fi
+            done
+            echo "ERROR: ${label} boot timeout after ${max_secs}s"
+            dump_logs
+            exit 1
+          }
+
+          # Sequential start: concurrent dual-boot often starves CPU/KVM on GHA runners,
+          # and bare `adb wait-for-device` has no timeout (hung the previous run for ~90m).
+          echo "=== Starting Pixel_6_A on :5554 ==="
+          nohup emulator -avd Pixel_6_A -port 5554 "${EMU_OPTS[@]}" > /tmp/emu-a.log 2>&1 &
+          PID_A=$!
+          wait_for_boot emulator-5554 /tmp/emu-a.log "$PID_A" "Pixel_6_A"
+
+          echo "=== Starting Pixel_6_B on :5556 ==="
+          nohup emulator -avd Pixel_6_B -port 5556 "${EMU_OPTS[@]}" > /tmp/emu-b.log 2>&1 &
+          PID_B=$!
+          wait_for_boot emulator-5556 /tmp/emu-b.log "$PID_B" "Pixel_6_B"
+
+          adb devices -l
+          echo "Both emulators ready"
 
       - name: Run multi-device E2E
         run: ./gradlew androidMultiDeviceE2e --no-daemon
