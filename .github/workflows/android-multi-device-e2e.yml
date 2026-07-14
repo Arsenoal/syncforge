@@ -14,6 +14,10 @@ jobs:
     name: Two emulators + mock-server
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    # Pin AVD location so create + emulator agree (avdmanager may otherwise write under
+    # ANDROID_SDK_HOME while emulator only looks in $HOME/.android/avd).
+    env:
+      ANDROID_AVD_HOME: /home/runner/.android/avd
 
     steps:
       - name: Checkout
@@ -64,29 +68,48 @@ jobs:
           set -euo pipefail
           export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/cmdline-tools/bin:$PATH"
+          # Avoid legacy ANDROID_SDK_HOME redirecting AVD files outside ANDROID_AVD_HOME.
+          unset ANDROID_SDK_HOME || true
+          mkdir -p "$ANDROID_AVD_HOME"
           # "no" declines the custom hardware profile prompt
           echo "no" | avdmanager create avd -n Pixel_6_A -k "system-images;android-29;default;x86_64" -d pixel_6 --force
           echo "no" | avdmanager create avd -n Pixel_6_B -k "system-images;android-29;default;x86_64" -d pixel_6 --force
           # Cap RAM so two instances fit on GitHub-hosted runners (default Pixel_6 is too heavy).
           for avd in Pixel_6_A Pixel_6_B; do
-            cfg="${HOME}/.android/avd/${avd}.avd/config.ini"
+            cfg="${ANDROID_AVD_HOME}/${avd}.avd/config.ini"
             if [ -f "$cfg" ]; then
               sed -i '/^hw.ramSize=/d' "$cfg"
               echo "hw.ramSize=1536" >> "$cfg"
+            else
+              echo "ERROR: missing ${cfg} after avdmanager create"
+              find "${HOME}/.android" "$ANDROID_SDK_ROOT" -name '*.ini' 2>/dev/null | head -50 || true
+              exit 1
             fi
           done
+          echo "=== Created AVDs ==="
+          ls -la "$ANDROID_AVD_HOME"
+          avdmanager list avd
+          # Prefer emulator's view of the world (same search path as runtime).
+          export PATH="$ANDROID_SDK_ROOT/emulator:$PATH"
+          emulator -list-avds | tee /tmp/avd-list.txt
+          grep -qx 'Pixel_6_A' /tmp/avd-list.txt
+          grep -qx 'Pixel_6_B' /tmp/avd-list.txt
 
       - name: Start two emulators
         run: |
           set -euo pipefail
           export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           export PATH="$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
+          unset ANDROID_SDK_HOME || true
+          mkdir -p "$ANDROID_AVD_HOME"
 
           echo "=== Preflight ==="
           which emulator
           emulator -version | head -5
           emulator -accel-check || true
-          ls -la "${HOME}/.android/avd/" || true
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
+          ls -la "$ANDROID_AVD_HOME" || true
+          emulator -list-avds || true
           test -e /dev/kvm && echo "KVM present" || echo "WARNING: /dev/kvm missing"
           adb start-server
 
