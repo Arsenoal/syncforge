@@ -35,6 +35,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Emulator qemu still dlopens PulseAudio even with -noaudio; missing libpulse
+      # aborts with exit 127 before any AVD starts.
+      - name: Install emulator host libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpulse0 libnss3 libxcomposite1 libxcursor1 libxi6 libxtst6
+
       - name: Install Android SDK packages
         uses: android-actions/setup-android@v3
 
