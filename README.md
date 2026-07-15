@@ -18,6 +18,10 @@ Your app keeps its own database (Room on Android, or any store you choose). Sync
 separate outbox and conflict store, then push/pulls over a pluggable transport. Local writes are
 instant; sync survives offline use and app restarts.
 
+> **UI layer:** For type-safe multiplatform navigation, MVI, and sync-aware Compose chrome
+> (optimistic UI, pending badges, conflict dialogs), see
+> **[ForgeNav](https://github.com/Arsenoal/forgenav)** (`studio.forgenav`).
+
 ---
 
 ## See it in action
@@ -115,6 +119,7 @@ Gradle snippets, DSL options, and platform-specific wiring are in each setup gui
 | **API reference** | [Modules](docs/MODULES.md) |
 | **Backend contract** | [REST API](docs/REST_API.md) |
 | **Conflicts** | [Conflict resolution](docs/CONFLICT_RESOLUTION.md) |
+| **Navigation + MVI (Compose)** | [ForgeNav](https://github.com/Arsenoal/forgenav) |
 | **Everything else** | [docs/README.md](docs/README.md) |
 
 ### Sample apps
@@ -124,6 +129,19 @@ Gradle snippets, DSL options, and platform-specific wiring are in each setup gui
 | [`:sample`](sample/) | Multi-entity sync, `gitLike` conflicts, debug overlay, Compose UI |
 | [`:mock-server`](mock-server/) | Reference backend + conflict simulation endpoints |
 | [`:backend-starter-spring`](backend-starter-spring/) | Spring Boot + JDBC store |
+
+---
+
+## Related: ForgeNav
+
+SyncForge is the **sync engine**. For multiplatform navigation and sync-aware UI state, use:
+
+**[ForgeNav](https://github.com/Arsenoal/forgenav)** — navigation + offline-first MVI for Compose Multiplatform (`studio.forgenav`).
+
+| Concern | Library |
+|---------|---------|
+| Outbox, transports, conflict store, push/pull | **SyncForge** (this repo) |
+| Routes, backstack, MVI, optimistic UI, sync banners | [ForgeNav](https://github.com/Arsenoal/forgenav) |
 
 ---
 
