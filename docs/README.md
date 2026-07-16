@@ -2,8 +2,9 @@
 
 **Current release:** `v2.0.0` on Maven Central — [Changelog § 2.0.0](../CHANGELOG.md#200---2026-07-09).
 
-The [repository README](../README.md) is the landing page (pitch, demo, quick start). This folder
-holds integration guides, recipes, and API reference.
+The [repository README](../README.md) is the landing page (what SyncForge is/isn't, current
+state, use cases, limitations, demo, quick start). This folder holds integration guides,
+recipes, and API reference.
 
 ---
 
@@ -13,6 +14,7 @@ holds integration guides, recipes, and API reference.
 |------------|------|
 | **See every feature + a code sample** | [FEATURES.md](FEATURES.md) |
 | **Build my first app (~10 min)** | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| **Upgrade from `1.1.0` to `2.0.0`** | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) |
 | **Copy-paste one task** | [RECIPES.md](RECIPES.md) |
 | **Look up a type** | [MODULES.md](MODULES.md) |
 
@@ -46,6 +48,7 @@ Implementation notes for each target — dependencies, wiring, and platform-spec
 | Audit export | [AUDIT_EXPORT.md](AUDIT_EXPORT.md) |
 | Compose conflict UI | [COMPOSE_UI.md](COMPOSE_UI.md) |
 | KMP migration notes | [KMP_MIGRATION.md](KMP_MIGRATION.md) |
+| Upgrade `1.1.0` → `2.0.0` | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) |
 | Future work | [ROADMAP.md](ROADMAP.md) |
 
 ---
