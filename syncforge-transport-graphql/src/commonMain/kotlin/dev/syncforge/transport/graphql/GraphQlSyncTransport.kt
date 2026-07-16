@@ -1,6 +1,5 @@
 package dev.syncforge.transport.graphql
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncError
 import dev.syncforge.network.PullResult
@@ -16,7 +15,6 @@ import io.ktor.client.HttpClient
  *
  * Wire with [GraphQlSyncConfig] pointing at your GraphQL endpoint (e.g. `:mock-server` `/graphql` facade).
  */
-@ExperimentalSyncForgeApi
 class GraphQlSyncTransport private constructor(
     private val api: GraphQlSyncApi,
     private val refreshingAuth: RefreshingSyncAuthProvider?,

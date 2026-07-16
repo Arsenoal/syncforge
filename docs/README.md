@@ -1,6 +1,9 @@
 # Documentation
 
-**Current release:** `v2.0.0` on Maven Central — [Changelog § 2.0.0](../CHANGELOG.md#200---2026-07-09).
+**Latest Maven Central release:** `v2.0.0` — [Changelog § 2.0.0](../CHANGELOG.md#200---2026-07-09).  
+**Monorepo (`main`):** `2.0.1` (Integration DX; not on Central yet) — [Changelog § 2.0.1](../CHANGELOG.md#201---2026-07-09).
+
+Consumer install examples and the version catalog pin use **`2.0.0`** until `2.0.1` is published.
 
 The [repository README](../README.md) is the landing page (what SyncForge is/isn't, current
 state, use cases, limitations, demo, quick start). This folder holds integration guides,

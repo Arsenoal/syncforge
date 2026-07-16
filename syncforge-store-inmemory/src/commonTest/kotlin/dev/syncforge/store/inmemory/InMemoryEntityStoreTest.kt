@@ -1,6 +1,5 @@
 package dev.syncforge.store.inmemory
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.EntityStoreSyncHandler
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.Change
@@ -15,7 +14,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalSyncForgeApi::class)
 class InMemoryEntityStoreTest {
 
     @Serializable

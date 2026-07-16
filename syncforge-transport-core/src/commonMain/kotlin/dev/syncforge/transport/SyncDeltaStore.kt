@@ -1,6 +1,5 @@
 package dev.syncforge.transport
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.network.PullResult
 import dev.syncforge.network.PushResult
@@ -15,7 +14,6 @@ import dev.syncforge.network.PushResult
  * Push/pull field shapes match `docs/REST_API.md` — acknowledged/rejected ids, paginated pull
  * cursors, opaque `payloadJson` per delta.
  */
-@ExperimentalSyncForgeApi
 interface SyncDeltaStore {
 
     /**

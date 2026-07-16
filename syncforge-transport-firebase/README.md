@@ -22,7 +22,6 @@ Functions: `syncforgePush`, `syncforgePull` — same push/pull contract as `:syn
 2. Wire the transport in your app:
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 val config = FirebaseSyncConfig.cloudFunctions(
     projectId = "your-firebase-project",
     region = "us-central1",

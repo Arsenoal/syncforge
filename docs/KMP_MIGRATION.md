@@ -125,7 +125,7 @@ implementations in `:syncforge` and persistence-only code in `:syncforge-persist
 
 ### Cursor store
 
-| Platform | 1.1.0 (now) | Later target |
+| Platform | 2.0.0 (current) | Later target |
 |----------|-------------|--------------|
 | Android | `DataStoreSyncCursorStore` ✅ (migrates legacy SharedPreferences) | — |
 | iOS | `UserDefaultsSyncCursorStore` ✅ | Unified KMP DataStore optional later |

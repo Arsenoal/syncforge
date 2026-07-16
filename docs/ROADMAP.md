@@ -1,8 +1,8 @@
 # SyncForge roadmap
 
-**Maven Central:** `2.0.0` release in progress (latest live: `1.1.0` — [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge))
+**Maven Central (latest release):** **`2.0.0` GA** — [studio.syncforge](https://central.sonatype.com/namespace/studio.syncforge) · [Changelog § 2.0.0](../CHANGELOG.md#200---2026-07-09)
 
-**Monorepo (`main`):** `2.0.0` — converges the 1.2–1.6 backlog for first Central upload since `1.1.0` (see [distribution policy](ROADMAP_1_0_TO_2_0.md#distribution-notes-10--20) · [sign-off checklist](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist)).
+**Monorepo (`main`):** **`2.0.1`** — Integration DX (EntityStore / REST / transport stack graduated to stable). Not on Central until `v2.0.1` is tagged and published. Consumer install pins stay at **`2.0.0`**. See [upgrade guide](UPGRADE_1_1_TO_2_0.md) · [CHANGELOG § 2.0.1](../CHANGELOG.md#201---2026-07-09).
 
 ---
 
@@ -19,12 +19,12 @@
 
 ---
 
-## What the library can do today (`main`, 1.2–1.6)
+## What the library can do today (`2.0.0` on Central · `2.0.1` on `main`)
 
 ### Core sync (stable since 1.0)
 
 - **Outbox → push → pull** with retry/backoff, network reconnect, pull pagination, and `SyncStatus` surfacing
-- **`conflicts { }`** — per-entity LWW, merge, defer-to-user, alwaysLocal/Remote, **`gitLike { }`** three-way merge, experimental **`crdt { }`**
+- **`conflicts { }`** — per-entity LWW, merge, defer-to-user, alwaysLocal/Remote, stable **`gitLike { }`** three-way merge, stable **`crdt { }`**
 - **`ConflictStrategyKind` catalog** — static and runtime policy updates (`updateConflictPolicy()`)
 - **KSP codegen** — `@SyncForgeEntity` + `@SyncForgeDao` → handlers; **`EntityStore`** + `@SyncForgeStore` adapters (`:syncforge-store-*`)
 - **Platform DSLs (stable)** — `SyncForge.android { }`, `SyncForge.ios { }`, `SyncForge.desktop { }`, `SyncForge.macos { }`
@@ -51,8 +51,9 @@
 
 ### Not yet included
 
-- **Maven Central publish** for 1.2+ artifacts (gated to **2.0.0**; use `publishToMavenLocal` or composite build until then)
-- **Standalone iOS distribution** (Swift Package Manager / XCFramework — gated to 2.0; KMP framework path today)
+- **Browser `js` on Maven Central** — `SyncForge.web { }` stays monorepo / composite / `publishToMavenLocal` only ([WEB_SETUP.md](WEB_SETUP.md))
+- **iOS SPM / XCFramework** — planned **`2.0.1+`**; KMP frameworks today ([IOS_SETUP.md](IOS_SETUP.md))
+- **Op-log / CRDT document channel, REST v2** — deferred to **2.1+** ([locked scope](ROADMAP_1_0_TO_2_0.md#200-locked-scope-july-2026))
 - **1.6-07** — conflict/debug CMP UI on web (deferred; Wasm path optional)
 - **1.3-06** — shake-to-open debug console
 
@@ -144,7 +145,8 @@
 | `1.0.0` | Stable public API + semver guarantees |
 | `1.1.x` – `1.5.x` | EntityStore, encrypted TokenStore, per-entity conflict strategies + gitLike merge, DI, CRDT, platform parity, GraphQL/Supabase transports, observability |
 | `1.6.x` | Optional web add-on — `SyncForge.web { }`, `:sample-web`, `webE2e` CI (monorepo-only; no Maven publish) |
-| `2.0.0` | Maven Central for 1.x backlog, optional op-log/CRDT channel, KMP graduation, REST v2 (if needed) |
+| `2.0.0` | Maven Central for 1.2–1.6 backlog, catalog pin, `gitLike`/`crdt` graduation (op-log/REST v2 → 2.1+) |
+| `2.1+` | Optional op-log/CRDT document channel, REST v2 (if needed) |
 
 **Detailed plan from 1.0.0 through 2.0.0:** [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md)
 
@@ -185,16 +187,16 @@ Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-githu
 
 ---
 
-## 1.2.x – 1.5.x status (monorepo)
+## 1.2.x – 1.5.x status
 
-**On `main` (unreleased on Maven Central).** See [CHANGELOG.md](../CHANGELOG.md) `[Unreleased]` for the full list.
+**Shipped on Maven Central at `2.0.0`.** Monorepo tags `v1.2.0`–`v1.5.0` are git milestones only. See [CHANGELOG.md](../CHANGELOG.md) `[1.2.0]`–`[1.5.0]`.
 
 | Version | Codename | Headline | Status |
 |---------|----------|----------|--------|
-| **1.2.0** | *Merge-smart* | `gitLike { }`, CRDT primitives, strategy catalog, runtime policy | ✅ on `main` |
-| **1.3.0** | *Everywhere* | `:sample-desktop`, stable iOS/desktop DSLs, CMP conflict UI | ✅ on `main` (SPM deferred to 2.0) |
-| **1.4.0** | *Ecosystem* | Spring/GraphQL/Supabase/Firebase transports, version catalog, multi-device E2E | ✅ on `main` |
-| **1.5.0** | *Operate* | Tracing, SyncHealth dashboard, hierarchical recipes, rate limiting, audit export | ✅ on `main` |
+| **1.2.0** | *Merge-smart* | `gitLike { }`, CRDT primitives, strategy catalog, runtime policy | ✅ Central via `2.0.0` |
+| **1.3.0** | *Everywhere* | `:sample-desktop`, stable iOS/desktop DSLs, CMP conflict UI | ✅ Central via `2.0.0` (SPM → `2.0.1+`) |
+| **1.4.0** | *Ecosystem* | Spring/GraphQL/Supabase/Firebase transports, version catalog, multi-device E2E | ✅ Central via `2.0.0` |
+| **1.5.0** | *Operate* | Tracing, SyncHealth dashboard, hierarchical recipes, rate limiting, audit export | ✅ Central via `2.0.0` |
 
 ---
 
@@ -214,8 +216,33 @@ Full breakdown: [ROADMAP_1_0_TO_2_0.md § 1.1.0](ROADMAP_1_0_TO_2_0.md#110-githu
 
 Sign-off: [ROADMAP_1_0_TO_2_0.md § 1.6.0](ROADMAP_1_0_TO_2_0.md#160-sign-off-checklist).
 
-## Next: 2.0.0 (*Converge*)
+## 2.0.0 status (*Converge*)
 
-First Maven Central publish for the 1.x backlog — scope locked July 2026. See [§ 2.0.0 locked scope](ROADMAP_1_0_TO_2_0.md#200-locked-scope-july-2026), [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md), and [§ 2.0.0 sign-off checklist](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist).
+**GA (July 2026).** First Maven Central publish since `1.1.0`; rolls up 1.2–1.6.
 
-Optional before 2.0: **1.6-07** (web conflict/debug CMP UI) or **1.3-06** (shake-to-open debug).
+| Track | Status |
+|-------|--------|
+| **Maven Central** — core, KMP natives, optional modules, catalog, Gradle plugin | ✅ `2.0.0` |
+| **Version catalog** — consumer pin; BOM not published at 2.0 | ✅ |
+| **`gitLike { }` / `crdt { }` graduation** | ✅ stable (no `@OptIn`) |
+| **Upgrade guide** `1.1.0` → `2.0.0` | ✅ [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) |
+| **REST v1** | ✅ frozen; v2 deferred to 2.1+ |
+| **Browser `js`** | ✅ monorepo-only (not on Central) |
+| **iOS SPM / XCFramework** | ⬜ deferred to `2.0.1+` |
+| **Git tag `v2.0.0`** | ✅ |
+
+Sign-off: [ROADMAP_1_0_TO_2_0.md § 2.0.0](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist).
+
+## 2.0.1 status (*Integration DX* — monorepo)
+
+| Track | Status |
+|-------|--------|
+| **`EntityStore` / `EntityStoreSyncHandler` stable** | ✅ on `main` (`2.0.1`) |
+| **`SyncHttpClient` / `RestSyncTransport` stable** | ✅ on `main` |
+| **Transport stack stable** (DeltaStore, Supabase, Firebase, GraphQL) | ✅ on `main` |
+| **Maven Central `2.0.1`** | ⬜ not published yet — consumers use **`2.0.0`** |
+| **iOS SPM / XCFramework** | ⬜ still deferred |
+
+## Next (2.1+)
+
+Optional follow-ups: **op-log / CRDT document channel**, **REST v2**, **iOS SPM**, **1.6-07** (web conflict CMP UI), **1.3-06** (shake-to-open debug). See [ROADMAP_1_0_TO_2_0.md § 2.0 explicit non-goals](ROADMAP_1_0_TO_2_0.md#20-explicit-non-goals).

@@ -11,9 +11,12 @@ Step-by-step guide for publishing SyncForge to Maven Central.
 | Version | Maven Central | iOS SPM / XCFramework | How to integrate |
 |---------|---------------|----------------------|------------------|
 | **1.0.x – 1.x** | **Not published** | **Not published** | Git clone, `publishAllToMavenLocal`, composite/`includeBuild`; iOS via KMP frameworks ([IOS_SETUP.md](IOS_SETUP.md)) |
-| **2.0.0+** | **Published** (full KMP artifact set) | **Published** (1.3-04) | Maven coordinates + Gradle plugin from Central; SPM when pipeline ships |
+| **2.0.0+** | **Published** (full KMP artifact set) | **Planned `2.0.1+`** (stub at 2.0.0) | Maven coordinates + Gradle plugin from Central; iOS via KMP frameworks until SPM ships |
 
-Last version on Central today: **1.1.0** (published before this policy). New 1.x tags do **not** upload to Sonatype or publish SPM binaries. Create [GitHub Releases manually](RELEASE.md#3-create-github-release-manual) and optionally run **Publish Release** for macOS validation.
+**Current release on Central:** **`2.0.0`** (tag `v2.0.0`, July 2026).  
+**Monorepo (`main`):** **`2.0.1`** — API graduation; not on Central until `v2.0.1` is published. Consumer install pins and `consumer-smoke` stay on **`2.0.0`** until then.
+
+Monorepo tags `v1.2.0`–`v1.6.0` do **not** upload separate artifacts — consumers use **`2.0.0`** coordinates. Pre-2.0 Central versions (`1.0.0`, `1.1.0`) remain available. Create [GitHub Releases manually](RELEASE.md#3-create-github-release-manual).
 
 ---
 
@@ -234,13 +237,50 @@ git push origin v1.1.0
 
 ---
 
+## 10. 1.1.0 → 2.0.0
+
+| Step | Action |
+|------|--------|
+| Release prep | ✅ Repo bumped to `2.0.0`; `CHANGELOG [2.0.0]`; catalog lists all optional modules; BOM removed from build |
+| Pre-tag | ✅ `./gradlew verifySignOffMatrix` |
+| Tag | ✅ `v2.0.0` pushed |
+| Publish | ✅ Publish Release + portal Publish (JVM/Android + KMP native deployments) |
+| Post-publish | ✅ Consumer-smoke pins at `2.0.0`; artifacts on `repo1.maven.org` |
+
+```bash
+./gradlew verifySignOffMatrix
+git tag v2.0.0
+git push origin v2.0.0
+# After Central sync:
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=2.0.0
+./gradlew verifyConsumerSmokeMavenCentral
+curl -sI "https://repo1.maven.org/maven2/studio/syncforge/syncforge-catalog/2.0.0/syncforge-catalog-2.0.0.toml" | head -1
+```
+
+**Consumer migration:** [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) — import `syncforge-catalog:2.0.0`; drop `syncforge-bom`.
+
+**Not on Central at 2.0.0:** browser `js` / `SyncForge.web { }` (monorepo-only); iOS SPM / XCFramework (target **`2.0.1+`**).
+
+| Sign-off | [ROADMAP_1_0_TO_2_0.md § 2.0.0 sign-off](ROADMAP_1_0_TO_2_0.md#200-sign-off-checklist) |
+
+### Next: monorepo `2.0.1` (not published yet)
+
+`main` is at **`syncforge.version=2.0.1`** (EntityStore / REST / transport `@OptIn` graduation). To publish:
+
+1. Keep `consumer-smoke` at **`2.0.0`** until Central has `2.0.1`.
+2. `./gradlew verifySignOffMatrix`
+3. Tag `v2.0.1` → Publish Release → portal Publish → Verify Maven Central Release
+4. Only then bump consumer pins and install snippets to `2.0.1`
+
+---
+
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | `syncforge-android-deps` missing on Central | Ensure `:syncforge-android-deps:publish` is in `publishAllToMavenCentral` (see [build.gradle.kts](../build.gradle.kts)) |
 | iOS/macOS compile fails on tag | `publish-release.yml` must run on `macos-latest` (already configured) |
-| Consumer smoke fails before publish | Consumer-smoke Maven Central pins stay on the **last live Central version** until the new release syncs — do not bump pins when tagging |
+| Consumer smoke fails before publish | Consumer-smoke Maven Central pins should match the **last live Central version** (`2.0.0` today) — bump pins only **after** the new release syncs |
 | Consumer smoke fails after publish | Bump `consumer-smoke/android-minimal/gradle/libs.versions.toml` **and** `gradle.properties` (`syncforge.version`) **after** Central sync |
 | Artifact missing after publish | Wait for Central sync (`verifyMavenCentralArtifacts`), or check Sonatype **Component Coordinates** before clicking **Publish** |
 | Deployment **FAILED** with "already exists" | Maven Central does not allow re-uploading the same version — bump `syncforge.version`, tag a new release, and run **Publish Release** again |

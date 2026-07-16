@@ -1,6 +1,5 @@
 package dev.syncforge.transport.contract
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.network.PullResult
 import dev.syncforge.network.PushResult
@@ -10,7 +9,6 @@ import dev.syncforge.network.api.toPushResult
 import dev.syncforge.transport.SyncDeltaStore
 
 /** [SyncDeltaStore] backed by [InMemorySyncBackend] — reference impl for contract tests. */
-@ExperimentalSyncForgeApi
 class InMemorySyncDeltaStore(
     private val backend: InMemorySyncBackend = InMemorySyncBackend(),
     private val clock: () -> Long = backend::lastNowMillis,

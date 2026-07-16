@@ -20,7 +20,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 1.4.x  Ecosystem       — Spring/GraphQL/Supabase transports, multi-device E2E, version catalog
 1.5.x  Production ops — OpenTelemetry, SyncHealth dashboard, hierarchical sync recipes
 1.6.x  Web add-on      — Optional Kotlin/JS or Wasm browser target (`SyncForge.web { }`, `:sample-web`)
-2.0.0  Major evolution — Optional CRDT/op-log channel, stable KMP DSLs, REST v2 (if needed)
+2.0.0  Converge         — Maven Central for 1.2–1.6 backlog, catalog pin, gitLike/crdt graduation (op-log/REST v2 → 2.1+)
 ```
 
 ---
@@ -53,7 +53,7 @@ SyncForge 1.0 establishes a **semver-stable Android + common sync contract**: ou
 | **1.4.0** | *Ecosystem*   | Q3 2027       | Spring + GraphQL transports, Supabase adapter, multi-device E2E |
 | **1.5.0** | *Operate*     | Q4 2027       | Tracing, metrics dashboard, hierarchical recipes       |
 | **1.6.0** | *Web add-on*  | July 2026     | Browser target, `SyncForge.web { }`, `:sample-web` (monorepo; tag pending) ✅ |
-| **2.0.0** | *Converge*    | 2028          | Major API + optional sync modes                        |
+| **2.0.0** | *Converge*    | July 2026     | Maven Central for 1.2–1.6 backlog; op-log/REST v2 → 2.1+ ✅ |
 
 Windows are indicative for a small team or part-time maintenance.
 
@@ -120,7 +120,7 @@ Ship a **trustworthy 1.0**: documented, tested, Maven Central, semver guarantees
 
 **Maven Central (policy):** **1.x tags do not publish new artifacts to Maven Central.** Development continues on `main` with git tags, `publishAllToMavenLocal`, and optional manual **Publish Release** validation (macOS compile/test). **First Central upload for the 1.x line after 1.1.0 is `v2.0.0`.** Existing Central versions (1.0.0, 1.1.0) remain available. See [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md).
 
-**iOS SPM / XCFramework (policy):** Same **2.0.0+** gate as Maven Central. Until then, iOS consumers integrate via KMP frameworks (`linkIosFrameworksForXcode`, Xcode Run Script). `publishIosSpmArtifacts` is a gated placeholder (1.3-04). See [IOS_SETUP.md](IOS_SETUP.md) and [RELEASE.md](RELEASE.md).
+**iOS SPM / XCFramework (policy):** Maven Central gate opens at **2.0.0**; SPM binary publish is deferred to **`2.0.1+`** (`publishIosSpmArtifacts` stub at 2.0.0). iOS consumers integrate via KMP frameworks (`linkIosFrameworksForXcode`, Xcode Run Script). See [IOS_SETUP.md](IOS_SETUP.md) and [RELEASE.md](RELEASE.md).
 
 **GitHub Releases:** Created **manually** in the repository UI — tag push does not auto-create releases or trigger publish CI.
 
@@ -1080,22 +1080,22 @@ Run locally on `main` (or release branch) before `v2.0.0`:
 ./gradlew iosE2e
 ```
 
-CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e`, `android-multi-device-e2e`, `web-e2e` (nightly), `verifyConsumerSmokeMavenCentral` (still pinned to **1.1.0** until post-2.0).
+CI (expected green on release candidate): `android-e2e`, `ios-e2e`, `desktop-e2e`, `android-multi-device-e2e`, `web-e2e` (nightly), `verifyConsumerSmokeMavenCentral` (pinned to **`2.0.0`** in `consumer-smoke/android-minimal/gradle.properties`).
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
 | 1 | 2.0 scope locked — P0 themes chosen; op-log/REST v2 deferred or scheduled | § [2.0.0 locked scope](#200-locked-scope-july-2026) | ✅ |
-| 2 | [2.0.0 acceptance criteria](#2000-acceptance-criteria) met | Rows below + this checklist | ⬜ (implementation pending) |
-| 3 | **Upgrade guide** `1.1.0` → `2.0.0` (breaking changes, catalog migration, removed BOM) | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) | ✅ drafted |
-| 4 | Entity sync (1.x path) unchanged for default consumers | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest`; no required op-log/CRDT module | ⬜ in `verifyReleaseSignOff` |
+| 2 | [2.0.0 acceptance criteria](#2000-acceptance-criteria) met | Rows below + this checklist | ✅ |
+| 3 | **Upgrade guide** `1.1.0` → `2.0.0` (breaking changes, catalog migration, removed BOM) | [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md) | ✅ |
+| 4 | Entity sync (1.x path) unchanged for default consumers | `StableApiSurfaceTest`, `StableAndroidApiSurfaceTest`; no required op-log/CRDT module | ✅ |
 | 5 | Experimental API policy documented | `MODULES.md` stability table — policy in [locked scope](#200-locked-scope-july-2026) | ✅ |
 | 6 | `gitLike { }` / `crdt { }` graduation decision | Graduated on `main`; `CONFLICT_RESOLUTION.md` + `StableApiSurfaceTest` | ✅ |
 | 7 | `SyncForge.web { }` distribution policy | Monorepo/composite only; documented in [WEB_SETUP.md](WEB_SETUP.md); **not** in `mavenCentralRequiredArtifacts` | ✅ by design |
 | 8 | REST contract policy | v1 frozen at 2.0.0; v2 deferred per [locked scope](#200-locked-scope-july-2026) | ✅ |
-| 9 | Security review — auth, `TokenStore`, transport defaults | `AUTH_API.md`, encrypted storage tests, TLS/redirect defaults documented | ⬜ |
-| 10 | Ecosystem docs current | `GETTING_STARTED` (catalog), `RECIPES.md`, transport guides (Supabase/Firebase/GraphQL/custom), `TRACING.md`, Spring starter | ✅ on `main` |
-| 11 | `verifyReleaseSignOff` green | `./gradlew verifySignOffMatrix` | ⬜ at `2.0.0` cut |
-| 12 | Full E2E matrix green | `androidE2e`, `iosE2e`, `desktopE2e`, `androidMultiDeviceE2e`, `webE2e` | ✅ infra on `main`; ⬜ at `2.0.0` cut |
+| 9 | Security review — auth, `TokenStore`, transport defaults | `AUTH_API.md`, encrypted storage tests, TLS/redirect defaults documented | ✅ |
+| 10 | Ecosystem docs current | `GETTING_STARTED` (catalog), `RECIPES.md`, transport guides (Supabase/Firebase/GraphQL/custom), `TRACING.md`, Spring starter | ✅ |
+| 11 | `verifyReleaseSignOff` green | `./gradlew verifySignOffMatrix` | ✅ at `v2.0.0` |
+| 12 | Full E2E matrix green | `androidE2e`, `iosE2e`, `desktopE2e`, `androidMultiDeviceE2e`, `webE2e` | ✅ at `v2.0.0` |
 
 #### Version bump & docs freeze
 
@@ -1114,14 +1114,14 @@ Prerequisites: Sonatype namespace, signing secrets — [MAVEN_PUBLISH.md](MAVEN_
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
-| 19 | Git tag `v2.0.0` pushed | `git tag v2.0.0 && git push origin v2.0.0` | ⬜ |
-| 20 | GitHub Release drafted manually | [RELEASE.md](RELEASE.md) § 3 — tag push does not auto-create | ⬜ |
-| 21 | **Publish Release** workflow (`>= 2.0.0`) | Actions → Publish Release → tag `v2.0.0`; macOS compile + `publishAllToMavenCentral` | ⬜ |
-| 22 | GPG signing wired in CI | `SIGNING_IN_MEMORY_KEY_B64` (or `SIGNING_IN_MEMORY_KEY`); `verifyPublishSigning` if testing locally | ⬜ |
-| 23 | Sonatype Portal — **Publish all VALIDATED deployments** | Typically **two** deployments (~39 JVM/Android + ~11 KMP native); see [MAVEN_PUBLISH.md § 5b](MAVEN_PUBLISH.md#5b-maven-central-publish-200-only) | ⬜ |
-| 24 | KMP native targets on Central | `syncforge-*` iOS/macOS artifacts resolvable; publish-release macOS compile step green | ⬜ |
-| 25 | Gradle plugin + catalog on Central | `syncforge-gradle-plugin`, `syncforge-catalog`, marker `studio.syncforge.android.gradle.plugin` | ⬜ |
-| 26 | Optional modules published | store, network-ktor, transport-*, integration-* POMs at `2.0.0` | ⬜ |
+| 19 | Git tag `v2.0.0` pushed | `git tag v2.0.0 && git push origin v2.0.0` | ✅ |
+| 20 | GitHub Release drafted manually | [RELEASE.md](RELEASE.md) § 3 — tag push does not auto-create | ⬜ optional |
+| 21 | **Publish Release** workflow (`>= 2.0.0`) | Actions → Publish Release → tag `v2.0.0`; macOS compile + `publishAllToMavenCentral` | ✅ |
+| 22 | GPG signing wired in CI | `SIGNING_IN_MEMORY_KEY_B64` (or `SIGNING_IN_MEMORY_KEY`); `verifyPublishSigning` if testing locally | ✅ |
+| 23 | Sonatype Portal — **Publish all VALIDATED deployments** | Typically **two** deployments (~39 JVM/Android + ~11 KMP native); see [MAVEN_PUBLISH.md § 5b](MAVEN_PUBLISH.md#5b-maven-central-publish-200-only) | ✅ |
+| 24 | KMP native targets on Central | `syncforge-*` iOS/macOS artifacts resolvable; publish-release macOS compile step green | ✅ |
+| 25 | Gradle plugin + catalog on Central | `syncforge-gradle-plugin`, `syncforge-catalog`, marker `studio.syncforge.android.gradle.plugin` | ✅ |
+| 26 | Optional modules published | store, network-ktor, transport-*, integration-* POMs at `2.0.0` | ✅ |
 
 #### iOS SPM / XCFramework (1.3-04)
 
@@ -1143,20 +1143,20 @@ Or **Actions → Verify Maven Central Release** — version `2.0.0`.
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
-| 29 | Required POMs on `repo1.maven.org` | `verifyMavenCentralArtifacts` / [verify-maven-central-release.yml](../.github/workflows/verify-maven-central-release.yml) | ⬜ |
-| 30 | Consumer smoke from Central only | Bump `consumer-smoke/android-minimal/gradle.properties` → `2.0.0`; `verifyConsumerSmokeMavenCentral` | ⬜ |
-| 31 | `verifyConsumerSmokeMavenCentralArtifacts` in CI green | Default branch after pin bump | ⬜ |
-| 32 | Sample `curl` smoke | `syncforge-catalog-2.0.0.toml` and `syncforge-2.0.0.pom` return HTTP 200 | ⬜ |
+| 29 | Required POMs on `repo1.maven.org` | `verifyMavenCentralArtifacts` / [verify-maven-central-release.yml](../.github/workflows/verify-maven-central-release.yml) | ✅ |
+| 30 | Consumer smoke from Central only | Bump `consumer-smoke/android-minimal/gradle.properties` → `2.0.0`; `verifyConsumerSmokeMavenCentral` | ✅ |
+| 31 | `verifyConsumerSmokeMavenCentralArtifacts` in CI green | Default branch after pin bump | ✅ |
+| 32 | Sample `curl` smoke | `syncforge-catalog-2.0.0.toml` and `syncforge-2.0.0.pom` return HTTP 200 | ✅ |
 
 #### Post-release housekeeping
 
 | # | Criterion | Verification | Status |
 |---|-----------|--------------|--------|
-| 33 | Roadmap + MODULES marked `2.0.0` GA | This checklist rows marked ✅; [ROADMAP.md](ROADMAP.md) header | ⬜ |
+| 33 | Roadmap + MODULES marked `2.0.0` GA | This checklist rows marked ✅; [ROADMAP.md](ROADMAP.md) header | ✅ |
 | 34 | 1.x monorepo tags optional | `v1.6.0` etc. remain git-only milestones; Central consumers use `2.0.0+` | ✅ policy |
-| 35 | Community announcement | GitHub Release notes; upgrade guide linked | ⬜ |
+| 35 | Community announcement | GitHub Release notes; upgrade guide linked | ⬜ optional |
 
-**2.0.0 verdict:** ⬜ Pending. When rows 1–26 and 29–33 are ✅ (rows 27–28 may slip to `2.0.1` if SPM pipeline is not ready), tag and publish. **Minimum bar:** Maven Central full artifact set + consumer smoke + upgrade guide + experimental API policy documented.
+**2.0.0 verdict:** **GA (July 2026).** Maven Central full artifact set + consumer smoke + upgrade guide shipped. Rows **27–28** (iOS SPM / XCFramework) deferred to **`2.0.1+`** by design. Row **20** / **35** (GitHub Release notes) remain optional follow-up.
 
 ---
 

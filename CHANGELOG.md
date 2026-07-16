@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nothing yet.
 
+## [2.0.1] - 2026-07-09
+
+**Integration DX** — graduates APIs that shipped in 1.1–1.4 but still required `@OptIn(ExperimentalSyncForgeApi::class)`. No wire or REST contract changes.
+
+### Changed
+
+- **`EntityStore` / `EntityStoreSyncHandler` graduated to stable** — BYO store path; remove module-wide opt-in when using `@SyncForgeStore` or hand-written handlers
+- **`SyncHttpClient` / `RestSyncTransport` graduated to stable** — aligns with stable `httpClient()` on platform DSLs
+- **Transport stack graduated to stable** — `SyncDeltaStore`, `DeltaStoreSyncTransport`, `InMemorySyncDeltaStore`, `SupabaseSyncDeltaStore`, `FirebaseSyncDeltaStore`, `GraphQlSyncTransport`
+- **`StableApiSurfaceTest` / `StableTransportApiSurfaceTest`** — CI guards for 2.0.1 graduation
+
 ## [2.0.0] - 2026-07-09
 
 **Converge** — first Maven Central publish since **`1.1.0`**. Rolls up the full **1.2–1.6** monorepo backlog (conflicts, platform parity, ecosystem transports, observability, web add-on sources) plus 2.0 API and distribution changes. Entity push/pull and REST v1 are unchanged.

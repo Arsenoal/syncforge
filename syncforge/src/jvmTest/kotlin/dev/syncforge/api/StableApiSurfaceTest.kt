@@ -14,7 +14,11 @@ import dev.syncforge.conflict.ConflictStrategyKind
 import dev.syncforge.conflict.ThreeWayMergeResult
 import dev.syncforge.conflict.conflictPolicy
 import kotlinx.serialization.Serializable
+import dev.syncforge.entity.EntityStore
+import dev.syncforge.entity.EntityStoreSyncHandler
 import dev.syncforge.entity.SyncedEntity
+import dev.syncforge.network.RestSyncTransport
+import dev.syncforge.network.SyncHttpClient
 import dev.syncforge.model.Change
 import dev.syncforge.model.SyncState
 import dev.syncforge.model.SyncStatus
@@ -134,6 +138,18 @@ class StableApiSurfaceTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun entityStoreAndHandlerHaveNoExperimentalAnnotation() {
+        assertNull(EntityStore::class.java.getAnnotation(ExperimentalSyncForgeApi::class.java))
+        assertNull(EntityStoreSyncHandler::class.java.getAnnotation(ExperimentalSyncForgeApi::class.java))
+    }
+
+    @Test
+    fun syncHttpClientAndRestSyncTransportHaveNoExperimentalAnnotation() {
+        assertNull(SyncHttpClient::class.java.getAnnotation(ExperimentalSyncForgeApi::class.java))
+        assertNull(RestSyncTransport::class.java.getAnnotation(ExperimentalSyncForgeApi::class.java))
     }
 
     @Test

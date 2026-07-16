@@ -21,7 +21,7 @@ Default port `8080` (override with `PORT`).
 ## Client
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
+
 SyncForge.android(this) {
     transport(
         GraphQlSyncTransport(

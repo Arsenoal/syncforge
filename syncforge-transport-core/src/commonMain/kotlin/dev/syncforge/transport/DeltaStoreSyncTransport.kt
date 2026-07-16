@@ -1,6 +1,5 @@
 package dev.syncforge.transport
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncError
 import dev.syncforge.network.PullResult
@@ -22,7 +21,6 @@ import dev.syncforge.network.SyncTransportException
  *
  * Authentication and wire format are owned by the [SyncDeltaStore] implementation.
  */
-@ExperimentalSyncForgeApi
 class DeltaStoreSyncTransport(
     private val store: SyncDeltaStore,
 ) : SyncTransport {

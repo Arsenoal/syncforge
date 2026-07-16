@@ -1,6 +1,11 @@
 # Release process
 
-How maintainers ship SyncForge. **Current release line:** `v2.0.0` on Maven Central.
+How maintainers ship SyncForge.
+
+| Channel | Version |
+|---------|---------|
+| **Maven Central (latest release)** | `v2.0.0` |
+| **Monorepo (`main` / `gradle.properties`)** | `2.0.1` (tag + publish when ready) |
 
 **Related docs:** [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md) (Maven Central details), [IOS_SETUP.md](IOS_SETUP.md) (local KMP iOS integration).
 

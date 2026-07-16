@@ -178,7 +178,7 @@ Match `backgroundSyncTaskIdentifier(...)` in `SyncForge.ios { }`. See [IOS_SETUP
 - **Experimental APIs** (`@ExperimentalSyncForgeApi`) — still require Kotlin opt-in; not all are exported to Swift.
 - **Compose UI** — Android-only; use SwiftUI/UIKit on iOS.
 - **Automatic memory management across boundaries** — cancel Flow tasks; avoid retaining Kotlin controllers in global singletons without lifecycle.
-- **SPM binary distribution** — until `v2.0.0`; integrate via KMP frameworks today ([RELEASE.md](RELEASE.md)).
+- **SPM binary distribution** — planned `2.0.1+`; integrate via KMP frameworks today ([IOS_SETUP.md](IOS_SETUP.md)).
 
 ---
 

@@ -12,7 +12,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import androidx.test.core.app.ApplicationProvider
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.entity.SyncedEntity
 import dev.syncforge.model.SyncState
 import kotlinx.coroutines.test.runTest
@@ -25,7 +24,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@OptIn(ExperimentalSyncForgeApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class RoomEntityStoreTest {

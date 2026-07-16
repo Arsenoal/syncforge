@@ -236,7 +236,6 @@ wraps any implementation and maps exceptions to `SyncTransportException`.
 ### Wiring
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 SyncForge.android(this) {
     transport(DeltaStoreSyncTransport(MyRpcSyncDeltaStore(api)))
     registry(handlers)

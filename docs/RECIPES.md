@@ -75,10 +75,8 @@ or call `sampleEntityConflicts()` from `SampleApplication`:
 | **tasks** | `gitLike { }` | Title and `completed` merge independently; same-field clash or remote delete → `deferToUser()` |
 
 ```kotlin
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.sample.conflicts.sampleEntityConflicts
 
-@OptIn(ExperimentalSyncForgeApi::class)
 SyncForge.android(context) {
     baseUrl(BuildConfig.SYNC_BASE_URL)
     registry(SyncForgeHandlers.registry(noteDao, tagDao, taskDao))
@@ -1009,7 +1007,6 @@ implementation("studio.syncforge:syncforge-transport-graphql:2.0.0")
 ### Wire the transport
 
 ```kotlin
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.transport.graphql.GraphQlSyncConfig
 import dev.syncforge.transport.graphql.GraphQlSyncTransport
 import io.ktor.client.HttpClient
@@ -1017,7 +1014,6 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 
-@OptIn(ExperimentalSyncForgeApi::class)
 val graphqlHttpClient = HttpClient(OkHttp.create()) {
     install(ContentNegotiation) {
         json(dev.syncforge.transport.graphql.KtorGraphQlSyncApi.defaultJson)
@@ -1135,7 +1131,6 @@ implementation("studio.syncforge:syncforge-transport-firebase:2.0.0")
 ### Ready-made stores
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 SyncForge.android(this) {
     transport(DeltaStoreSyncTransport(SupabaseSyncDeltaStore(config)))
     // or: DeltaStoreSyncTransport(FirebaseSyncDeltaStore(config))
@@ -1149,7 +1144,6 @@ See [syncforge-transport-supabase](../syncforge-transport-supabase/README.md) an
 ### Custom store (~100–200 lines)
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 class MyRpcSyncDeltaStore(
     private val api: MyBackendApi,
 ) : SyncDeltaStore {

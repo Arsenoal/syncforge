@@ -12,7 +12,8 @@
 ![Desktop](https://img.shields.io/badge/platform-JVM%20desktop-007396?logo=openjdk&logoColor=white)
 ![macOS](https://img.shields.io/badge/platform-macOS-000000?logo=apple&logoColor=white)
 
-**Latest on Maven Central:** [`2.0.0`](https://central.sonatype.com/namespace/studio.syncforge) · [Changelog](CHANGELOG.md#200---2026-07-09) · [Upgrade from 1.1.0](docs/UPGRADE_1_1_TO_2_0.md)
+**Latest on Maven Central:** [`2.0.0`](https://central.sonatype.com/namespace/studio.syncforge) · [Changelog](CHANGELOG.md#200---2026-07-09) · [Upgrade from 1.1.0](docs/UPGRADE_1_1_TO_2_0.md)  
+**Monorepo (`main`):** `2.0.1` — Integration DX (BYO store + transport APIs stable); [Changelog § 2.0.1](CHANGELOG.md#201---2026-07-09). Not on Central until published — install pins stay at **`2.0.0`**.
 
 ---
 
@@ -53,15 +54,16 @@ Local writes go to **your** store first (optimistic). Mutations enqueue; sync dr
 
 ---
 
-## Current state (`2.0.0`)
+## Current state
 
 | Area | Status |
 |------|--------|
-| **Maven Central** | Published under `studio.syncforge` — core, optional modules, version catalog, Android Gradle plugin |
+| **Maven Central** | **`2.0.0`** published under `studio.syncforge` — core, optional modules, version catalog, Android Gradle plugin |
+| **Monorepo (`main`)** | **`2.0.1`** — same artifact set + Integration DX (see below); publish via tag when ready |
 | **Android** | **Stable** primary path — Room (or BYO store), WorkManager, Compose helpers, KSP handlers |
 | **iOS / JVM desktop / macOS** | **Stable** platform DSLs — integrate as KMP framework (iOS); SPM/XCFramework still planned |
 | **Conflicts** | **Stable** — LWW, always local/remote, merge, `gitLike`, `crdt`, `deferToUser` |
-| **Transports** | **Stable** optional modules — REST default; GraphQL / Supabase / Firebase / `SyncDeltaStore` |
+| **Transports / BYO store** | **Stable** on `main` (`2.0.1`) — REST, GraphQL, Supabase, Firebase, `EntityStore` (no `@OptIn`) |
 | **Auth DSL** | Built-in register/login/refresh helpers when your API matches the expected shape |
 | **Debug / tracing / web** | **Experimental** — `@OptIn(ExperimentalSyncForgeApi::class)`; shapes may change |
 | **Browser `js`** | Sources + `:sample-web` in this monorepo only — **not** on Maven Central |

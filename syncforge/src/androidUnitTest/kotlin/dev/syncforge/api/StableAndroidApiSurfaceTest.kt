@@ -37,6 +37,7 @@ class StableAndroidApiSurfaceTest {
             "registry",
             "handler",
             "transport",
+            "httpClient",
             "databaseName",
             "schedulePeriodicSyncOnStart",
             "conflicts",

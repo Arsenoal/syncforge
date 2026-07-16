@@ -9,8 +9,9 @@ future work, see [ROADMAP.md](ROADMAP.md). For the HTTP contract, see [REST_API.
 ## API stability
 
 SyncForge uses three stability levels. **1.0** graduates the Android-primary sync contract to
-**Stable**; KMP platform DSLs, auth, debug, and low-level builders remain **Experimental**
-until a later release.
+**Stable**; **1.3** graduates iOS, desktop, and macOS platform DSLs; **2.0** graduates
+`gitLike { }` and `crdt { }`. Auth, debug/tracing surfaces, `SyncForge.web { }`, and
+low-level builders remain **Experimental**.
 
 | Level | Marker | Meaning |
 |-------|--------|---------|
@@ -50,6 +51,10 @@ The annotation lives in `dev.syncforge.api.ExperimentalSyncForgeApi` (`:syncforg
 | `SyncForge.desktop { }`, `SyncForge.macos { }` | **Stable** | JVM desktop + native macOS DSLs (1.3-03); macOS delegates to iOS defaults. |
 | `SyncForge.web { }`, `createWebKtorSyncTransport`, `WebVisibilitySyncTrigger` | **Experimental** | Kotlin/JS browser DSL (1.6); SQLDelight web-worker + `localStorage` cursor; see [WEB_SETUP.md](WEB_SETUP.md). |
 | `SyncForge.create()`, `createWithRetry()`, `builder { }`, `SyncForgeBuilder` | **Experimental** | Low-level factory for custom wiring; parameter surface still evolving. |
+| `EntityStore<T>`, `EntityStoreSyncHandler<T>` | **Stable** | BYO app persistence port + handler base (graduated 2.0.1). |
+| `SyncHttpClient`, `RestSyncTransport`, `PullQueryParams` | **Stable** | Injectable REST executor + default transport (graduated 2.0.1). |
+| `SyncDeltaStore`, `DeltaStoreSyncTransport` (`:syncforge-transport-core`) | **Stable** | BaaS storage port + adapter (graduated 2.0.1). |
+| `SupabaseSyncDeltaStore`, `FirebaseSyncDeltaStore`, `GraphQlSyncTransport` | **Stable** | Optional catalog-listed transports (graduated 2.0.1). |
 | `SyncManager` — `status`, `authState`, `session`, `register`/`login`/`logout`, `conflicts`, `sync`/`push`/`pull`, `enqueueChange`, `resolveConflict`, `findOpenConflict`, scheduling | **Stable** | Core sync + built-in auth contract (1.1). |
 | `SyncWorkScheduler`, `NoOpSyncWorkScheduler` | **Stable** | Platform scheduling hook; wired automatically by platform DSLs. |
 | `SyncManager.debug`, `SyncManager.conflictHistory` | **Experimental** | Debug/QA observability; shape may change. |
@@ -918,18 +923,21 @@ Demonstrates `SyncForge.android { }`, conflict resolution, and `SyncDebugLaunche
 
 ---
 
-## What comes next — 1.1.0
+## Release status
 
-See [ROADMAP.md](ROADMAP.md) and [ROADMAP_1_0_TO_2_0.md](ROADMAP_1_0_TO_2_0.md) for the full plan.
+| Channel | Version | Notes |
+|---------|---------|--------|
+| **Maven Central** (consumers) | **`2.0.0`** | Import `studio.syncforge:syncforge-catalog:2.0.0` — [GETTING_STARTED.md](GETTING_STARTED.md) |
+| **Monorepo (`main`)** | **`2.0.1`** | Integration DX on `main` — not on Central until tagged + Publish Release |
 
-**1.1.0 (Wire-up) — GA:**
+Upgrading from `1.1.0`: [UPGRADE_1_1_TO_2_0.md](UPGRADE_1_1_TO_2_0.md).
 
-- ✅ `SyncHttpClient` + `RestSyncTransport` + `:syncforge-network-ktor` (optional catalog entry)
-- ✅ `EntityStore` + `@SyncForgeStore` KSP + `:syncforge-store-room` / `:syncforge-store-inmemory`
-- ✅ Encrypted `TokenStore` (Android/iOS), `CharArray` auth overloads, built-in auth stable
-- ✅ `DataStoreSyncCursorStore` (Android); iOS UserDefaults + desktop file fallback documented
-- ✅ `:syncforge-integration-koin` / `:syncforge-integration-hilt` (optional catalog entries)
-- ✅ Maven Central — `1.1.0` published (14 artifacts + consumer smoke verified)
-- ✅ Tag `v1.1.0` — see [ROADMAP_1_0_TO_2_0.md § 1.1.0 sign-off](ROADMAP_1_0_TO_2_0.md#110-sign-off-checklist)
+**Graduated at monorepo `2.0.1` (no `@OptIn` required):**
 
-**Next (1.2.x):** per-entity conflict strategies and git-like merge — see [ROADMAP.md](ROADMAP.md).
+- ✅ `EntityStore` / `EntityStoreSyncHandler` — BYO store path
+- ✅ `SyncHttpClient` / `RestSyncTransport` — injectable REST stack
+- ✅ `SyncDeltaStore` / `DeltaStoreSyncTransport` + Supabase / Firebase / GraphQL modules
+
+**Still experimental:** `SyncForge.web { }`, `SyncForgeBuilder`, `persistence()` / `customize()`, debug/tracing surfaces.
+
+**Deferred:** iOS SPM pipeline, op-log/REST v2 (`2.1+`). See [ROADMAP.md](ROADMAP.md).

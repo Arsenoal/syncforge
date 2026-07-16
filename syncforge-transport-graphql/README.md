@@ -14,7 +14,6 @@ Custom / BaaS transports: [CUSTOM_TRANSPORT.md](../docs/CUSTOM_TRANSPORT.md).
 Point at a GraphQL endpoint that exposes the SyncForge sync operations (same semantics as [REST_API.md](../docs/REST_API.md)). Schema and resolver recipes: [syncforge-server/graphql/README.md](../syncforge-server/graphql/README.md).
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 val config = GraphQlSyncConfig(
     endpointUrl = "http://10.0.2.2:8080/graphql",
     bearerToken = { tokenStore.accessToken },

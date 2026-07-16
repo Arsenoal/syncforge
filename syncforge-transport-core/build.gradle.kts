@@ -35,10 +35,6 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    sourceSets.all {
-        languageSettings.optIn("dev.syncforge.api.ExperimentalSyncForgeApi")
-    }
-
     sourceSets {
         commonMain.dependencies {
             implementation(project(":syncforge"))

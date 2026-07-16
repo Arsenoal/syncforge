@@ -1,6 +1,5 @@
 package dev.syncforge.network
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.network.api.PushRequest
 
 /**
@@ -13,7 +12,6 @@ import dev.syncforge.network.api.PushRequest
  * Non-REST backends (GraphQL, BaaS adapters) implement [SyncTransport] directly and do not
  * use this interface.
  */
-@ExperimentalSyncForgeApi
 interface SyncHttpClient {
 
     suspend fun postPush(baseUrl: String, request: PushRequest): PushResult

@@ -20,7 +20,6 @@ Creates `sync_entity`, version counter, `syncforge_push` / `syncforge_pull` RPCs
 2. Wire the transport in your app:
 
 ```kotlin
-@OptIn(ExperimentalSyncForgeApi::class)
 val config = SupabaseSyncConfig(
     projectUrl = "https://YOUR_PROJECT.supabase.co",
     apiKey = BuildConfig.SUPABASE_ANON_KEY,

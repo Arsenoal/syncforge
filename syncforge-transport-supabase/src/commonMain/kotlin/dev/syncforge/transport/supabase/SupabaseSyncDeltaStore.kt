@@ -1,6 +1,5 @@
 package dev.syncforge.transport.supabase
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.network.PullResult
 import dev.syncforge.network.PushResult
@@ -24,7 +23,6 @@ import kotlinx.serialization.json.Json
  * For background sync, subscribe to Realtime `postgres_changes` on `sync_entity` — see
  * [SupabaseRealtimePatterns].
  */
-@ExperimentalSyncForgeApi
 class SupabaseSyncDeltaStore(
     private val api: SupabaseSyncApi,
     private val clock: () -> Long = { currentTimeMillis() },

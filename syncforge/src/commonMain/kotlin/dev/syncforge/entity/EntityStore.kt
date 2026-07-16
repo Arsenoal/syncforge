@@ -1,7 +1,5 @@
 package dev.syncforge.entity
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
-
 /**
  * App-side persistence port for a single synced entity type.
  *
@@ -10,7 +8,6 @@ import dev.syncforge.api.ExperimentalSyncForgeApi
  *
  * SyncForge's internal outbox and conflict databases remain separate (SQLDelight `syncforge.db`).
  */
-@ExperimentalSyncForgeApi
 interface EntityStore<T : SyncedEntity> {
 
     suspend fun findById(id: String): T?

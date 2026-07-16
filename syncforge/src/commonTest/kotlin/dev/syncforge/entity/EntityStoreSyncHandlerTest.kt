@@ -1,6 +1,5 @@
 package dev.syncforge.entity
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.Change
 import dev.syncforge.model.ChangeType
 import dev.syncforge.model.SyncState
@@ -16,7 +15,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalSyncForgeApi::class)
 class EntityStoreSyncHandlerTest {
 
     @Serializable

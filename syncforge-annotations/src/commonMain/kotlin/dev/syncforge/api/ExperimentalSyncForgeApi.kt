@@ -7,6 +7,10 @@ package dev.syncforge.api
  * core [dev.syncforge.sync.SyncManager] (sync lifecycle, outbox, conflicts, built-in auth),
  * [dev.syncforge.AndroidSyncForgeDsl.auth] (built-in register/login DSL),
  * [dev.syncforge.conflict.ConflictPolicy] / [dev.syncforge.conflict.ConflictStrategies],
+ * [dev.syncforge.entity.EntityStore] / [dev.syncforge.entity.EntityStoreSyncHandler],
+ * [dev.syncforge.network.SyncHttpClient] / [dev.syncforge.network.RestSyncTransport],
+ * [dev.syncforge.transport.SyncDeltaStore] / [dev.syncforge.transport.DeltaStoreSyncTransport],
+ * optional transport modules (Supabase, Firebase, GraphQL),
  * [dev.syncforge.compose.SyncStatusUiModel], and production conflict/status Compose helpers.
  *
  * Experimental APIs may change in minor releases until explicitly graduated.

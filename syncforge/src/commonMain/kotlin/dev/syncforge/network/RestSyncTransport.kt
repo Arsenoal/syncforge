@@ -1,6 +1,5 @@
 package dev.syncforge.network
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.model.SyncError
 import dev.syncforge.network.api.PushRequest
@@ -11,7 +10,6 @@ import dev.syncforge.network.api.toDto
  *
  * Owns transport-level error wrapping and a single 401 refresh retry via [RefreshingSyncAuthProvider].
  */
-@ExperimentalSyncForgeApi
 class RestSyncTransport(
     baseUrl: String,
     private val httpClient: SyncHttpClient,

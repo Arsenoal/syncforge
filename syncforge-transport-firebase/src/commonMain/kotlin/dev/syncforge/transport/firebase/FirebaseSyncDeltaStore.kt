@@ -1,6 +1,5 @@
 package dev.syncforge.transport.firebase
 
-import dev.syncforge.api.ExperimentalSyncForgeApi
 import dev.syncforge.model.OutboxEntry
 import dev.syncforge.network.PullResult
 import dev.syncforge.network.PushResult
@@ -24,7 +23,6 @@ import kotlinx.serialization.json.Json
  * For background sync, attach a Firestore snapshot listener on `sync_entity` — see
  * [FirebaseListenerPatterns].
  */
-@ExperimentalSyncForgeApi
 class FirebaseSyncDeltaStore(
     private val api: FirebaseSyncApi,
     private val clock: () -> Long = { currentTimeMillis() },
